@@ -1,0 +1,11 @@
+-- Add new fields to doctors table
+ALTER TABLE "doctors"
+  ADD COLUMN IF NOT EXISTS "phone"            TEXT,
+  ADD COLUMN IF NOT EXISTS "email"            TEXT,
+  ADD COLUMN IF NOT EXISTS "gender"           "Gender" NOT NULL DEFAULT 'MALE',
+  ADD COLUMN IF NOT EXISTS "dateOfBirth"      DATE,
+  ADD COLUMN IF NOT EXISTS "joiningDate"      TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS "consultationFee"  DOUBLE PRECISION NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS "availableDays"    TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS "chamberSchedule"  TEXT,
+  ADD COLUMN IF NOT EXISTS "specializations"  TEXT[] NOT NULL DEFAULT '{}';

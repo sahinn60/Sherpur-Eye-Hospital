@@ -1,0 +1,14 @@
+export { HeroSection } from "./HeroSection";
+export { IntroSection } from "./IntroSection";
+export { ServicesSection } from "./ServicesSection";
+export { PhacoBanner } from "./PhacoBanner";
+export { WhyChooseSection } from "./WhyChooseSection";
+export { DoctorsSection } from "./DoctorsSection";
+export { FacilitiesSection } from "./FacilitiesSection";
+export { CareProcessSection } from "./CareProcessSection";
+export { StatsSection } from "./StatsSection";
+export { TestimonialsSection } from "./TestimonialsSection";
+export { ArticlesSection } from "./ArticlesSection";
+export { GallerySection } from "./GallerySection";
+export { ContactCTA } from "./ContactCTA";
+export { MapSection } from "./MapSection";

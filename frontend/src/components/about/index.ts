@@ -1,0 +1,9 @@
+export { AboutIntro } from "./AboutIntro";
+export { MissionVision } from "./MissionVision";
+export { ValuesSection } from "./ValuesSection";
+export { PatientCareSection } from "./PatientCareSection";
+export { EquipmentSection } from "./EquipmentSection";
+export { EnvironmentSection } from "./EnvironmentSection";
+export { ContactReasonsSection } from "./ContactReasonsSection";
+export { AboutGallery } from "./AboutGallery";
+export { AboutCTA } from "./AboutCTA";
