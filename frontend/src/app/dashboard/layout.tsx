@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Stethoscope, Users, CalendarCheck, CalendarOff,
   UserRound, CalendarDays, FileText, Receipt, TrendingUp, TrendingDown,
   Package, Scissors, BarChart2, Newspaper, Image, ShieldCheck, Settings,
-  Menu, X, LogOut, Globe, ClipboardList, ChevronDown, Bell,
+  Menu, X, LogOut, Globe, ClipboardList, ChevronDown, Bell, BookTemplate,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth";
@@ -18,7 +18,7 @@ import { NotificationBell } from "@/components/leave";
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard, Stethoscope, Users, CalendarCheck, CalendarOff,
   UserRound, CalendarDays, FileText, Receipt, TrendingUp, TrendingDown,
-  Package, Scissors, BarChart2, Newspaper, Image, ShieldCheck, Settings, Globe, ClipboardList,
+  Package, Scissors, BarChart2, Newspaper, Image, ShieldCheck, Settings, Globe, ClipboardList, BookTemplate,
 };
 
 function canSeeItem(

@@ -36,7 +36,8 @@ export const SIDEBAR_NAV: NavGroup[] = [
       { href: "/dashboard/clinic",       label: "ক্লিনিক",           icon: "Stethoscope",  roles: ["DOCTOR","SUPER_ADMIN","ADMIN"] },
       { href: "/dashboard/patients",     label: "রোগী",             icon: "UserRound",    roles: ["SUPER_ADMIN","ADMIN","HR","DOCTOR","RECEPTION"] },
       { href: "/dashboard/appointments", label: "অ্যাপয়েন্টমেন্ট", icon: "CalendarDays", permission: "appointments.view" },
-      { href: "/dashboard/prescriptions",label: "প্রেসক্রিপশন",   icon: "FileText",     roles: ["SUPER_ADMIN","ADMIN","DOCTOR","RECEPTION"] },
+      { href: "/dashboard/prescriptions",          label: "প্রেসক্রিপশন",   icon: "FileText",     roles: ["SUPER_ADMIN","ADMIN","DOCTOR","RECEPTION"] },
+      { href: "/dashboard/prescriptions/templates",  label: "Rx টেমপ্লেট",   icon: "BookTemplate", roles: ["SUPER_ADMIN","ADMIN","DOCTOR"] },
     ],
   },
   {

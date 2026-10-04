@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth";
 import { signatureUpload, uploadToCloudinary } from "../middleware/upload";
 import * as ctrl from "../controllers/prescription.controller";
+import * as tmpl from "../controllers/template.controller";
 
 const router = Router();
 const doctorAccess = [authenticate, authorize("DOCTOR", "SUPER_ADMIN", "ADMIN")];
@@ -12,6 +13,13 @@ router.get ("/settings",            doctorOnly,   ctrl.getMySettings);
 router.post("/settings",            doctorOnly,   ctrl.saveMySettings);
 router.post("/settings/signature",  doctorOnly,   signatureUpload.single("signature"), uploadToCloudinary("signatures"), ctrl.uploadSignature);
 router.delete("/settings/signature",doctorOnly,   ctrl.removeSignature);
+
+// Templates
+router.get   ("/templates",     doctorAccess, tmpl.list);
+router.post  ("/templates",     doctorOnly,   tmpl.create);
+router.get   ("/templates/:id", doctorAccess, tmpl.get);
+router.put   ("/templates/:id", doctorOnly,   tmpl.update);
+router.delete("/templates/:id", doctorOnly,   tmpl.remove);
 
 // Prescriptions
 router.get ("/",           doctorAccess, ctrl.listRx);
