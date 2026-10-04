@@ -39,6 +39,8 @@ app.use(
         "https://sherpur-eye-hospital-kappa.vercel.app",
         "https://frontend-nine-taupe-48.vercel.app",
         "https://frontend-six-psi-30.vercel.app",
+        "https://frontend-git-master-crack-nc-odes-projects.vercel.app",
+        "https://frontend-crack-nc-odes-projects.vercel.app",
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
