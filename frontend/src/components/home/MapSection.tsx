@@ -34,33 +34,14 @@ export function MapSection() {
         {/* Map on top on mobile, side-by-side on lg */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
           <div className="lg:col-span-2 rounded-2xl overflow-hidden shadow-md border border-gray-200 h-56 sm:h-72 lg:h-80">
-            {s.map_embed_url ? (
-              s.map_embed_url.includes("/maps/embed") ? (
-                <iframe
-                  src={s.map_embed_url}
-                  width="100%" height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title={t("হাসপাতালের অবস্থান", "Hospital Location")}
-                />
-              ) : (
-                <a
-                  href={s.map_embed_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-full h-full bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                  <div className="text-center">
-                    <div className="text-5xl mb-3">📍</div>
-                    <p className="text-primary-600 font-semibold text-sm">
-                      {t("মানচিত্রে দেখুন", "View on Google Maps")}
-                    </p>
-                    <p className="text-gray-400 text-xs mt-1">{t(s.address_bn, s.address_en)}</p>
-                  </div>
-                </a>
-              )
-            ) : null}
+            <iframe
+              src={`https://maps.google.com/maps?q=Sherpur+Adhunik+Eye+Hospital+Sherpur+Bangladesh&output=embed&hl=bn`}
+              width="100%" height="100%"
+              style={{ border: 0 }}
+              allowFullScreen loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title={t("হাসপাতালের অবস্থান", "Hospital Location")}
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4 lg:gap-5">
             {details.map((item) => (
