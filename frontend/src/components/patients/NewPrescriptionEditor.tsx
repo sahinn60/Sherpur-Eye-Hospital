@@ -30,6 +30,32 @@ interface RefractionRow {
   add: string;
 }
 
+interface EyeExamRow {
+  // Anterior segment
+  lids: string;
+  conjunctiva: string;
+  cornea: string;
+  ac: string;        // Anterior Chamber
+  iris: string;
+  pupil: string;
+  lens: string;
+  // Posterior segment
+  vitreous: string;
+  disc: string;
+  macula: string;
+  vessels: string;
+  periphery: string;
+}
+
+const EMPTY_EYE_EXAM: EyeExamRow = {
+  lids: "", conjunctiva: "", cornea: "", ac: "",
+  iris: "", pupil: "", lens: "",
+  vitreous: "", disc: "", macula: "", vessels: "", periphery: "",
+};
+
+const CATARACT_GRADES = ["", "Immature", "Mature", "Hypermature", "Nuclear", "Cortical", "PSC", "Mixed"];
+const SURGERY_RECS    = ["", "Advised", "Urgent", "Elective", "Not indicated", "Deferred", "Post-op follow-up"];
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const FREQ_OPTIONS = [
@@ -251,6 +277,15 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
   const [reRE,           setReRE]           = useState<RefractionRow>({ sph: "", cyl: "", axis: "", add: "" });
   const [reLE,           setReLE]           = useState<RefractionRow>({ sph: "", cyl: "", axis: "", add: "" });
   const [examNotes,      setExamNotes]      = useState("");
+  // Structured slit-lamp / fundus exam
+  const [examOD,         setExamOD]         = useState<EyeExamRow>({ ...EMPTY_EYE_EXAM });
+  const [examOS,         setExamOS]         = useState<EyeExamRow>({ ...EMPTY_EYE_EXAM });
+  // Cataract & surgery
+  const [cataractOD,     setCataractOD]     = useState("");
+  const [cataractOS,     setCataractOS]     = useState("");
+  const [surgeryRecOD,   setSurgeryRecOD]   = useState("");
+  const [surgeryRecOS,   setSurgeryRecOS]   = useState("");
+  const [clinicalNotes,  setClinicalNotes]  = useState("");
   const [diagnosis,      setDiagnosis]      = useState("");
   const [investigations, setInvestigations] = useState("");
   const [medicines,      setMedicines]      = useState<MedRow[]>([
@@ -342,7 +377,18 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           ? JSON.stringify(reRE) : undefined,
         refractionLE: (reLE.sph || reLE.cyl || reLE.axis || reLE.add)
           ? JSON.stringify(reLE) : undefined,
-        examNotes: examNotes || undefined,
+        examNotes: [
+          examNotes,
+          // Serialize structured exam into examNotes as JSON block
+          (Object.values(examOD).some(Boolean) || Object.values(examOS).some(Boolean))
+            ? JSON.stringify({ OD: examOD, OS: examOS })
+            : "",
+          cataractOD ? `Cataract OD: ${cataractOD}` : "",
+          cataractOS ? `Cataract OS: ${cataractOS}` : "",
+          surgeryRecOD ? `Surgery OD: ${surgeryRecOD}` : "",
+          surgeryRecOS ? `Surgery OS: ${surgeryRecOS}` : "",
+          clinicalNotes ? `Clinical Notes: ${clinicalNotes}` : "",
+        ].filter(Boolean).join("\n") || undefined,
         diagnosis: diagnosis || undefined,
         investigations: investigations || undefined,
         advice: advice || undefined,
@@ -482,83 +528,81 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
 
           {/* 2. Eye Examination */}
           <Section title="Eye Examination" defaultOpen accent>
-            <div className="space-y-5">
+            <div className="space-y-6">
 
-              {/* VA & IOP table */}
+              {/* ── Visual Acuity ── */}
               <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
-                  Visual Acuity & IOP
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border-collapse">
-                    <thead>
-                      <tr>
-                        <th className="text-left text-xs text-gray-400 font-semibold pb-2 pr-4 w-24"></th>
-                        <th className="text-center text-xs text-gray-600 font-bold pb-2 px-2">
-                          <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full">VA</span>
-                        </th>
-                        <th className="text-center text-xs text-gray-600 font-bold pb-2 px-2">
-                          <span className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full">IOP (mmHg)</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="space-y-2">
-                      <tr>
-                        <td className="pr-4 py-2">
-                          <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2.5 py-1.5 rounded-lg">OD (Right)</span>
-                        </td>
-                        <td className="px-2 py-2">
-                          <input value={vaRE} onChange={(e) => setVaRE(e.target.value)}
-                            placeholder="6/6" className={smallInp} />
-                        </td>
-                        <td className="px-2 py-2">
-                          <input value={iopRE} onChange={(e) => setIopRE(e.target.value)}
-                            placeholder="14" className={smallInp} />
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="pr-4 py-2">
-                          <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2.5 py-1.5 rounded-lg">OS (Left)</span>
-                        </td>
-                        <td className="px-2 py-2">
-                          <input value={vaLE} onChange={(e) => setVaLE(e.target.value)}
-                            placeholder="6/6" className={smallInp} />
-                        </td>
-                        <td className="px-2 py-2">
-                          <input value={iopLE} onChange={(e) => setIopLE(e.target.value)}
-                            placeholder="14" className={smallInp} />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">Visual Acuity (VA)</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3">
+                    <p className="text-xs font-bold text-blue-700 mb-2">OD — Right Eye</p>
+                    <label className={label}>Unaided / UCVA</label>
+                    <input value={vaRE} onChange={(e) => setVaRE(e.target.value)}
+                      placeholder="e.g. 6/60" className={inp} />
+                  </div>
+                  <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3">
+                    <p className="text-xs font-bold text-indigo-700 mb-2">OS — Left Eye</p>
+                    <label className={label}>Unaided / UCVA</label>
+                    <input value={vaLE} onChange={(e) => setVaLE(e.target.value)}
+                      placeholder="e.g. 6/60" className={inp} />
+                  </div>
                 </div>
               </div>
 
-              {/* Refraction */}
+              {/* ── IOP ── */}
               <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Refraction</p>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border-collapse min-w-[320px]">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-purple-500 rounded-full" />
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">Intraocular Pressure (IOP)</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-3">
+                    <p className="text-xs font-bold text-purple-700 mb-2">OD — Right Eye</p>
+                    <label className={label}>IOP (mmHg)</label>
+                    <input value={iopRE} onChange={(e) => setIopRE(e.target.value)}
+                      placeholder="e.g. 14 mmHg" className={inp} />
+                  </div>
+                  <div className="bg-violet-50/50 border border-violet-100 rounded-xl p-3">
+                    <p className="text-xs font-bold text-violet-700 mb-2">OS — Left Eye</p>
+                    <label className={label}>IOP (mmHg)</label>
+                    <input value={iopLE} onChange={(e) => setIopLE(e.target.value)}
+                      placeholder="e.g. 14 mmHg" className={inp} />
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Refraction ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-emerald-500 rounded-full" />
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">Refraction</p>
+                </div>
+                <div className="overflow-x-auto rounded-xl border border-gray-200">
+                  <table className="w-full text-sm min-w-[420px]">
                     <thead>
-                      <tr>
-                        {["", "SPH", "CYL", "AXIS", "ADD"].map((h) => (
-                          <th key={h} className="text-center text-xs text-gray-500 font-bold pb-2 px-1">
-                            {h && <span className="bg-gray-100 px-2 py-1 rounded">{h}</span>}
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="text-left text-xs font-bold text-gray-500 px-4 py-2.5 w-20">Eye</th>
+                        {["SPH", "CYL", "AXIS", "ADD"].map((h) => (
+                          <th key={h} className="text-center text-xs font-bold text-gray-600 px-3 py-2.5">
+                            <span className="bg-white border border-gray-200 px-2.5 py-1 rounded-lg shadow-sm">{h}</span>
                           </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {([
-                        { label: "OD", state: reRE, set: setReRE },
-                        { label: "OS", state: reLE, set: setReLE },
-                      ] as const).map(({ label: eyeLabel, state, set }) => (
-                        <tr key={eyeLabel}>
-                          <td className="pr-2 py-1.5">
-                            <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2.5 py-1.5 rounded-lg">{eyeLabel}</span>
+                        { eyeLabel: "OD", color: "text-blue-700", state: reRE, set: setReRE },
+                        { eyeLabel: "OS", color: "text-indigo-700", state: reLE, set: setReLE },
+                      ] as const).map(({ eyeLabel, color, state, set }) => (
+                        <tr key={eyeLabel} className="border-b border-gray-100 last:border-0">
+                          <td className="px-4 py-3">
+                            <span className={`text-xs font-bold ${color} bg-gray-100 px-2.5 py-1.5 rounded-lg`}>{eyeLabel}</span>
                           </td>
                           {(["sph", "cyl", "axis", "add"] as const).map((k) => (
-                            <td key={k} className="px-1 py-1.5">
+                            <td key={k} className="px-3 py-3">
                               <input
                                 value={state[k]}
                                 onChange={(e) => set((r) => ({ ...r, [k]: e.target.value }))}
@@ -574,17 +618,190 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
                 </div>
               </div>
 
-              {/* Exam notes */}
+              {/* ── Slit-lamp / Anterior Segment ── */}
               <div>
-                <label className={label}>Examination Notes</label>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-amber-500 rounded-full" />
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">Anterior Segment Examination</p>
+                </div>
+                <div className="overflow-x-auto rounded-xl border border-gray-200">
+                  <table className="w-full text-sm min-w-[480px]">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="text-left text-xs font-bold text-gray-500 px-4 py-2.5 w-32">Structure</th>
+                        <th className="text-center text-xs font-bold text-blue-600 px-3 py-2.5">OD (Right)</th>
+                        <th className="text-center text-xs font-bold text-indigo-600 px-3 py-2.5">OS (Left)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {([
+                        { key: "lids" as const,        label: "Lids & Lashes" },
+                        { key: "conjunctiva" as const, label: "Conjunctiva" },
+                        { key: "cornea" as const,      label: "Cornea" },
+                        { key: "ac" as const,          label: "Ant. Chamber" },
+                        { key: "iris" as const,        label: "Iris" },
+                        { key: "pupil" as const,       label: "Pupil" },
+                        { key: "lens" as const,        label: "Lens" },
+                      ]).map(({ key, label: rowLabel }) => (
+                        <tr key={key} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50">
+                          <td className="px-4 py-2.5">
+                            <span className="text-xs font-semibold text-gray-600">{rowLabel}</span>
+                          </td>
+                          <td className="px-3 py-2">
+                            <input
+                              value={examOD[key]}
+                              onChange={(e) => setExamOD((r) => ({ ...r, [key]: e.target.value }))}
+                              placeholder="Normal"
+                              className={smallInp}
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <input
+                              value={examOS[key]}
+                              onChange={(e) => setExamOS((r) => ({ ...r, [key]: e.target.value }))}
+                              placeholder="Normal"
+                              className={smallInp}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* ── Posterior Segment / Fundus ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-rose-500 rounded-full" />
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">Posterior Segment / Fundus</p>
+                </div>
+                <div className="overflow-x-auto rounded-xl border border-gray-200">
+                  <table className="w-full text-sm min-w-[480px]">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="text-left text-xs font-bold text-gray-500 px-4 py-2.5 w-32">Structure</th>
+                        <th className="text-center text-xs font-bold text-blue-600 px-3 py-2.5">OD (Right)</th>
+                        <th className="text-center text-xs font-bold text-indigo-600 px-3 py-2.5">OS (Left)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {([
+                        { key: "vitreous" as const,  label: "Vitreous" },
+                        { key: "disc" as const,      label: "Optic Disc" },
+                        { key: "macula" as const,    label: "Macula" },
+                        { key: "vessels" as const,   label: "Blood Vessels" },
+                        { key: "periphery" as const, label: "Periphery" },
+                      ]).map(({ key, label: rowLabel }) => (
+                        <tr key={key} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50">
+                          <td className="px-4 py-2.5">
+                            <span className="text-xs font-semibold text-gray-600">{rowLabel}</span>
+                          </td>
+                          <td className="px-3 py-2">
+                            <input
+                              value={examOD[key]}
+                              onChange={(e) => setExamOD((r) => ({ ...r, [key]: e.target.value }))}
+                              placeholder="Normal"
+                              className={smallInp}
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <input
+                              value={examOS[key]}
+                              onChange={(e) => setExamOS((r) => ({ ...r, [key]: e.target.value }))}
+                              placeholder="Normal"
+                              className={smallInp}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* ── Cataract Status ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-orange-400 rounded-full" />
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">Cataract Status</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-3">
+                    <p className="text-xs font-bold text-orange-700 mb-2">OD — Right Eye</p>
+                    <label className={label}>Cataract Grade / Type</label>
+                    <select value={cataractOD} onChange={(e) => setCataractOD(e.target.value)} className={inp}>
+                      <option value="">— Not assessed —</option>
+                      {CATARACT_GRADES.filter(Boolean).map((g) => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-3">
+                    <p className="text-xs font-bold text-orange-700 mb-2">OS — Left Eye</p>
+                    <label className={label}>Cataract Grade / Type</label>
+                    <select value={cataractOS} onChange={(e) => setCataractOS(e.target.value)} className={inp}>
+                      <option value="">— Not assessed —</option>
+                      {CATARACT_GRADES.filter(Boolean).map((g) => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Surgery Recommendation ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-red-500 rounded-full" />
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">Surgery Recommendation</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-red-50/40 border border-red-100 rounded-xl p-3">
+                    <p className="text-xs font-bold text-red-700 mb-2">OD — Right Eye</p>
+                    <label className={label}>Recommendation</label>
+                    <select value={surgeryRecOD} onChange={(e) => setSurgeryRecOD(e.target.value)} className={inp}>
+                      <option value="">— None —</option>
+                      {SURGERY_RECS.filter(Boolean).map((r) => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  <div className="bg-red-50/40 border border-red-100 rounded-xl p-3">
+                    <p className="text-xs font-bold text-red-700 mb-2">OS — Left Eye</p>
+                    <label className={label}>Recommendation</label>
+                    <select value={surgeryRecOS} onChange={(e) => setSurgeryRecOS(e.target.value)} className={inp}>
+                      <option value="">— None —</option>
+                      {SURGERY_RECS.filter(Boolean).map((r) => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Clinical Notes ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-gray-400 rounded-full" />
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">Clinical Notes</p>
+                </div>
+                <textarea
+                  rows={3}
+                  value={clinicalNotes}
+                  onChange={(e) => setClinicalNotes(e.target.value)}
+                  placeholder="Additional clinical observations, special findings, patient cooperation, dilation status..."
+                  className={`${inp} resize-none`}
+                />
+              </div>
+
+              {/* ── General Exam Notes ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-teal-500 rounded-full" />
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">Examination Summary Notes</p>
+                </div>
                 <textarea
                   rows={2}
                   value={examNotes}
                   onChange={(e) => setExamNotes(e.target.value)}
-                  placeholder="Anterior segment, posterior segment, fundus..."
+                  placeholder="Overall examination summary for prescription print..."
                   className={`${inp} resize-none`}
                 />
               </div>
+
             </div>
           </Section>
 
