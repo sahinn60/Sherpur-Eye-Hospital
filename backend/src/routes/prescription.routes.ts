@@ -11,7 +11,7 @@ const doctorOnly   = [authenticate, authorize("DOCTOR")];
 const adminOnly    = [authenticate, authorize("SUPER_ADMIN", "ADMIN")];
 
 // ── Admin: Hospital Rx Settings ───────────────────────────────────────────────
-router.get   ("/admin/hospital-settings",       adminOnly, admin.getHospitalRxSettings);
+router.get   ("/admin/hospital-settings",       [authenticate], admin.getHospitalRxSettings);
 router.post  ("/admin/hospital-settings",       adminOnly, admin.saveHospitalRxSettings);
 router.post  ("/admin/hospital-settings/logo",  adminOnly, signatureUpload.single("logo"), uploadToCloudinary("rx_logos"), admin.uploadHospitalLogo);
 
@@ -22,7 +22,7 @@ router.put   ("/admin/doctors/:doctorId/settings",                 adminOnly, ad
 router.post  ("/admin/doctors/:doctorId/settings/signature",       adminOnly, signatureUpload.single("signature"), uploadToCloudinary("signatures"), admin.uploadDoctorSignature);
 router.delete("/admin/doctors/:doctorId/settings/signature",       adminOnly, admin.removeDoctorSignature);
 // Settings
-router.get ("/settings",            doctorOnly,   ctrl.getMySettings);
+router.get ("/settings",            doctorAccess, ctrl.getMySettings);
 router.post("/settings",            doctorOnly,   ctrl.saveMySettings);
 router.post("/settings/signature",  doctorOnly,   signatureUpload.single("signature"), uploadToCloudinary("signatures"), ctrl.uploadSignature);
 router.delete("/settings/signature",doctorOnly,   ctrl.removeSignature);

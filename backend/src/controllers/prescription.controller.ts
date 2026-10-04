@@ -15,6 +15,11 @@ async function resolveDoctor(req: Request) {
 
 export async function getMySettings(req: Request, res: Response, next: NextFunction) {
   try {
+    // Non-doctor roles (ADMIN, RECEPTION) have no doctor profile — return null gracefully
+    if (!['DOCTOR'].includes(req.user!.role)) {
+      res.json(successResponse("ok", null));
+      return;
+    }
     const doctor = await resolveDoctor(req);
     const settings = await svc.getDoctorSettings(doctor.id);
     res.json(successResponse("ok", settings));
