@@ -396,7 +396,7 @@ async function main() {
   for (const s of cmsSettings) {
     await prisma.siteSetting.upsert({
       where: { key: s.key },
-      update: { value: s.value },
+      update: s.type === "image" ? {} : { value: s.value },
       create: s,
     });
   }
