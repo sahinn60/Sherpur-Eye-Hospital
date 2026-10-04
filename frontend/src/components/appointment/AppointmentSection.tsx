@@ -4,21 +4,6 @@ import { Suspense } from "react";
 import { AppointmentForm } from "./AppointmentForm";
 import { useLang } from "@/context/LangContext";
 
-function FormSkeleton() {
-  return (
-    <div className="space-y-6 animate-pulse">
-      <div className="h-5 bg-gray-200 rounded w-1/3" />
-      <div className="grid sm:grid-cols-2 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-10 bg-gray-200 rounded-md" />
-        ))}
-      </div>
-      <div className="h-24 bg-gray-200 rounded-md" />
-      <div className="h-12 bg-gray-200 rounded-xl" />
-    </div>
-  );
-}
-
 export function AppointmentSection() {
   const { t } = useLang();
 
@@ -37,7 +22,7 @@ export function AppointmentSection() {
               )}
             </p>
           </div>
-          <Suspense fallback={<FormSkeleton />}>
+          <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100 rounded-xl" />}>
             <AppointmentForm />
           </Suspense>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { CalendarCheck, CheckCircle } from "lucide-react";
 import { useLang } from "@/context/LangContext";
@@ -17,6 +17,14 @@ const TIME_SLOTS = [
   "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM",
   "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM",
 ];
+
+function SearchParamsReader({ onRead }: { onRead: (doctorId: string, serviceId: string) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    onRead(searchParams.get("doctor") || "", searchParams.get("service") || "");
+  }, [searchParams, onRead]);
+  return null;
+}
 
 function SuccessCard({ appointment, onNew, t }: {
   appointment: Appointment;
@@ -90,12 +98,10 @@ export function AppointmentForm() {
     preferredDate: "", preferredTime: "", reason: "", message: "",
   });
 
-  useEffect(() => {
-    const doctorId = searchParams.get("doctor");
-    const serviceId = searchParams.get("service");
+  const handleSearchParams = (doctorId: string, serviceId: string) => {
     if (doctorId) setForm(f => ({ ...f, doctorId }));
     if (serviceId) setForm(f => ({ ...f, serviceId }));
-  }, [searchParams]);
+  };
 
   const set = (k: string, v: string) => {
     setForm(f => ({ ...f, [k]: v }));
@@ -149,6 +155,9 @@ export function AppointmentForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <Suspense fallback={null}>
+        <SearchParamsReader onRead={handleSearchParams} />
+      </Suspense>
       {/* Patient Info */}
       <div>
         <h3 className="text-base font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100">
