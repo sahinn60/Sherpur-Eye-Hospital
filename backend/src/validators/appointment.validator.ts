@@ -10,7 +10,7 @@ export const createAppointmentSchema = z.object({
   serviceId: z.string().optional().transform(v => v || undefined),
   preferredDate: z.string().min(1, "Preferred date is required"),
   preferredTime: z.string().min(1, "Preferred time is required"),
-  reason: z.string().min(5, "Please describe your problem"),
+  reason: z.string().min(1, "Please describe your problem"),
   message: z.string().optional(),
 });
 

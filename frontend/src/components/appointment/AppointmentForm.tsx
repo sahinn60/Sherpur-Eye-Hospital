@@ -110,7 +110,7 @@ export function AppointmentForm() {
     if (!form.gender) e.gender = t("লিঙ্গ নির্বাচন করুন", "Select gender");
     if (!form.preferredDate) e.preferredDate = t("তারিখ নির্বাচন করুন", "Select a date");
     if (!form.preferredTime) e.preferredTime = t("সময় নির্বাচন করুন", "Select a time");
-    if (form.reason.trim().length < 3) e.reason = t("সমস্যার বিবরণ দিন", "Describe your problem");
+    if (!form.reason.trim()) e.reason = t("সমস্যার বিবরণ দিন", "Describe your problem");
     return e;
   }
 
