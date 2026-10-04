@@ -275,6 +275,59 @@ async function main() {
     { key: "about_desc_bn",       value: "শেরপুর আধুনিক চক্ষু হাসপাতাল একটি অত্যাধুনিক চক্ষু চিকিৎসা কেন্দ্র।", group: "about", labelBn: "বিবরণ (বাংলা)", labelEn: "Description (Bangla)", type: "textarea" },
     { key: "about_image_1",       value: "", group: "about", labelBn: "About ছবি ১", labelEn: "About Image 1", type: "image" },
     { key: "about_image_2",       value: "", group: "about", labelBn: "About ছবি ২", labelEn: "About Image 2", type: "image" },
+
+    // Page Heroes
+    { key: "hero_about_image",       value: "", group: "page_heroes", labelBn: "About পেজ হিরো ছবি",       labelEn: "About Page Hero Image",       type: "image" },
+    { key: "hero_appointment_image", value: "", group: "page_heroes", labelBn: "Appointment পেজ হিরো ছবি",  labelEn: "Appointment Page Hero Image",  type: "image" },
+    { key: "hero_doctors_image",     value: "", group: "page_heroes", labelBn: "Doctors পেজ হিরো ছবি",    labelEn: "Doctors Page Hero Image",    type: "image" },
+    { key: "hero_gallery_image",     value: "", group: "page_heroes", labelBn: "Gallery পেজ হিরো ছবি",    labelEn: "Gallery Page Hero Image",    type: "image" },
+    { key: "hero_services_image",    value: "", group: "page_heroes", labelBn: "Services পেজ হিরো ছবি",   labelEn: "Services Page Hero Image",   type: "image" },
+    { key: "hero_news_image",        value: "", group: "page_heroes", labelBn: "News পেজ হিরো ছবি",       labelEn: "News Page Hero Image",       type: "image" },
+    { key: "hero_contact_image",     value: "", group: "page_heroes", labelBn: "Contact পেজ হিরো ছবি",    labelEn: "Contact Page Hero Image",    type: "image" },
+
+    // Nav Icons
+    { key: "nav_icon_home",        value: "", group: "nav_icons", labelBn: "হোম আইকন",          labelEn: "Home Icon",        type: "image" },
+    { key: "nav_icon_about",       value: "", group: "nav_icons", labelBn: "আমাদের সম্পর্কে আইকন", labelEn: "About Icon",      type: "image" },
+    { key: "nav_icon_doctors",     value: "", group: "nav_icons", labelBn: "চিকিৎসক আইকন",      labelEn: "Doctors Icon",     type: "image" },
+    { key: "nav_icon_services",    value: "", group: "nav_icons", labelBn: "সেবা আইকন",          labelEn: "Services Icon",    type: "image" },
+    { key: "nav_icon_appointment", value: "", group: "nav_icons", labelBn: "অ্যাপয়েন্টমেন্ট আইকন", labelEn: "Appointment Icon", type: "image" },
+    { key: "nav_icon_gallery",     value: "", group: "nav_icons", labelBn: "গ্যালারি আইকন",       labelEn: "Gallery Icon",     type: "image" },
+    { key: "nav_icon_news",        value: "", group: "nav_icons", labelBn: "সংবাদ আইকন",          labelEn: "News Icon",        type: "image" },
+    { key: "nav_icon_contact",     value: "", group: "nav_icons", labelBn: "যোগাযোগ আইকন",       labelEn: "Contact Icon",     type: "image" },
+
+    // Service Icons
+    { key: "icon_service_1", value: "👁️", group: "icons_services", labelBn: "সেবা আইকন ১", labelEn: "Service Icon 1", type: "text" },
+    { key: "icon_service_2", value: "🔬", group: "icons_services", labelBn: "সেবা আইকন ২", labelEn: "Service Icon 2", type: "text" },
+    { key: "icon_service_3", value: "👓", group: "icons_services", labelBn: "সেবা আইকন ৩", labelEn: "Service Icon 3", type: "text" },
+    { key: "icon_service_4", value: "💧", group: "icons_services", labelBn: "সেবা আইকন ৪", labelEn: "Service Icon 4", type: "text" },
+    { key: "icon_service_5", value: "🧒", group: "icons_services", labelBn: "সেবা আইকন ৫", labelEn: "Service Icon 5", type: "text" },
+    { key: "icon_service_6", value: "🏥", group: "icons_services", labelBn: "সেবা আইকন ৬", labelEn: "Service Icon 6", type: "text" },
+
+    // Why Us Icons
+    { key: "icon_why_1", value: "🏆", group: "icons_why", labelBn: "কেন আমরা আইকন ১", labelEn: "Why Us Icon 1", type: "text" },
+    { key: "icon_why_2", value: "⚙️", group: "icons_why", labelBn: "কেন আমরা আইকন ২", labelEn: "Why Us Icon 2", type: "text" },
+    { key: "icon_why_3", value: "💙", group: "icons_why", labelBn: "কেন আমরা আইকন ৩", labelEn: "Why Us Icon 3", type: "text" },
+    { key: "icon_why_4", value: "💰", group: "icons_why", labelBn: "কেন আমরা আইকন ৪", labelEn: "Why Us Icon 4", type: "text" },
+    { key: "icon_why_5", value: "🕐", group: "icons_why", labelBn: "কেন আমরা আইকন ৫", labelEn: "Why Us Icon 5", type: "text" },
+    { key: "icon_why_6", value: "📍", group: "icons_why", labelBn: "কেন আমরা আইকন ৬", labelEn: "Why Us Icon 6", type: "text" },
+
+    // Facilities Icons
+    { key: "icon_facility_1", value: "🏨", group: "icons_facilities", labelBn: "সুবিধা আইকন ১", labelEn: "Facility Icon 1", type: "text" },
+    { key: "icon_facility_2", value: "🔭", group: "icons_facilities", labelBn: "সুবিধা আইকন ২", labelEn: "Facility Icon 2", type: "text" },
+    { key: "icon_facility_3", value: "🛏️", group: "icons_facilities", labelBn: "সুবিধা আইকন ৩", labelEn: "Facility Icon 3", type: "text" },
+    { key: "icon_facility_4", value: "🚑", group: "icons_facilities", labelBn: "সুবিধা আইকন ৪", labelEn: "Facility Icon 4", type: "text" },
+    { key: "icon_facility_5", value: "💊", group: "icons_facilities", labelBn: "সুবিধা আইকন ৫", labelEn: "Facility Icon 5", type: "text" },
+    { key: "icon_facility_6", value: "🅿️", group: "icons_facilities", labelBn: "সুবিধা আইকন ৬", labelEn: "Facility Icon 6", type: "text" },
+
+    // About Page Icons
+    { key: "icon_mission",  value: "🎯", group: "icons_about", labelBn: "মিশন আইকন",    labelEn: "Mission Icon",   type: "text" },
+    { key: "icon_vision",   value: "🌟", group: "icons_about", labelBn: "ভিশন আইকন",    labelEn: "Vision Icon",    type: "text" },
+    { key: "icon_value_1",  value: "❤️", group: "icons_about", labelBn: "মূল্যবোধ আইকন ১", labelEn: "Value Icon 1", type: "text" },
+    { key: "icon_value_2",  value: "✅", group: "icons_about", labelBn: "মূল্যবোধ আইকন ২", labelEn: "Value Icon 2", type: "text" },
+    { key: "icon_value_3",  value: "🤝", group: "icons_about", labelBn: "মূল্যবোধ আইকন ৩", labelEn: "Value Icon 3", type: "text" },
+    { key: "icon_value_4",  value: "🌱", group: "icons_about", labelBn: "মূল্যবোধ আইকন ৪", labelEn: "Value Icon 4", type: "text" },
+    { key: "icon_value_5",  value: "🏘️", group: "icons_about", labelBn: "মূল্যবোধ আইকন ৫", labelEn: "Value Icon 5", type: "text" },
+    { key: "icon_value_6",  value: "📚", group: "icons_about", labelBn: "মূল্যবোধ আইকন ৬", labelEn: "Value Icon 6", type: "text" },
   ];
 
   for (const s of cmsSettings) {
