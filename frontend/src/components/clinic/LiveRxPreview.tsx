@@ -53,9 +53,11 @@ export function LiveRxPreview({ data, doctorSettings }: Props) {
     });
   }, []);
 
-  const effectiveSettings = doctorSettings ?? liveSettings;
+  const effectiveSettings = useMemo(
+    () => doctorSettings ?? liveSettings,
+    [doctorSettings, liveSettings]
+  );
 
-  // Build the full HTML string — recomputes whenever any input changes
   const html = useMemo(() => {
     if (!ready) return "";
     const now = new Date().toISOString();
