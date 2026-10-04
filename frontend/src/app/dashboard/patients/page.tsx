@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, Plus, UserRound, Filter } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth";
@@ -14,6 +15,7 @@ import { Patient } from "@/types/patient";
 export default function PatientsPage() {
   const { isAdmin, hasRole } = useAuth();
   const canWrite = isAdmin || hasRole("DOCTOR", "RECEPTION");
+  const searchParams = useSearchParams();
 
   const [patients,    setPatients]    = useState<Patient[]>([]);
   const [total,       setTotal]       = useState(0);
@@ -27,7 +29,9 @@ export default function PatientsPage() {
   const [showForm,    setShowForm]    = useState(false);
   const [editTarget,  setEditTarget]  = useState<Patient | null>(null);
   const [formError,   setFormError]   = useState("");
-  const [viewId,      setViewId]      = useState<string | null>(null);
+  const [viewId,      setViewId]      = useState<string | null>(
+    searchParams.get("open") || null
+  );
 
   const load = useCallback(async () => {
     setLoading(true);

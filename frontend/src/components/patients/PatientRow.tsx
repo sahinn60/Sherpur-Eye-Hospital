@@ -1,6 +1,7 @@
 "use client";
 
-import { Phone, MapPin, User, Edit2, ToggleLeft, ToggleRight, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Phone, MapPin, User, Edit2, ToggleLeft, ToggleRight, Eye, FilePlus } from "lucide-react";
 import { Patient, GENDER_BN } from "@/types/patient";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function PatientRow({ patient, onView, onEdit, onToggle, canWrite }: Props) {
+  const router = useRouter();
   const initials = patient.nameBn.slice(0, 2);
 
   return (
@@ -74,6 +76,12 @@ export function PatientRow({ patient, onView, onEdit, onToggle, canWrite }: Prop
           </button>
           {canWrite && (
             <>
+              <button
+                onClick={() => router.push(`/dashboard/patients/${patient.id}/prescription/new`)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                title="নতুন প্রেসক্রিপশন">
+                <FilePlus size={15} />
+              </button>
               <button onClick={() => onEdit(patient)}
                 className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                 title="সম্পাদনা">
