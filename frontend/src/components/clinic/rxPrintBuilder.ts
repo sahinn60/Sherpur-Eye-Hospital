@@ -12,7 +12,7 @@ export const PRINT_CSS = `
 html,body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;line-height:1.4}
 
-.rx-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:7px;border-bottom:2px solid #1a3a6b;margin-bottom:8px}
+.rx-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:7px;border-bottom:2px solid #1a3a6b;margin-bottom:8px;page-break-inside:avoid}
 .hosp-left{display:flex;align-items:flex-start;gap:9px}
 .hosp-logo{width:54px;height:54px;object-fit:contain;flex-shrink:0}
 .hosp-name-bn{font-size:16px;font-weight:700;color:#1a3a6b;line-height:1.2;letter-spacing:-0.01em}
@@ -26,40 +26,40 @@ body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;li
 .dr-bmdc{font-size:9px;color:#666;margin-top:2px}
 .dr-chamber{font-size:9px;color:#666;margin-top:1px}
 
-.patient-bar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;border:1px solid #b8cce4;border-radius:2px;margin-bottom:9px;overflow:hidden;font-size:10px}
+.patient-bar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;border:1px solid #b8cce4;border-radius:2px;margin-bottom:9px;overflow:hidden;font-size:10px;page-break-inside:avoid}
 .pb-cell{padding:4px 7px;border-right:1px solid #b8cce4}
 .pb-cell:last-child{border-right:none}
 .pb-label{font-size:8.5px;text-transform:uppercase;letter-spacing:0.04em;color:#777;display:block;margin-bottom:1px}
 .pb-value{font-weight:700;color:#1a1a1a;font-size:10.5px}
 
-.rx-body{display:grid;grid-template-columns:82mm 1px 1fr;gap:0;min-height:195mm}
+.rx-body{display:grid;grid-template-columns:82mm 1px 1fr;gap:0}
 .col-left{padding-right:9px;padding-top:2px}
 .col-divider{background:#c8d8ee;margin:0 5px}
-.col-right{padding-left:11px;padding-top:2px}
+.col-right{padding-left:11px;padding-top:2px;display:flex;flex-direction:column}
 
-.sec-head{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;border-bottom:1px solid #c8d8ee;padding-bottom:2px;margin-bottom:5px;margin-top:11px}
+.sec-head{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;border-bottom:1px solid #c8d8ee;padding-bottom:2px;margin-bottom:5px;margin-top:11px;page-break-after:avoid}
 .sec-head:first-child{margin-top:0}
 .clinical-text{font-size:10.5px;color:#222;line-height:1.65;white-space:pre-line}
 
-.eye-tbl{width:100%;border-collapse:collapse;font-size:9.5px;margin-bottom:3px}
+.eye-tbl{width:100%;border-collapse:collapse;font-size:9.5px;margin-bottom:3px;page-break-inside:avoid}
 .eye-tbl th{background:#e8f0fb;color:#1a3a6b;padding:3px 5px;border:1px solid #b8cce4;font-size:8.5px;font-weight:700;text-align:center}
 .eye-tbl th.left{text-align:left}
 .eye-tbl td{padding:3px 5px;border:1px solid #d4e2f0;text-align:center;font-size:9.5px}
 .eye-tbl td.eye-lbl{font-weight:700;text-align:left;background:#f4f8fd;font-size:9px;color:#1a3a6b}
 
-.ref-tbl{width:100%;border-collapse:collapse;font-size:9px;margin-bottom:3px}
+.ref-tbl{width:100%;border-collapse:collapse;font-size:9px;margin-bottom:3px;page-break-inside:avoid}
 .ref-tbl th{background:#e8f0fb;color:#1a3a6b;padding:2px 4px;border:1px solid #b8cce4;font-size:8px;font-weight:700;text-align:center}
 .ref-tbl td{padding:2px 4px;border:1px solid #d4e2f0;text-align:center;font-size:9px}
 .ref-tbl td.lbl{font-weight:700;text-align:left;background:#f4f8fd;color:#1a3a6b;padding-left:5px}
 
 .diag-text{font-size:11px;font-weight:700;color:#1a1a1a;line-height:1.55;padding:3px 0}
 
-.rx-sym-row{display:flex;align-items:flex-start;gap:5px;margin-bottom:7px}
+.rx-sym-row{display:flex;align-items:flex-start;gap:5px;margin-bottom:7px;page-break-after:avoid}
 .rx-sym{font-size:36px;font-weight:900;color:#1a3a6b;line-height:0.85;font-family:'Times New Roman',serif;flex-shrink:0;margin-top:2px}
 .rx-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;padding-top:10px}
 
 .med-list{list-style:none}
-.med-item{padding:6px 0;border-bottom:1px dashed #dde8f5}
+.med-item{padding:6px 0;border-bottom:1px dashed #dde8f5;page-break-inside:avoid}
 .med-item:last-child{border-bottom:none}
 .med-num{font-size:10.5px;font-weight:700;color:#1a3a6b;margin-right:3px}
 .med-name{font-size:12px;font-weight:700;color:#1a1a1a}
@@ -68,12 +68,12 @@ body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;li
 
 .advice-text{font-size:10px;color:#222;line-height:1.75;white-space:pre-line}
 
-.followup-box{border:1px solid #b8cce4;border-radius:2px;padding:5px 8px;margin-top:10px;display:inline-flex;align-items:center;gap:7px}
+.followup-box{border:1px solid #b8cce4;border-radius:2px;padding:5px 8px;margin-top:10px;display:inline-flex;align-items:center;gap:7px;page-break-inside:avoid}
 .fu-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#1a3a6b}
 .fu-date{font-size:11px;font-weight:700;color:#1a1a1a}
 .fu-note{font-size:9.5px;color:#555}
 
-.sig-area{margin-top:auto;padding-top:20px;display:flex;justify-content:flex-end}
+.sig-area{margin-top:auto;padding-top:20px;display:flex;justify-content:flex-end;page-break-inside:avoid}
 .sig-block{text-align:center;min-width:150px}
 .sig-img{height:44px;max-width:140px;object-fit:contain;display:block;margin:0 auto 5px}
 .sig-line{border-top:1px solid #333;padding-top:4px;margin-top:2px}
@@ -81,13 +81,21 @@ body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;li
 .sig-qual{font-size:9px;color:#555;line-height:1.5;margin-top:1px}
 .sig-bmdc{font-size:8.5px;color:#777;margin-top:1px}
 
-.rx-footer{border-top:1px solid #c8d8ee;margin-top:8px;padding-top:5px;display:flex;justify-content:space-between;align-items:center}
+.rx-footer{border-top:1px solid #c8d8ee;margin-top:8px;padding-top:5px;display:flex;justify-content:space-between;align-items:center;page-break-inside:avoid}
 .footer-left{font-size:8.5px;color:#888;line-height:1.6}
 .footer-right{font-size:8.5px;color:#aaa;font-family:monospace;text-align:right}
 
 .draft-stamp{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:72px;font-weight:900;color:rgba(239,68,68,0.08);pointer-events:none;white-space:nowrap;z-index:0;letter-spacing:0.1em}
 
-@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .rx-header,.patient-bar{page-break-inside:avoid}
+  .med-item{page-break-inside:avoid}
+  .sig-area{page-break-inside:avoid}
+  .rx-footer{page-break-inside:avoid}
+  .rx-body{page-break-inside:auto}
+  .col-left,.col-right{page-break-inside:auto}
+}
 `;
 
 export function buildRxHTML(

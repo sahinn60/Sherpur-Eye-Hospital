@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* ── Sidebar ── */}
         <aside className={`
-          fixed top-0 left-0 h-full z-30 flex flex-col
+          fixed top-0 left-0 h-full z-30 flex flex-col no-print
           transition-transform duration-300 ease-in-out
           ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 lg:static lg:z-auto
         `} style={{ width: 256, background: "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)" }}>
@@ -172,7 +172,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex-1 flex flex-col min-w-0">
 
           {/* Topbar */}
-          <header className="sticky top-0 z-10 shrink-0 flex items-center gap-4 px-5"
+          <header className="sticky top-0 z-10 shrink-0 flex items-center gap-4 px-5 no-print"
             style={{
               height: 64,
               background: "rgba(240,242,245,0.9)",

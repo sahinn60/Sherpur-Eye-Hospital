@@ -57,3 +57,31 @@
     100% { transform: translateX(-50%); }
   }
 }
+
+/* ── Print styles: hide dashboard chrome, show only prescription ── */
+@media print {
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  /* Reset page background */
+  body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Make the main content area fill the page */
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure the iframe preview fills the page when printing from preview route */
+  iframe {
+    width: 100% !important;
+    height: auto !important;
+    border: none !important;
+  }
+}

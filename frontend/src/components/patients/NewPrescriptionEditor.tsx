@@ -669,7 +669,8 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
   const [loading,  setLoading]  = useState(true);
   const [saving,   setSaving]   = useState(false);
   const [error,    setError]    = useState("");
-  const [success,  setSuccess]  = useState(false);
+  const [success,   setSuccess]   = useState(false);
+  const [savedRxId,  setSavedRxId]  = useState<string | null>(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
   // Doctor
@@ -768,7 +769,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
 
     setSaving(true);
     try {
-      await createPrescription(patientId, {
+      const saved = await createPrescription(patientId, {
         doctorId: doctorId || undefined,
         chiefComplaint: chiefComplaint || undefined,
         history: history || undefined,
@@ -804,8 +805,8 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
         })),
       } as any);
 
+      setSavedRxId((saved as any).id);
       setSuccess(true);
-      setTimeout(() => router.push(`/dashboard/patients?open=${patientId}&tab=prescriptions`), 1400);
     } catch (e: any) {
       setError(e?.response?.data?.message || "Failed to save prescription.");
     } finally {
@@ -840,12 +841,27 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
 
   // ── Success ────────────────────────────────────────────────────────────────
   if (success) return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4">
+    <div className="flex flex-col items-center justify-center py-24 gap-5">
       <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
         <CheckCircle size={32} className="text-emerald-500" />
       </div>
-      <p className="text-lg font-bold text-gray-800">Prescription Saved</p>
-      <p className="text-sm text-gray-400">Redirecting to patient profile...</p>
+      <p className="text-lg font-bold text-gray-800">Prescription Saved!</p>
+      <div className="flex items-center gap-3">
+        {savedRxId && (
+          <button
+            onClick={() => router.push(`/dashboard/prescriptions/${savedRxId}/preview`)}
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            Preview &amp; Print
+          </button>
+        )}
+        <button
+          onClick={() => router.push(`/dashboard/patients?open=${patientId}&tab=prescriptions`)}
+          className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+        >
+          Back to Patient
+        </button>
+      </div>
     </div>
   );
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Printer, Eye } from "lucide-react";
 import { RouteGuard } from "@/components/auth";
 import { Button, Modal } from "@/components/ui";
 import { PrescriptionPrint } from "@/components/clinic";
@@ -39,6 +39,10 @@ export default function PrescriptionViewEditor({ rxId }: { rxId?: string }) {
         <div className="flex items-center justify-between">
           <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
             <ArrowLeft size={16} /> ফিরে যান
+          </button>
+          <button onClick={() => router.push(`/dashboard/prescriptions/${rxId}/preview`)}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all shadow-sm">
+            <Eye size={14} /> Preview
           </button>
           <Button onClick={() => setShowPrint(true)} className="flex items-center gap-2">
             <Printer size={14} /> প্রিন্ট করুন
