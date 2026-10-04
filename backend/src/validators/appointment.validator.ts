@@ -4,7 +4,7 @@ export const createAppointmentSchema = z.object({
   patientName: z.string().min(2, "Name must be at least 2 characters"),
   phone: z.string().min(10, "Enter a valid phone number"),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
-  age: z.number({ invalid_type_error: "Age must be a number" }).int().min(1).max(120),
+  age: z.coerce.number({ invalid_type_error: "Age must be a number" }).int().min(1).max(120),
   gender: z.enum(["MALE", "FEMALE", "OTHER"]),
   doctorId: z.string().optional(),
   serviceId: z.string().optional(),
