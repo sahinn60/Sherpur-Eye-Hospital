@@ -107,21 +107,21 @@ export function AppointmentForm() {
     setErrors(e => ({ ...e, [k]: "" }));
   };
 
-  function validate() {
+  function validate(f: typeof form) {
     const e: Record<string, string> = {};
-    if (form.patientName.trim().length < 2) e.patientName = t("নাম কমপক্ষে ২ অক্ষর হতে হবে", "Name must be at least 2 characters");
-    if (form.phone.trim().length < 10) e.phone = t("সঠিক ফোন নম্বর দিন", "Enter a valid phone number");
-    if (!form.age || isNaN(Number(form.age))) e.age = t("বয়স দিন", "Enter age");
-    if (!form.gender) e.gender = t("লিঙ্গ নির্বাচন করুন", "Select gender");
-    if (!form.preferredDate) e.preferredDate = t("তারিখ নির্বাচন করুন", "Select a date");
-    if (!form.preferredTime) e.preferredTime = t("সময় নির্বাচন করুন", "Select a time");
-    if (!form.reason.trim()) e.reason = t("সমস্যার বিবরণ দিন", "Describe your problem");
+    if (f.patientName.trim().length < 2) e.patientName = t("নাম কমপক্ষে ২ অক্ষর হতে হবে", "Name must be at least 2 characters");
+    if (f.phone.trim().length < 10) e.phone = t("সঠিক ফোন নম্বর দিন", "Enter a valid phone number");
+    if (!f.age || isNaN(Number(f.age))) e.age = t("বয়স দিন", "Enter age");
+    if (!f.gender) e.gender = t("লিঙ্গ নির্বাচন করুন", "Select gender");
+    if (!f.preferredDate) e.preferredDate = t("তারিখ নির্বাচন করুন", "Select a date");
+    if (!f.preferredTime) e.preferredTime = t("সময় নির্বাচন করুন", "Select a time");
+    if (!f.reason.trim()) e.reason = t("সমস্যার বিবরণ দিন", "Describe your problem");
     return e;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const errs = validate();
+    const errs = validate(form);
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
     setSubmitting(true);
