@@ -244,7 +244,7 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="rounded-2xl overflow-hidden shadow-md border border-gray-200 h-72 md:h-96">
             <iframe
-              src={s.map_embed_url}
+              src={s.map_embed_url || `https://maps.google.com/maps?q=Sherpur+Adhunik+Eye+Hospital+Sherpur+Bangladesh&output=embed&hl=bn`}
               width="100%" height="100%"
               style={{ border: 0 }}
               allowFullScreen loading="lazy"
