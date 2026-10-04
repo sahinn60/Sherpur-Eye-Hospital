@@ -1,20 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { buildRxHTML } from "./rxPrintBuilder";
 import { fetchHospitalRxSettings, HospitalRxSettings } from "@/lib/services/adminPrescriptionService";
 import { fetchRxSettings, DoctorPrescriptionSettings } from "@/lib/services/prescriptionService";
 import type { RxItem } from "@/lib/services/prescriptionService";
 
 export interface LivePreviewData {
-  // Patient
   patient?: {
     id: string; patientId: string; nameBn: string; nameEn: string;
     phone: string; age?: number | null; gender: string; address?: string | null;
   } | null;
-  // Doctor
   doctorId?: string;
-  // Clinical
   chiefComplaint?: string;
   history?: string;
   vaRightEye?: string;
@@ -39,21 +36,28 @@ interface Props {
 }
 
 export function LiveRxPreview({ data, doctorSettings }: Props) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [hospital, setHospital] = useState<HospitalRxSettings>({});
   const [liveSettings, setLiveSettings] = useState<Partial<DoctorPrescriptionSettings>>({});
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [ready, setReady] = useState(false);
 
-  // Load hospital + doctor settings once
   useEffect(() => {
-    fetchHospitalRxSettings().then(setHospital).catch(() => {});
-    fetchRxSettings().then((s) => { if (s) setLiveSettings(s); }).catch(() => {});
+    Promise.allSettled([
+      fetchHospitalRxSettings(),
+      fetchRxSettings(),
+    ]).then(([hospResult, settingsResult]) => {
+      if (hospResult.status === "fulfilled") setHospital(hospResult.value);
+      if (settingsResult.status === "fulfilled" && settingsResult.value) {
+        setLiveSettings(settingsResult.value);
+      }
+      setReady(true);
+    });
   }, []);
 
   const effectiveSettings = doctorSettings ?? liveSettings;
 
-  const writePreview = useCallback(() => {
-    if (!iframeRef.current) return;
+  // Build the full HTML string — recomputes whenever any input changes
+  const html = useMemo(() => {
+    if (!ready) return "";
     const now = new Date().toISOString();
     const rxData = {
       ...data,
@@ -65,25 +69,21 @@ export function LiveRxPreview({ data, doctorSettings }: Props) {
       status: "DRAFT" as const,
       items: data.items || [],
     };
-    const html = buildRxHTML(rxData as any, effectiveSettings, hospital, false);
-    const doc = iframeRef.current.contentDocument;
-    if (!doc) return;
-    doc.open();
-    doc.write(html);
-    doc.close();
-  }, [data, effectiveSettings, hospital]);
+    return buildRxHTML(rxData as any, effectiveSettings, hospital, false);
+  }, [data, effectiveSettings, hospital, ready]);
 
-  // Debounce preview updates 300ms
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(writePreview, 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [writePreview]);
+  if (!ready) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-white">
+        <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <iframe
-      ref={iframeRef}
       title="Live Prescription Preview"
+      srcDoc={html}
       className="w-full h-full border-0 bg-white"
       style={{ minHeight: 0 }}
     />

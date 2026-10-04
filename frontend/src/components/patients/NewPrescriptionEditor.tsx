@@ -2,6 +2,16 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
+
+// ─── Debounce hook ────────────────────────────────────────────────────────────
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState<T>(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
 import {
   ArrowLeft, Plus, Trash2, Save, User, Phone, Hash,
   AlertCircle, CheckCircle, ChevronDown, ChevronUp,
@@ -612,6 +622,9 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
     advice, instructions, followUpDate, followUpNote, medicines,
   ]);
 
+  // ── Debounce preview data 400ms so iframe doesn't reload on every keystroke
+  const debouncedPreviewData = useDebounced(previewData, 400);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -996,7 +1009,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
               <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Updates as you type</span>
             </div>
             <div className="rounded-2xl border border-gray-200 shadow-sm overflow-hidden bg-gray-50" style={{ height: "calc(100vh - 120px)" }}>
-              <LiveRxPreview data={previewData} />
+              <LiveRxPreview data={debouncedPreviewData} />
             </div>
           </div>
         </div>
@@ -1013,7 +1026,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
               </button>
             </div>
             <div className="rounded-2xl border border-gray-200 shadow-sm overflow-hidden bg-gray-50" style={{ height: "80vh" }}>
-              <LiveRxPreview data={previewData} />
+              <LiveRxPreview data={debouncedPreviewData} />
             </div>
           </div>
         )}
