@@ -118,7 +118,28 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchPublicSettings()
-      .then((map) => setS({ ...DEFAULTS, ...map } as HospitalSettings))
+      .then((map) => {
+        // Fix key mapping between backend keys and frontend keys
+        const mapped = {
+          ...map,
+          logo_url:       map.hospital_logo       || "",
+          hero_image_url: map.hero_image           || "",
+          phone:          map.contact_phone        || "",
+          email:          map.contact_email        || "",
+          address_bn:     map.contact_address_bn   || "",
+          address_en:     map.contact_address_en   || "",
+          map_embed_url:  map.contact_map_url      || "",
+          hours_bn:       map.hours_weekday_bn     || "",
+          friday_bn:      map.hours_weekend_bn     || "",
+          emergency:      map.hours_emergency      || "",
+          social_facebook:  map.social_facebook    || "",
+          social_youtube:   map.social_youtube     || "",
+          social_instagram: map.social_instagram   || "",
+          about_main_image: map.about_image_1      || "",
+          about_gallery_1:  map.about_image_2      || "",
+        };
+        setS({ ...DEFAULTS, ...mapped } as HospitalSettings);
+      })
       .catch(() => {/* keep defaults */})
       .finally(() => setLoading(false));
   }, []);
