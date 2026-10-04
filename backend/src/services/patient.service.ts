@@ -51,8 +51,11 @@ export const VISIT_SELECT = {
 };
 
 export const PRESCRIPTION_SELECT = {
-  id: true, diagnosis: true, instructions: true, doctorNotes: true,
-  followUpDate: true, createdBy: true, createdAt: true, updatedAt: true,
+  id: true, rxNo: true, diagnosis: true, instructions: true, doctorNotes: true,
+  chiefComplaint: true, history: true, examNotes: true, investigations: true, advice: true,
+  vaRightEye: true, vaLeftEye: true, iopRightEye: true, iopLeftEye: true,
+  refractionRE: true, refractionLE: true,
+  followUpDate: true, followUpNote: true, createdBy: true, createdAt: true, updatedAt: true,
   doctor: { select: { id: true, nameBn: true, nameEn: true, designationBn: true, qualificationBn: true, phone: true } },
   visit:  { select: { id: true, visitDate: true, chiefComplaint: true } },
   patient: { select: { id: true, patientId: true, nameBn: true, nameEn: true, phone: true, age: true, gender: true, address: true } },
@@ -210,12 +213,24 @@ export async function addPrescription(patientId: string, input: CreatePrescripti
   const rx = await prisma.prescription.create({
     data: {
       patientId,
-      visitId:      input.visitId || null,
-      doctorId:     input.doctorId || null,
-      diagnosis:    input.diagnosis || null,
-      instructions: input.instructions || null,
-      doctorNotes:  input.doctorNotes || null,
-      followUpDate: input.followUpDate ? new Date(input.followUpDate) : null,
+      visitId:        input.visitId || null,
+      doctorId:       input.doctorId || null,
+      chiefComplaint: (input as any).chiefComplaint || null,
+      history:        (input as any).history || null,
+      vaRightEye:     (input as any).vaRightEye || null,
+      vaLeftEye:      (input as any).vaLeftEye || null,
+      iopRightEye:    (input as any).iopRightEye || null,
+      iopLeftEye:     (input as any).iopLeftEye || null,
+      refractionRE:   (input as any).refractionRE || null,
+      refractionLE:   (input as any).refractionLE || null,
+      examNotes:      (input as any).examNotes || null,
+      diagnosis:      input.diagnosis || null,
+      investigations: (input as any).investigations || null,
+      advice:         (input as any).advice || null,
+      instructions:   input.instructions || null,
+      doctorNotes:    input.doctorNotes || null,
+      followUpDate:   input.followUpDate ? new Date(input.followUpDate) : null,
+      followUpNote:   (input as any).followUpNote || null,
       createdBy,
       items: {
         create: input.items.map((item, i) => ({
