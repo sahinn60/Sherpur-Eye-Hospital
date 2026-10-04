@@ -1,6 +1,6 @@
 import api from "@/lib/api";
 import {
-  Patient, PatientDetail, PatientListResponse,
+  Patient, PatientDetail, Prescription, PatientListResponse,
   VisitListResponse, PrescriptionListResponse, AppointmentListResponse,
 } from "@/types/patient";
 
@@ -61,6 +61,11 @@ export async function createVisit(patientId: string, data: {
 
 export async function fetchPatientPrescriptions(patientId: string, page = 1, limit = 20): Promise<PrescriptionListResponse> {
   const res = await api.get(`/patients/${patientId}/prescriptions`, { params: { page, limit } });
+  return res.data.data;
+}
+
+export async function fetchPatientPrescription(patientId: string, rxId: string): Promise<Prescription> {
+  const res = await api.get(`/patients/${patientId}/prescriptions/${rxId}`);
   return res.data.data;
 }
 

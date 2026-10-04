@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { X, Phone, MapPin, User, Calendar, Stethoscope, FileText, Clock, Plus, ChevronDown, ChevronUp } from "lucide-react";
-import { PatientDetail, Visit, Prescription, PatientAppointment, GENDER_BN } from "@/types/patient";
+import { PatientDetail, Visit, PatientAppointment, GENDER_BN } from "@/types/patient";
 import {
-  fetchPatient, fetchPatientVisits, fetchPatientPrescriptions,
-  fetchPatientAppointments, createVisit, createPrescription,
+  fetchPatient, fetchPatientVisits,
+  fetchPatientAppointments, createVisit,
 } from "@/lib/services/patientService";
 import { Button } from "@/components/ui";
+import { PatientPrescriptionHistory } from "./PatientPrescriptionHistory";
 
 type Tab = "profile" | "visits" | "prescriptions" | "appointments";
 
@@ -76,82 +77,15 @@ function VisitForm({ patientId, onDone }: { patientId: string; onDone: () => voi
   );
 }
 
-// ─── Prescription Form ────────────────────────────────────────────────────────
-
-function PrescriptionForm({ patientId, onDone }: { patientId: string; onDone: () => void }) {
-  const [items, setItems] = useState([{ medicineName: "", dose: "", frequency: "", duration: "" }]);
-  const [instructions, setInstructions] = useState("");
-  const [followUpDate, setFollowUpDate] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  function addItem() { setItems((m) => [...m, { medicineName: "", dose: "", frequency: "", duration: "" }]); }
-  function removeItem(i: number) { setItems((m) => m.filter((_, idx) => idx !== i)); }
-  function updateItem(i: number, key: string, val: string) {
-    setItems((m) => m.map((item, idx) => idx === i ? { ...item, [key]: val } : item));
-  }
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await createPrescription(patientId, {
-        items: items.filter((m) => m.medicineName.trim()),
-        instructions, followUpDate,
-      });
-      onDone();
-    } finally { setSaving(false); }
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-3 bg-gray-50 rounded-xl p-4 border border-gray-200">
-      <p className="text-sm font-semibold text-gray-700">নতুন প্রেসক্রিপশন</p>
-      <div className="space-y-2">
-        {items.map((item, i) => (
-          <div key={i} className="grid grid-cols-4 gap-2 items-center">
-            {(["medicineName", "dose", "frequency", "duration"] as const).map((k) => (
-              <input key={k} value={item[k]}
-                onChange={(e) => updateItem(i, k, e.target.value)}
-                placeholder={k === "medicineName" ? "ওষুধের নাম" : k === "dose" ? "মাত্রা" : k === "frequency" ? "সময়" : "মেয়াদ"}
-                className="text-xs border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500" />
-            ))}
-            {items.length > 1 && (
-              <button type="button" onClick={() => removeItem(i)} className="text-red-400 hover:text-red-600 text-xs col-span-4 text-right">বাদ দিন</button>
-            )}
-          </div>
-        ))}
-        <button type="button" onClick={addItem} className="text-xs text-primary-600 hover:underline flex items-center gap-1">
-          <Plus size={12} /> ওষুধ যোগ
-        </button>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">নির্দেশনা</label>
-        <textarea rows={2} className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
-          value={instructions} onChange={(e) => setInstructions(e.target.value)} />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">ফলো-আপ তারিখ</label>
-        <input type="date" className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-          value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} />
-      </div>
-      <div className="flex justify-end gap-2">
-        <Button type="button" size="sm" variant="secondary" onClick={onDone}>বাতিল</Button>
-        <Button type="submit" size="sm" loading={saving}>সংরক্ষণ</Button>
-      </div>
-    </form>
-  );
-}
-
 // ─── Main Drawer ──────────────────────────────────────────────────────────────
 
 export function PatientProfileDrawer({ patientId, onClose, canWrite }: Props) {
-  const [patient,       setPatient]       = useState<PatientDetail | null>(null);
-  const [visits,        setVisits]        = useState<Visit[]>([]);
-  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-  const [appointments,  setAppointments]  = useState<PatientAppointment[]>([]);
+  const [patient,      setPatient]      = useState<PatientDetail | null>(null);
+  const [visits,       setVisits]       = useState<Visit[]>([]);
+  const [appointments, setAppointments] = useState<PatientAppointment[]>([]);
   const [tab,           setTab]           = useState<Tab>("profile");
   const [loading,       setLoading]       = useState(true);
   const [showVisitForm, setShowVisitForm] = useState(false);
-  const [showRxForm,    setShowRxForm]    = useState(false);
   const [expandedVisit, setExpandedVisit] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -160,7 +94,6 @@ export function PatientProfileDrawer({ patientId, onClose, canWrite }: Props) {
       const p = await fetchPatient(patientId);
       setPatient(p);
       setVisits(p.visits);
-      setPrescriptions(p.prescriptions);
     } finally { setLoading(false); }
   }, [patientId]);
 
@@ -170,12 +103,6 @@ export function PatientProfileDrawer({ patientId, onClose, canWrite }: Props) {
     const res = await fetchPatientVisits(patientId);
     setVisits(res.items);
     setShowVisitForm(false);
-  }
-
-  async function loadPrescriptions() {
-    const res = await fetchPatientPrescriptions(patientId);
-    setPrescriptions(res.items);
-    setShowRxForm(false);
   }
 
   async function loadAppointments() {
@@ -192,6 +119,7 @@ export function PatientProfileDrawer({ patientId, onClose, canWrite }: Props) {
     { key: "profile",       label: "প্রোফাইল",      icon: <User size={14} /> },
     { key: "visits",        label: `ভিজিট (${patient?._count.visits ?? 0})`, icon: <Stethoscope size={14} /> },
     { key: "prescriptions", label: `Rx (${patient?._count.prescriptions ?? 0})`, icon: <FileText size={14} /> },
+
     { key: "appointments",  label: "অ্যাপয়েন্টমেন্ট", icon: <Calendar size={14} /> },
   ];
 
@@ -347,65 +275,16 @@ export function PatientProfileDrawer({ patientId, onClose, canWrite }: Props) {
 
             // ── Prescriptions Tab ────────────────────────────────────────────
             ) : tab === "prescriptions" ? (
-              <div className="space-y-4">
-                {canWrite && !showRxForm && (
-                  <Button size="sm" onClick={() => setShowRxForm(true)} className="flex items-center gap-1.5">
-                    <Plus size={14} /> নতুন প্রেসক্রিপশন
-                  </Button>
-                )}
-                {showRxForm && <PrescriptionForm patientId={patientId} onDone={loadPrescriptions} />}
-
-                {prescriptions.length === 0 ? (
-                  <div className="text-center py-10 text-gray-400">
-                    <FileText size={32} className="mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">কোনো প্রেসক্রিপশন নেই</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {prescriptions.map((rx) => (
-                      <div key={rx.id} className="border border-gray-200 rounded-xl p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-800">{fmt(rx.createdAt)}</p>
-                            {rx.doctor && <p className="text-xs text-gray-400">{rx.doctor.nameBn}</p>}
-                          </div>
-                          {rx.followUpDate && (
-                            <span className="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded flex items-center gap-1">
-                              <Clock size={11} /> {fmt(rx.followUpDate)}
-                            </span>
-                          )}
-                        </div>
-                        {(rx.items || []).length > 0 && (
-                          <div className="bg-gray-50 rounded-lg overflow-hidden">
-                            <table className="w-full text-xs">
-                              <thead>
-                                <tr className="bg-gray-100">
-                                  {["ওষুধ", "মাত্রা", "সময়", "মেয়াদ"].map((h) => (
-                                    <th key={h} className="px-3 py-1.5 text-left text-gray-500 font-medium">{h}</th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(rx.items || []).map((item, i) => (
-                                  <tr key={item.id || i} className="border-t border-gray-100">
-                                    <td className="px-3 py-1.5 font-medium text-gray-800">{item.medicineName}</td>
-                                    <td className="px-3 py-1.5 text-gray-600">{item.dose || "—"}</td>
-                                    <td className="px-3 py-1.5 text-gray-600">{item.frequency || "—"}</td>
-                                    <td className="px-3 py-1.5 text-gray-600">{item.duration || "—"}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                        {rx.instructions && (
-                          <p className="text-xs text-gray-500 mt-2 italic">{rx.instructions}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <PatientPrescriptionHistory
+                patientId={patientId}
+                patientName={patient.nameBn}
+                patientIdCode={patient.patientId}
+                age={patient.age}
+                gender={patient.gender}
+                phone={patient.phone}
+                canWrite={canWrite}
+                initialCount={patient._count.prescriptions}
+              />
 
             // ── Appointments Tab ─────────────────────────────────────────────
             ) : (
