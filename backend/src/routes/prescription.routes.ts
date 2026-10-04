@@ -17,7 +17,7 @@ router.post  ("/admin/hospital-settings/logo",  adminOnly, signatureUpload.singl
 
 // ── Admin: Doctor Rx Settings ─────────────────────────────────────────────────
 router.get   ("/admin/doctors",                                    adminOnly, admin.listDoctorsWithSettings);
-router.get   ("/admin/doctors/:doctorId/settings",                 adminOnly, admin.getDoctorRxSettings);
+router.get   ("/admin/doctors/:doctorId/settings",                 [authenticate, authorize("SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTION")], admin.getDoctorRxSettings);
 router.put   ("/admin/doctors/:doctorId/settings",                 adminOnly, admin.saveDoctorRxSettings);
 router.post  ("/admin/doctors/:doctorId/settings/signature",       adminOnly, signatureUpload.single("signature"), uploadToCloudinary("signatures"), admin.uploadDoctorSignature);
 router.delete("/admin/doctors/:doctorId/settings/signature",       adminOnly, admin.removeDoctorSignature);
