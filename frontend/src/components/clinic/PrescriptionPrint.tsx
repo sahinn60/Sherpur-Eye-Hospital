@@ -1,384 +1,488 @@
 "use client";
 
-import { useRef } from "react";
-import { Printer, X, Download } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
+import { Printer, X } from "lucide-react";
 import { ClinicPrescription } from "@/types/clinic";
 import { GENDER_BN } from "@/types/patient";
 import { Button } from "@/components/ui";
+import { fetchHospitalRxSettings, HospitalRxSettings } from "@/lib/services/adminPrescriptionService";
 
 interface Props {
   rx: ClinicPrescription;
   onClose: () => void;
 }
 
-function fmt(d: string | null | undefined) {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString("bn-BD", { day: "numeric", month: "long", year: "numeric" });
-}
 function fmtEn(d: string | null | undefined) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-export function PrescriptionPrint({ rx, onClose }: Props) {
-  const printRef = useRef<HTMLDivElement>(null);
+// ─── Print CSS injected into the new window ───────────────────────────────────
 
-  function handlePrint() {
-    const content = printRef.current?.innerHTML;
-    if (!content) return;
-    const win = window.open("", "_blank", "width=900,height=1100");
-    if (!win) return;
-    win.document.write(`<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8"/>
-<title>Rx - ${rx.patient?.nameBn} - ${fmtEn(rx.createdAt)}</title>
-<style>
+const PRINT_CSS = `
 *{margin:0;padding:0;box-sizing:border-box}
-@page{size:A4;margin:12mm 14mm 14mm}
-body{font-family:'Times New Roman',Times,serif;font-size:12px;color:#111;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.page{width:182mm;min-height:267mm;position:relative}
+@page{size:A4 portrait;margin:10mm 12mm 12mm}
+html,body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;line-height:1.4}
 
-/* HEADER */
-.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:8px;border-bottom:2.5px solid #1a3a6b;margin-bottom:10px}
-.hosp-left{display:flex;align-items:flex-start;gap:10px}
-.hosp-logo{width:52px;height:52px;object-fit:contain}
-.hosp-name-bn{font-size:17px;font-weight:700;color:#1a3a6b;line-height:1.2}
-.hosp-name-en{font-size:11px;color:#1a3a6b;font-weight:600;margin-top:1px}
-.hosp-contact{font-size:9.5px;color:#555;margin-top:3px;line-height:1.5}
-.doctor-block{text-align:right;min-width:160px}
-.dr-name{font-size:14px;font-weight:700;color:#111;font-family:'Times New Roman',serif}
-.dr-qual{font-size:10px;color:#333;margin-top:1px;line-height:1.4}
-.dr-bmdc{font-size:9.5px;color:#555;margin-top:2px}
-.dr-chamber{font-size:9.5px;color:#555;margin-top:1px}
+/* ── HEADER ── */
+.rx-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:7px;border-bottom:2px solid #1a3a6b;margin-bottom:8px}
+.hosp-left{display:flex;align-items:flex-start;gap:9px}
+.hosp-logo{width:54px;height:54px;object-fit:contain;flex-shrink:0}
+.hosp-name-bn{font-size:16px;font-weight:700;color:#1a3a6b;line-height:1.2;letter-spacing:-0.01em}
+.hosp-name-en{font-size:10.5px;color:#2a4a8b;font-weight:600;margin-top:2px}
+.hosp-contact{font-size:9px;color:#555;margin-top:4px;line-height:1.6}
+.hosp-contact span{margin-right:10px}
+.dr-block{text-align:right;min-width:170px;max-width:200px}
+.dr-name{font-size:13.5px;font-weight:700;color:#1a1a1a;font-family:'Times New Roman',serif}
+.dr-qual{font-size:9.5px;color:#333;margin-top:2px;line-height:1.5}
+.dr-spec{font-size:9.5px;color:#1a3a6b;font-weight:600;margin-top:1px}
+.dr-bmdc{font-size:9px;color:#666;margin-top:2px}
+.dr-chamber{font-size:9px;color:#666;margin-top:1px}
 
-/* PATIENT BAR */
-.patient-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border:1px solid #c8d8f0;border-radius:3px;margin-bottom:10px;overflow:hidden}
-.pb-cell{padding:4px 8px;font-size:10.5px;border-right:1px solid #c8d8f0}
+/* ── PATIENT BAR ── */
+.patient-bar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;border:1px solid #b8cce4;border-radius:2px;margin-bottom:9px;overflow:hidden;font-size:10px}
+.pb-cell{padding:4px 7px;border-right:1px solid #b8cce4}
 .pb-cell:last-child{border-right:none}
-.pb-label{color:#666;font-size:9px;text-transform:uppercase;letter-spacing:0.03em;display:block;margin-bottom:1px}
-.pb-value{font-weight:600;color:#111}
-.pb-full{grid-column:1/-1;border-top:1px solid #c8d8f0;border-right:none}
+.pb-label{font-size:8.5px;text-transform:uppercase;letter-spacing:0.04em;color:#777;display:block;margin-bottom:1px}
+.pb-value{font-weight:700;color:#1a1a1a;font-size:10.5px}
 
-/* BODY */
-.body-grid{display:grid;grid-template-columns:1fr 2px 2fr;gap:0;min-height:180mm}
-.left-col{padding-right:10px;padding-top:4px}
-.divider{background:#dde6f5;margin:0 6px}
-.right-col{padding-left:12px;padding-top:4px}
+/* ── BODY GRID ── */
+.rx-body{display:grid;grid-template-columns:82mm 1px 1fr;gap:0;min-height:195mm}
+.col-left{padding-right:9px;padding-top:2px}
+.col-divider{background:#c8d8ee;margin:0 5px}
+.col-right{padding-left:11px;padding-top:2px}
 
-/* SECTION LABELS */
-.sec-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a3a6b;border-bottom:1px solid #dde6f5;padding-bottom:2px;margin-bottom:5px;margin-top:10px}
-.sec-label:first-child{margin-top:0}
+/* ── SECTION HEADING ── */
+.sec-head{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;border-bottom:1px solid #c8d8ee;padding-bottom:2px;margin-bottom:5px;margin-top:11px}
+.sec-head:first-child{margin-top:0}
 
-/* EYE EXAM TABLE */
-.eye-table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:4px}
-.eye-table th{background:#eef3fb;color:#1a3a6b;font-size:9px;padding:3px 5px;text-align:center;border:1px solid #c8d8f0;font-weight:700}
-.eye-table td{padding:3px 5px;border:1px solid #dde6f5;text-align:center;font-size:10px}
-.eye-table .eye-label{font-weight:700;text-align:left;background:#f8fafd;font-size:9.5px}
+/* ── CLINICAL TEXT ── */
+.clinical-text{font-size:10.5px;color:#222;line-height:1.65;white-space:pre-line}
 
-/* REFRACTION */
-.refraction-grid{display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr;gap:0;border:1px solid #dde6f5;border-radius:2px;overflow:hidden;font-size:9.5px;margin-bottom:4px}
-.rg-header{background:#eef3fb;color:#1a3a6b;font-weight:700;padding:3px 4px;text-align:center;border-right:1px solid #dde6f5;border-bottom:1px solid #dde6f5;font-size:9px}
-.rg-cell{padding:3px 4px;text-align:center;border-right:1px solid #dde6f5;border-bottom:1px solid #dde6f5}
-.rg-cell:last-child{border-right:none}
-.rg-label{font-weight:700;background:#f8fafd;text-align:left;padding-left:5px}
+/* ── EYE EXAM TABLE ── */
+.eye-tbl{width:100%;border-collapse:collapse;font-size:9.5px;margin-bottom:3px}
+.eye-tbl th{background:#e8f0fb;color:#1a3a6b;padding:3px 5px;border:1px solid #b8cce4;font-size:8.5px;font-weight:700;text-align:center}
+.eye-tbl th.left{text-align:left}
+.eye-tbl td{padding:3px 5px;border:1px solid #d4e2f0;text-align:center;font-size:9.5px}
+.eye-tbl td.eye-lbl{font-weight:700;text-align:left;background:#f4f8fd;font-size:9px;color:#1a3a6b}
 
-/* DIAGNOSIS */
-.diagnosis-text{font-size:11px;font-weight:600;color:#111;line-height:1.5;padding:4px 0}
+/* ── REFRACTION TABLE ── */
+.ref-tbl{width:100%;border-collapse:collapse;font-size:9px;margin-bottom:3px}
+.ref-tbl th{background:#e8f0fb;color:#1a3a6b;padding:2px 4px;border:1px solid #b8cce4;font-size:8px;font-weight:700;text-align:center}
+.ref-tbl td{padding:2px 4px;border:1px solid #d4e2f0;text-align:center;font-size:9px}
+.ref-tbl td.lbl{font-weight:700;text-align:left;background:#f4f8fd;color:#1a3a6b;padding-left:5px}
 
-/* Rx SECTION */
-.rx-symbol{font-size:32px;font-weight:900;color:#1a3a6b;line-height:1;float:left;margin-right:6px;margin-top:-2px;font-family:'Times New Roman',serif}
-.rx-header{overflow:hidden;margin-bottom:6px}
-.rx-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#1a3a6b;padding-top:6px}
+/* ── DIAGNOSIS ── */
+.diag-text{font-size:11px;font-weight:700;color:#1a1a1a;line-height:1.55;padding:3px 0}
 
-/* MEDICINE LIST */
-.med-item{margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed #e5e7eb}
-.med-item:last-child{border-bottom:none;margin-bottom:0}
-.med-num{font-size:11px;font-weight:700;color:#1a3a6b;margin-right:4px}
-.med-name{font-size:12px;font-weight:700;color:#111}
-.med-strength{font-size:10.5px;color:#444;margin-left:4px}
-.med-detail{font-size:10.5px;color:#444;margin-top:2px;margin-left:16px;line-height:1.5}
-.med-detail span{margin-right:10px}
+/* ── Rx SYMBOL + MEDICINES ── */
+.rx-sym-row{display:flex;align-items:flex-start;gap:5px;margin-bottom:7px}
+.rx-sym{font-size:36px;font-weight:900;color:#1a3a6b;line-height:0.85;font-family:'Times New Roman',serif;flex-shrink:0;margin-top:2px}
+.rx-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;padding-top:10px}
 
-/* ADVICE */
-.advice-text{font-size:10.5px;color:#222;line-height:1.7;white-space:pre-line}
+.med-list{list-style:none}
+.med-item{padding:6px 0 6px 0;border-bottom:1px dashed #dde8f5}
+.med-item:last-child{border-bottom:none}
+.med-num{font-size:10.5px;font-weight:700;color:#1a3a6b;margin-right:3px}
+.med-name{font-size:12px;font-weight:700;color:#1a1a1a}
+.med-strength{font-size:10px;color:#444;margin-left:3px;font-weight:400}
+.med-detail{font-size:10px;color:#444;margin-top:2px;padding-left:16px;line-height:1.6}
+.med-detail .dot{margin:0 5px;color:#bbb}
 
-/* FOLLOWUP */
-.followup-box{border:1px solid #c8d8f0;border-radius:3px;padding:5px 8px;margin-top:8px;display:flex;align-items:center;gap:6px}
-.followup-label{font-size:9px;font-weight:700;text-transform:uppercase;color:#1a3a6b;letter-spacing:0.05em}
-.followup-date{font-size:11px;font-weight:700;color:#111}
+/* ── ADVICE ── */
+.advice-text{font-size:10px;color:#222;line-height:1.75;white-space:pre-line}
 
-/* SIGNATURE */
-.signature-area{margin-top:auto;padding-top:16px;display:flex;justify-content:flex-end}
-.sig-block{text-align:center;min-width:140px}
-.sig-img{height:40px;max-width:130px;object-fit:contain;display:block;margin:0 auto 4px}
-.sig-line{border-top:1px solid #333;padding-top:4px}
-.sig-name{font-size:11px;font-weight:700;color:#111}
-.sig-qual{font-size:9.5px;color:#555;line-height:1.4}
+/* ── FOLLOW-UP ── */
+.followup-box{border:1px solid #b8cce4;border-radius:2px;padding:5px 8px;margin-top:10px;display:inline-flex;align-items:center;gap:7px;min-width:160px}
+.fu-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#1a3a6b}
+.fu-date{font-size:11px;font-weight:700;color:#1a1a1a}
+.fu-note{font-size:9.5px;color:#555}
 
-/* FOOTER */
-.footer{border-top:1px solid #dde6f5;margin-top:10px;padding-top:6px;display:flex;justify-content:space-between;align-items:center}
-.footer-text{font-size:9px;color:#888;line-height:1.5}
-.rx-no{font-size:9px;color:#aaa;font-family:monospace}
+/* ── SIGNATURE ── */
+.sig-area{margin-top:auto;padding-top:20px;display:flex;justify-content:flex-end}
+.sig-block{text-align:center;min-width:150px}
+.sig-img{height:44px;max-width:140px;object-fit:contain;display:block;margin:0 auto 5px}
+.sig-line{border-top:1px solid #333;padding-top:4px;margin-top:2px}
+.sig-name{font-size:11px;font-weight:700;color:#1a1a1a}
+.sig-qual{font-size:9px;color:#555;line-height:1.5;margin-top:1px}
+.sig-bmdc{font-size:8.5px;color:#777;margin-top:1px}
 
-.text-muted{color:#999;font-style:italic;font-size:10px}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-</style>
-</head>
-<body><div class="page">${content}</div></body>
-</html>`);
-    win.document.close();
-    win.focus();
-    setTimeout(() => { win.print(); win.close(); }, 500);
+/* ── FOOTER ── */
+.rx-footer{border-top:1px solid #c8d8ee;margin-top:8px;padding-top:5px;display:flex;justify-content:space-between;align-items:center}
+.footer-left{font-size:8.5px;color:#888;line-height:1.6}
+.footer-right{font-size:8.5px;color:#aaa;font-family:monospace;text-align:right}
+
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+`;
+
+// ─── Build the HTML string for the prescription ───────────────────────────────
+
+function buildPrescriptionHTML(
+  rx: ClinicPrescription,
+  hospital: HospitalRxSettings
+): string {
+  const doctor   = rx.doctor;
+  const patient  = rx.patient;
+  const settings = (doctor as any)?.prescriptionSettings ?? {};
+
+  // Parse refraction JSON
+  let reRE: Record<string, string> | null = null;
+  let reLE: Record<string, string> | null = null;
+  try { if ((rx as any).refractionRE) reRE = JSON.parse((rx as any).refractionRE); } catch {}
+  try { if ((rx as any).refractionLE) reLE = JSON.parse((rx as any).refractionLE); } catch {}
+
+  const hasVA  = (rx as any).vaRightEye || (rx as any).vaLeftEye;
+  const hasIOP = (rx as any).iopRightEye || (rx as any).iopLeftEye;
+  const hasRef = reRE || reLE;
+
+  const hospNameBn = hospital.rx_hospital_name_bn || "শেরপুর আধুনিক চক্ষু হাসপাতাল ও ফ্যাকো সেন্টার";
+  const hospNameEn = hospital.rx_hospital_name_en || "Sherpur Adhunik Eye Hospital & Phaco Center";
+  const hospAddr   = hospital.rx_hospital_address || "";
+  const hospPhone  = hospital.rx_hospital_phone   || "";
+  const hospEmerg  = hospital.rx_hospital_emergency || "";
+  const hospEmail  = hospital.rx_hospital_email   || "";
+  const hospWeb    = hospital.rx_hospital_website || "";
+  const hospLogo   = hospital.rx_hospital_logo    || "";
+  const showLogo   = hospital.rx_show_logo !== "false";
+  const footerText = hospital.rx_footer_text || "";
+
+  const drName  = settings.nameBn  || doctor?.nameBn  || "";
+  const drQual  = settings.qualificationBn || doctor?.qualificationBn || "";
+  const drDesg  = settings.designationBn  || doctor?.designationBn  || "";
+  const drSpec  = settings.specialtyBn    || "";
+  const drBmdc  = settings.bmdcNo         || "";
+  const drPhone = settings.chamberPhone   || doctor?.phone || "";
+  const sigUrl  = settings.signatureUrl   || null;
+  const sigMode = settings.signatureMode  || "handwritten";
+
+  const rxNo = (rx as any).rxNo || rx.id.slice(-8).toUpperCase();
+
+  // ── Contact line
+  const contactParts: string[] = [];
+  if (hospAddr)  contactParts.push(`<span>${hospAddr}</span>`);
+  if (hospPhone) contactParts.push(`<span>☎ ${hospPhone}</span>`);
+  if (hospEmerg) contactParts.push(`<span>🚨 ${hospEmerg}</span>`);
+  if (hospEmail) contactParts.push(`<span>✉ ${hospEmail}</span>`);
+  if (hospWeb)   contactParts.push(`<span>🌐 ${hospWeb}</span>`);
+
+  // ── Footer contact line
+  const footerParts: string[] = [];
+  if (hospNameBn) footerParts.push(hospNameBn);
+  if (hospAddr)   footerParts.push(hospAddr);
+  if (hospPhone)  footerParts.push(`☎ ${hospPhone}`);
+  if (hospEmerg)  footerParts.push(`Emergency: ${hospEmerg}`);
+  if (hospWeb)    footerParts.push(hospWeb);
+
+  // ── Medicine rows
+  const medRows = rx.items.map((item, i) => {
+    const detailParts: string[] = [];
+    if (item.dose)         detailParts.push(item.dose);
+    if (item.frequency)    detailParts.push(item.frequency);
+    if (item.duration)     detailParts.push(`× ${item.duration}`);
+    if (item.instructions) detailParts.push(`(${item.instructions})`);
+    return `
+      <li class="med-item">
+        <div>
+          <span class="med-num">${i + 1}.</span>
+          <span class="med-name">${item.medicineName}</span>
+        </div>
+        ${detailParts.length ? `<div class="med-detail">${detailParts.join('<span class="dot">·</span>')}</div>` : ""}
+      </li>`;
+  }).join("");
+
+  // ── Advice lines
+  const adviceText = (rx as any).advice || rx.instructions || "";
+
+  // ── Signature block
+  let sigHTML = "";
+  if (sigMode === "uploaded" && sigUrl) {
+    sigHTML = `<img src="${sigUrl}" alt="signature" class="sig-img" />`;
+  } else if (sigMode === "handwritten") {
+    sigHTML = `<div style="height:40px"></div>`;
   }
 
-  const doctor = rx.doctor;
-  const patient = rx.patient;
-  const settings = doctor?.prescriptionSettings;
+  return `
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"/>
+<title>Prescription — ${patient?.nameBn || ""} — ${fmtEn(rx.createdAt)}</title>
+<style>${PRINT_CSS}</style>
+</head>
+<body>
+<div style="width:186mm;min-height:277mm;margin:0 auto;position:relative;background:#fff">
 
-  // Parse refraction if stored
-  let refractionRE: any = null;
-  let refractionLE: any = null;
-  try { if ((rx as any).refractionRE) refractionRE = JSON.parse((rx as any).refractionRE); } catch {}
-  try { if ((rx as any).refractionLE) refractionLE = JSON.parse((rx as any).refractionLE); } catch {}
+  <!-- HEADER -->
+  <div class="rx-header">
+    <div class="hosp-left">
+      ${showLogo && hospLogo ? `<img src="${hospLogo}" alt="logo" class="hosp-logo"/>` : ""}
+      <div>
+        <div class="hosp-name-bn">${hospNameBn}</div>
+        <div class="hosp-name-en">${hospNameEn}</div>
+        ${contactParts.length ? `<div class="hosp-contact">${contactParts.join("")}</div>` : ""}
+      </div>
+    </div>
+    <div class="dr-block">
+      ${drName  ? `<div class="dr-name">${drName}</div>` : ""}
+      ${drQual  ? `<div class="dr-qual">${drQual}</div>` : ""}
+      ${drDesg  ? `<div class="dr-qual">${drDesg}</div>` : ""}
+      ${drSpec  ? `<div class="dr-spec">${drSpec}</div>` : ""}
+      ${drBmdc  ? `<div class="dr-bmdc">BMDC Reg. No: ${drBmdc}</div>` : ""}
+      ${drPhone ? `<div class="dr-chamber">☎ ${drPhone}</div>` : ""}
+    </div>
+  </div>
 
-  const hasEyeExam = (rx as any).vaRightEye || (rx as any).vaLeftEye || (rx as any).iopRightEye || (rx as any).iopLeftEye;
-  const hasRefraction = refractionRE || refractionLE;
+  <!-- PATIENT BAR -->
+  ${patient ? `
+  <div class="patient-bar">
+    <div class="pb-cell">
+      <span class="pb-label">Patient</span>
+      <span class="pb-value">${patient.nameBn}</span>
+    </div>
+    <div class="pb-cell">
+      <span class="pb-label">Patient ID</span>
+      <span class="pb-value">${patient.patientId}</span>
+    </div>
+    <div class="pb-cell">
+      <span class="pb-label">Age / Sex</span>
+      <span class="pb-value">${patient.age ? `${patient.age}y` : "—"} / ${patient.gender === "MALE" ? "M" : patient.gender === "FEMALE" ? "F" : "O"}</span>
+    </div>
+    <div class="pb-cell">
+      <span class="pb-label">Date</span>
+      <span class="pb-value">${fmtEn(rx.createdAt)}</span>
+    </div>
+    <div class="pb-cell">
+      <span class="pb-label">Rx No.</span>
+      <span class="pb-value" style="font-family:monospace;font-size:9.5px">${rxNo}</span>
+    </div>
+  </div>` : ""}
+
+  <!-- BODY -->
+  <div class="rx-body">
+
+    <!-- LEFT COLUMN -->
+    <div class="col-left">
+
+      ${(rx as any).chiefComplaint ? `
+        <div class="sec-head">Chief Complaint</div>
+        <p class="clinical-text">${(rx as any).chiefComplaint}</p>
+      ` : ""}
+
+      ${(rx as any).history ? `
+        <div class="sec-head">History</div>
+        <p class="clinical-text">${(rx as any).history}</p>
+      ` : ""}
+
+      ${(hasVA || hasIOP) ? `
+        <div class="sec-head">Eye Examination</div>
+        <table class="eye-tbl">
+          <thead>
+            <tr>
+              <th class="left" style="width:28%">Eye</th>
+              ${hasVA  ? `<th>VA</th>` : ""}
+              ${hasIOP ? `<th>IOP</th>` : ""}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="eye-lbl">OD (Right)</td>
+              ${hasVA  ? `<td>${(rx as any).vaRightEye  || "—"}</td>` : ""}
+              ${hasIOP ? `<td>${(rx as any).iopRightEye || "—"}</td>` : ""}
+            </tr>
+            <tr>
+              <td class="eye-lbl">OS (Left)</td>
+              ${hasVA  ? `<td>${(rx as any).vaLeftEye  || "—"}</td>` : ""}
+              ${hasIOP ? `<td>${(rx as any).iopLeftEye || "—"}</td>` : ""}
+            </tr>
+          </tbody>
+        </table>
+      ` : ""}
+
+      ${hasRef ? `
+        <div class="sec-head" style="margin-top:8px">Refraction</div>
+        <table class="ref-tbl">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding-left:5px">Eye</th>
+              <th>SPH</th><th>CYL</th><th>AXIS</th><th>ADD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="lbl">OD</td>
+              <td>${reRE?.sph || "—"}</td><td>${reRE?.cyl || "—"}</td>
+              <td>${reRE?.axis || "—"}</td><td>${reRE?.add || "—"}</td>
+            </tr>
+            <tr>
+              <td class="lbl">OS</td>
+              <td>${reLE?.sph || "—"}</td><td>${reLE?.cyl || "—"}</td>
+              <td>${reLE?.axis || "—"}</td><td>${reLE?.add || "—"}</td>
+            </tr>
+          </tbody>
+        </table>
+      ` : ""}
+
+      ${rx.diagnosis ? `
+        <div class="sec-head">Diagnosis</div>
+        <p class="diag-text">${rx.diagnosis}</p>
+      ` : ""}
+
+      ${(rx as any).investigations ? `
+        <div class="sec-head">Investigation</div>
+        <p class="clinical-text">${(rx as any).investigations}</p>
+      ` : ""}
+
+      ${(rx as any).examNotes ? `
+        <div class="sec-head">Examination Notes</div>
+        <p class="clinical-text" style="font-size:9.5px;color:#444">${(rx as any).examNotes}</p>
+      ` : ""}
+
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="col-divider"></div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-right">
+
+      ${rx.items.length > 0 ? `
+        <div class="rx-sym-row">
+          <span class="rx-sym">&#8478;</span>
+          <span class="rx-label">Medicines</span>
+        </div>
+        <ul class="med-list">${medRows}</ul>
+      ` : ""}
+
+      ${adviceText ? `
+        <div class="sec-head" style="margin-top:16px">Advice</div>
+        <p class="advice-text">${adviceText.replace(/\n/g, "<br/>")}</p>
+      ` : ""}
+
+      ${rx.followUpDate ? `
+        <div style="margin-top:14px">
+          <div class="sec-head">Follow-up</div>
+          <div class="followup-box">
+            <span class="fu-label">Next Visit:</span>
+            <span class="fu-date">${fmtEn(rx.followUpDate)}</span>
+            ${(rx as any).followUpNote ? `<span class="fu-note">— ${(rx as any).followUpNote}</span>` : ""}
+          </div>
+        </div>
+      ` : ""}
+
+      <!-- SIGNATURE -->
+      <div class="sig-area">
+        <div class="sig-block">
+          ${sigHTML}
+          <div class="sig-line">
+            <div class="sig-name">${drName}</div>
+            ${drQual ? `<div class="sig-qual">${drQual}</div>` : ""}
+            ${drSpec ? `<div class="sig-qual">${drSpec}</div>` : ""}
+            ${drBmdc ? `<div class="sig-bmdc">BMDC Reg. No: ${drBmdc}</div>` : ""}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="rx-footer">
+    <div class="footer-left">
+      ${footerParts.join(" &nbsp;|&nbsp; ")}
+      ${footerText ? `<br/>${footerText}` : ""}
+    </div>
+    <div class="footer-right">
+      Rx# ${rxNo}<br/>
+      ${fmtEn(rx.createdAt)}
+    </div>
+  </div>
+
+</div>
+</body>
+</html>`;
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export function PrescriptionPrint({ rx, onClose }: Props) {
+  const previewRef = useRef<HTMLIFrameElement>(null);
+  const [hospital, setHospital] = useState<HospitalRxSettings>({});
+  const [loading,  setLoading]  = useState(true);
+
+  useEffect(() => {
+    fetchHospitalRxSettings()
+      .then(setHospital)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const html = loading ? "" : buildPrescriptionHTML(rx, hospital);
+
+  // Inject HTML into iframe for preview
+  useEffect(() => {
+    if (!html || !previewRef.current) return;
+    const doc = previewRef.current.contentDocument;
+    if (!doc) return;
+    doc.open();
+    doc.write(html);
+    doc.close();
+  }, [html]);
+
+  function handlePrint() {
+    if (!html) return;
+    const win = window.open("", "_blank", "width=900,height=1200");
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); }, 600);
+  }
 
   return (
-    <div className="space-y-3">
-      {/* Action bar */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-700">প্রেসক্রিপশন প্রিভিউ</p>
-        <div className="flex gap-2">
-          <Button size="sm" onClick={handlePrint} className="flex items-center gap-2">
-            <Printer size={14} /> প্রিন্ট করুন
-          </Button>
-          <Button size="sm" variant="secondary" onClick={onClose}>
-            <X size={14} />
-          </Button>
-        </div>
-      </div>
-
-      {/* A4 Preview */}
-      <div className="border border-gray-300 rounded-lg overflow-auto bg-gray-100 p-4">
-        <div
-          ref={printRef}
-          className="bg-white mx-auto shadow-sm"
-          style={{ width: "182mm", minHeight: "267mm", padding: "10mm 12mm 14mm", fontFamily: "'Times New Roman', Times, serif", fontSize: "12px", color: "#111" }}
-        >
-          {/* HEADER */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: "8px", borderBottom: "2.5px solid #1a3a6b", marginBottom: "10px" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-              <div>
-                <div style={{ fontSize: "17px", fontWeight: 700, color: "#1a3a6b", lineHeight: 1.2 }}>শেরপুর আধুনিক চক্ষু হাসপাতাল</div>
-                <div style={{ fontSize: "11px", color: "#1a3a6b", fontWeight: 600, marginTop: "1px" }}>Sherpur Adhunik Eye Hospital & Phaco Center</div>
-                <div style={{ fontSize: "9.5px", color: "#555", marginTop: "3px", lineHeight: 1.5 }}>
-                  শেরপুর সদর, শেরপুর &nbsp;|&nbsp; ☎ 01781-836581 &nbsp;|&nbsp; জরুরি: ২৪ ঘণ্টা
-                </div>
-              </div>
-            </div>
-            {doctor && (
-              <div style={{ textAlign: "right", minWidth: "160px" }}>
-                <div style={{ fontSize: "14px", fontWeight: 700, color: "#111" }}>{doctor.nameBn}</div>
-                <div style={{ fontSize: "10px", color: "#333", marginTop: "1px", lineHeight: 1.4 }}>{doctor.qualificationBn}</div>
-                <div style={{ fontSize: "10px", color: "#333" }}>{doctor.designationBn}</div>
-                {settings?.bmdcNo && <div style={{ fontSize: "9.5px", color: "#555", marginTop: "2px" }}>BMDC Reg. No: {settings.bmdcNo}</div>}
-                {doctor.phone && <div style={{ fontSize: "9.5px", color: "#555" }}>☎ {doctor.phone}</div>}
-              </div>
-            )}
-          </div>
-
-          {/* PATIENT BAR */}
-          {patient && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", border: "1px solid #c8d8f0", borderRadius: "3px", marginBottom: "10px", overflow: "hidden" }}>
-              {[
-                { label: "রোগীর নাম", value: patient.nameBn },
-                { label: "রোগী আইডি", value: patient.patientId },
-                { label: "তারিখ", value: fmtEn(rx.createdAt) },
-                { label: "বয়স", value: patient.age ? `${patient.age} বছর` : "—" },
-                { label: "লিঙ্গ", value: GENDER_BN[patient.gender] },
-                { label: "ফোন", value: patient.phone },
-              ].map((cell, i) => (
-                <div key={i} style={{ padding: "4px 8px", fontSize: "10.5px", borderRight: i % 3 !== 2 ? "1px solid #c8d8f0" : "none", borderTop: i >= 3 ? "1px solid #c8d8f0" : "none" }}>
-                  <span style={{ color: "#666", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.03em", display: "block", marginBottom: "1px" }}>{cell.label}</span>
-                  <span style={{ fontWeight: 600, color: "#111" }}>{cell.value}</span>
-                </div>
-              ))}
-            </div>
+    <div className="flex flex-col gap-3" style={{ height: "82vh" }}>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-gray-700">Prescription Preview</span>
+          {(rx as any).rxNo && (
+            <span className="text-xs font-mono bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
+              {(rx as any).rxNo}
+            </span>
           )}
-
-          {/* BODY: LEFT + DIVIDER + RIGHT */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2px 2fr", gap: 0, minHeight: "180mm" }}>
-
-            {/* LEFT COLUMN */}
-            <div style={{ paddingRight: "10px", paddingTop: "4px" }}>
-
-              {/* Chief Complaint */}
-              {(rx as any).chiefComplaint && (
-                <>
-                  <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#1a3a6b", borderBottom: "1px solid #dde6f5", paddingBottom: "2px", marginBottom: "5px" }}>Chief Complaint</div>
-                  <p style={{ fontSize: "10.5px", color: "#222", lineHeight: 1.6 }}>{(rx as any).chiefComplaint}</p>
-                </>
-              )}
-
-              {/* Eye Examination */}
-              {hasEyeExam && (
-                <>
-                  <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#1a3a6b", borderBottom: "1px solid #dde6f5", paddingBottom: "2px", marginBottom: "5px", marginTop: "10px" }}>Visual Acuity</div>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px" }}>
-                    <thead>
-                      <tr>
-                        <th style={{ background: "#eef3fb", color: "#1a3a6b", fontSize: "9px", padding: "3px 5px", textAlign: "left", border: "1px solid #c8d8f0" }}>Eye</th>
-                        <th style={{ background: "#eef3fb", color: "#1a3a6b", fontSize: "9px", padding: "3px 5px", textAlign: "center", border: "1px solid #c8d8f0" }}>VA</th>
-                        <th style={{ background: "#eef3fb", color: "#1a3a6b", fontSize: "9px", padding: "3px 5px", textAlign: "center", border: "1px solid #c8d8f0" }}>IOP</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td style={{ padding: "3px 5px", border: "1px solid #dde6f5", fontWeight: 700, fontSize: "9.5px", background: "#f8fafd" }}>OD (R)</td>
-                        <td style={{ padding: "3px 5px", border: "1px solid #dde6f5", textAlign: "center" }}>{(rx as any).vaRightEye || "—"}</td>
-                        <td style={{ padding: "3px 5px", border: "1px solid #dde6f5", textAlign: "center" }}>{(rx as any).iopRightEye || "—"}</td>
-                      </tr>
-                      <tr>
-                        <td style={{ padding: "3px 5px", border: "1px solid #dde6f5", fontWeight: 700, fontSize: "9.5px", background: "#f8fafd" }}>OS (L)</td>
-                        <td style={{ padding: "3px 5px", border: "1px solid #dde6f5", textAlign: "center" }}>{(rx as any).vaLeftEye || "—"}</td>
-                        <td style={{ padding: "3px 5px", border: "1px solid #dde6f5", textAlign: "center" }}>{(rx as any).iopLeftEye || "—"}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </>
-              )}
-
-              {/* Refraction */}
-              {hasRefraction && (
-                <>
-                  <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#1a3a6b", borderBottom: "1px solid #dde6f5", paddingBottom: "2px", marginBottom: "5px", marginTop: "10px" }}>Refraction</div>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "9.5px" }}>
-                    <thead>
-                      <tr>
-                        {["", "SPH", "CYL", "AXIS", "ADD"].map((h) => (
-                          <th key={h} style={{ background: "#eef3fb", color: "#1a3a6b", padding: "2px 3px", textAlign: "center", border: "1px solid #c8d8f0", fontSize: "8.5px" }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[{ label: "OD", data: refractionRE }, { label: "OS", data: refractionLE }].map(({ label, data }) => (
-                        <tr key={label}>
-                          <td style={{ padding: "2px 4px", border: "1px solid #dde6f5", fontWeight: 700, background: "#f8fafd", fontSize: "9px" }}>{label}</td>
-                          {["sph", "cyl", "axis", "add"].map((k) => (
-                            <td key={k} style={{ padding: "2px 3px", border: "1px solid #dde6f5", textAlign: "center" }}>{data?.[k] || "—"}</td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </>
-              )}
-
-              {/* Diagnosis */}
-              {rx.diagnosis && (
-                <>
-                  <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#1a3a6b", borderBottom: "1px solid #dde6f5", paddingBottom: "2px", marginBottom: "5px", marginTop: "10px" }}>Diagnosis</div>
-                  <p style={{ fontSize: "11px", fontWeight: 600, color: "#111", lineHeight: 1.5 }}>{rx.diagnosis}</p>
-                </>
-              )}
-
-              {/* Investigations */}
-              {(rx as any).investigations && (
-                <>
-                  <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#1a3a6b", borderBottom: "1px solid #dde6f5", paddingBottom: "2px", marginBottom: "5px", marginTop: "10px" }}>Investigation</div>
-                  <p style={{ fontSize: "10.5px", color: "#222", lineHeight: 1.6, whiteSpace: "pre-line" }}>{(rx as any).investigations}</p>
-                </>
-              )}
-
-              {/* Exam Notes */}
-              {(rx as any).examNotes && (
-                <>
-                  <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#1a3a6b", borderBottom: "1px solid #dde6f5", paddingBottom: "2px", marginBottom: "5px", marginTop: "10px" }}>Examination Notes</div>
-                  <p style={{ fontSize: "10px", color: "#444", lineHeight: 1.6, whiteSpace: "pre-line" }}>{(rx as any).examNotes}</p>
-                </>
-              )}
-            </div>
-
-            {/* DIVIDER */}
-            <div style={{ background: "#dde6f5", margin: "0 6px" }} />
-
-            {/* RIGHT COLUMN */}
-            <div style={{ paddingLeft: "12px", paddingTop: "4px" }}>
-
-              {/* Rx MEDICINES */}
-              {rx.items.length > 0 && (
-                <>
-                  <div style={{ overflow: "hidden", marginBottom: "8px" }}>
-                    <span style={{ fontSize: "34px", fontWeight: 900, color: "#1a3a6b", lineHeight: 1, float: "left", marginRight: "6px", marginTop: "-4px", fontFamily: "'Times New Roman', serif" }}>℞</span>
-                    <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#1a3a6b", display: "block", paddingTop: "8px" }}>Medicines</span>
-                  </div>
-                  <div>
-                    {rx.items.map((item, i) => (
-                      <div key={item.id} style={{ marginBottom: "9px", paddingBottom: "9px", borderBottom: i < rx.items.length - 1 ? "1px dashed #e5e7eb" : "none" }}>
-                        <div>
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a3a6b", marginRight: "4px" }}>{i + 1}.</span>
-                          <span style={{ fontSize: "12px", fontWeight: 700, color: "#111" }}>{item.medicineName}</span>
-                          {item.dose && <span style={{ fontSize: "10.5px", color: "#444", marginLeft: "4px" }}>{item.dose}</span>}
-                        </div>
-                        <div style={{ fontSize: "10.5px", color: "#444", marginTop: "2px", marginLeft: "16px", lineHeight: 1.6 }}>
-                          {item.frequency && <span style={{ marginRight: "10px" }}>{item.frequency}</span>}
-                          {item.duration && <span style={{ marginRight: "10px" }}>× {item.duration}</span>}
-                          {item.instructions && <span style={{ color: "#666" }}>({item.instructions})</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {/* Advice */}
-              {(rx.instructions || (rx as any).advice) && (
-                <>
-                  <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#1a3a6b", borderBottom: "1px solid #dde6f5", paddingBottom: "2px", marginBottom: "5px", marginTop: "14px" }}>Advice</div>
-                  <p style={{ fontSize: "10.5px", color: "#222", lineHeight: 1.7, whiteSpace: "pre-line" }}>
-                    {(rx as any).advice || rx.instructions}
-                  </p>
-                </>
-              )}
-
-              {/* Follow-up */}
-              {rx.followUpDate && (
-                <div style={{ border: "1px solid #c8d8f0", borderRadius: "3px", padding: "5px 8px", marginTop: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: "#1a3a6b", letterSpacing: "0.05em" }}>Follow-up:</span>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#111" }}>{fmtEn(rx.followUpDate)}</span>
-                  {(rx as any).followUpNote && <span style={{ fontSize: "10px", color: "#555" }}>— {(rx as any).followUpNote}</span>}
-                </div>
-              )}
-
-              {/* SIGNATURE */}
-              <div style={{ marginTop: "auto", paddingTop: "24px", display: "flex", justifyContent: "flex-end" }}>
-                <div style={{ textAlign: "center", minWidth: "140px" }}>
-                  {settings?.signatureUrl && (
-                    <img src={settings.signatureUrl} alt="signature" style={{ height: "40px", maxWidth: "130px", objectFit: "contain", display: "block", margin: "0 auto 4px" }} />
-                  )}
-                  <div style={{ borderTop: "1px solid #333", paddingTop: "4px" }}>
-                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#111" }}>{doctor?.nameBn || "—"}</div>
-                    <div style={{ fontSize: "9.5px", color: "#555", lineHeight: 1.4 }}>{doctor?.qualificationBn}</div>
-                    <div style={{ fontSize: "9.5px", color: "#555" }}>{doctor?.designationBn}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* FOOTER */}
-          <div style={{ borderTop: "1px solid #dde6f5", marginTop: "10px", paddingTop: "6px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontSize: "9px", color: "#888", lineHeight: 1.5 }}>
-              শেরপুর আধুনিক চক্ষু হাসপাতাল ও ফ্যাকো সেন্টার &nbsp;|&nbsp; শেরপুর সদর, শেরপুর &nbsp;|&nbsp; ☎ 01781-836581
-            </div>
-            <div style={{ fontSize: "9px", color: "#aaa", fontFamily: "monospace" }}>
-              Rx# {(rx as any).rxNo || rx.id.slice(-8).toUpperCase()}
-            </div>
-          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={handlePrint} disabled={loading} className="flex items-center gap-2">
+            <Printer size={14} /> Print / Save PDF
+          </Button>
+          <button onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+            <X size={16} />
+          </button>
         </div>
       </div>
+
+      {/* Preview */}
+      <div className="flex-1 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="w-7 h-7 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <iframe
+            ref={previewRef}
+            title="Prescription Preview"
+            className="w-full h-full border-0 bg-white"
+            style={{ minHeight: 0 }}
+          />
+        )}
+      </div>
+
+      <p className="text-xs text-gray-400 text-center shrink-0">
+        Click "Print / Save PDF" → In the print dialog, choose "Save as PDF" to download.
+      </p>
     </div>
   );
 }
