@@ -250,8 +250,10 @@ async function main() {
     // Contact
     { key: "contact_address_bn",  value: "শেরপুর সদর, শেরপুর",            group: "contact",  labelBn: "ঠিকানা (বাংলা)",           labelEn: "Address (Bangla)",         type: "textarea" },
     { key: "contact_address_en",  value: "Sherpur Sadar, Sherpur",         group: "contact",  labelBn: "ঠিকানা (ইংরেজি)",         labelEn: "Address (English)",       type: "textarea" },
-    { key: "contact_phone",       value: "01700-000000",                   group: "contact",  labelBn: "ফোন নম্বর",               labelEn: "Phone Number",             type: "text" },
-    { key: "contact_email",       value: "info@sherpureyehospital.com",    group: "contact",  labelBn: "ইমেইল",                   labelEn: "Email",                    type: "text" },
+    { key: "contact_phone",       value: "01781-836581",                   group: "contact",  labelBn: "ফোন নম্বর",               labelEn: "Phone Number",             type: "text" },
+    { key: "contact_email",       value: "sherpuradhunikeyehospital22@gmail.com",    group: "contact",  labelBn: "ইমেইল",                   labelEn: "Email",                    type: "text" },
+    { key: "email",               value: "sherpuradhunikeyehospital22@gmail.com",    group: "contact",  labelBn: "ইমেইল",                   labelEn: "Email",                    type: "text" },
+    { key: "phone",               value: "01781-836581",                   group: "contact",  labelBn: "ফোন নম্বর",               labelEn: "Phone Number",             type: "text" },
     { key: "contact_map_url",     value: "",                               group: "contact",  labelBn: "Google Map Embed URL",     labelEn: "Google Map Embed URL",     type: "url" },
     // Hours
     { key: "hours_weekday_bn",    value: "শনি – বৃহস্পতি: সকাল ৮টা – রাত ৮টা", group: "hours", labelBn: "সাপ্তাহিক সময়সূচি (বাংলা)", labelEn: "Weekday Hours (Bangla)", type: "text" },
@@ -394,7 +396,7 @@ async function main() {
   for (const s of cmsSettings) {
     await prisma.siteSetting.upsert({
       where: { key: s.key },
-      update: {},
+      update: { value: s.value },
       create: s,
     });
   }
