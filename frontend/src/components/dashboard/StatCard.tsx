@@ -10,17 +10,18 @@ interface StatCardProps {
 
 export function StatCard({ label, value, icon: Icon, color, loading }: StatCardProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+    <div className="rounded-2xl p-5 flex items-center gap-4 transition-all hover:-translate-y-0.5"
+      style={{ background: "white", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }}>
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
-        <Icon size={22} />
+        <Icon size={20} />
       </div>
       <div className="min-w-0">
         {loading ? (
-          <div className="h-7 w-12 bg-gray-200 rounded animate-pulse mb-1" />
+          <div className="h-7 w-14 rounded-lg animate-pulse mb-1" style={{ background: "#f1f5f9" }} />
         ) : (
-          <p className="text-2xl font-bold text-gray-900 leading-tight">{value}</p>
+          <p className="text-2xl font-bold leading-tight" style={{ color: "#0f172a" }}>{value}</p>
         )}
-        <p className="text-xs text-gray-500 truncate">{label}</p>
+        <p className="text-xs font-medium truncate mt-0.5" style={{ color: "#64748b" }}>{label}</p>
       </div>
     </div>
   );

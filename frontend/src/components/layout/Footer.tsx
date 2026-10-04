@@ -13,10 +13,10 @@ export function Footer() {
 
   return (
     <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 py-14">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           {/* Brand */}
-          <div className="lg:col-span-1">
+          <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Eye size={20} className="text-white" />
@@ -60,11 +60,15 @@ export function Footer() {
 
           {/* Quick links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">{t("দ্রুত লিংক", "Quick Links")}</h3>
-            <ul className="space-y-2.5">
+            <h3 className="text-white font-semibold mb-4 text-sm sm:text-base">{t("দ্রুত লিংক", "Quick Links")}</h3>
+            <ul className="space-y-2">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-gray-400 hover:text-primary-400 text-sm transition-colors">
+                  <Link href={link.href} className="flex items-center gap-2 text-gray-400 hover:text-primary-400 text-sm transition-colors">
+                    {s[link.iconKey] && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={s[link.iconKey]} alt="" width={14} height={14} style={{ width: 14, height: 14, objectFit: "contain", opacity: 0.7 }} />
+                    )}
                     {t(link.bn, link.en)}
                   </Link>
                 </li>
@@ -74,8 +78,8 @@ export function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="text-white font-semibold mb-4">{t("আমাদের সেবা", "Our Services")}</h3>
-            <ul className="space-y-2.5">
+            <h3 className="text-white font-semibold mb-4 text-sm sm:text-base">{t("আমাদের সেবা", "Our Services")}</h3>
+            <ul className="space-y-2">
               {[
                 { bn: "ফ্যাকো ক্যাটারেক্ট সার্জারি", en: "Phaco Cataract Surgery" },
                 { bn: "রেটিনা চিকিৎসা", en: "Retina Treatment" },
@@ -95,11 +99,11 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold mb-4">{t("যোগাযোগ", "Contact")}</h3>
+            <h3 className="text-white font-semibold mb-4 text-sm sm:text-base">{t("যোগাযোগ", "Contact")}</h3>
             <ul className="space-y-3">
               <li className="flex gap-3 text-sm text-gray-400">
                 <MapPin size={16} className="text-primary-400 flex-shrink-0 mt-0.5" />
-                {t(s.address_bn, s.address_en)}
+                <span>{t(s.address_bn, s.address_en)}</span>
               </li>
               <li>
                 <a href={`tel:${s.phone}`} className="flex gap-3 text-sm text-gray-400 hover:text-primary-400 transition-colors">
@@ -110,7 +114,7 @@ export function Footer() {
               <li>
                 <a href={`mailto:${s.email}`} className="flex gap-3 text-sm text-gray-400 hover:text-primary-400 transition-colors">
                   <Mail size={16} className="text-primary-400 flex-shrink-0" />
-                  {s.email}
+                  <span className="break-all">{s.email}</span>
                 </a>
               </li>
               <li className="text-sm text-gray-400 pt-1">
@@ -124,9 +128,9 @@ export function Footer() {
       </div>
 
       <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-          <p>
-            © {year} {t(`${s.hospital_name_bn} ${s.tagline_bn}। সর্বস্বত্ব সংরক্ষিত।`, `${s.hospital_name_en} ${s.tagline_en}. All rights reserved.`)}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+          <p className="text-center sm:text-left">
+            © {year} {t(`${s.hospital_name_bn}। সর্বস্বত্ব সংরক্ষিত।`, `${s.hospital_name_en}. All rights reserved.`)}
           </p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">{t("গোপনীয়তা নীতি", "Privacy Policy")}</Link>

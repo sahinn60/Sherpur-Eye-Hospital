@@ -31,4 +31,5 @@ export const config = {
     apiSecret: process.env.CLOUDINARY_API_SECRET || "",
   },
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+  backendUrl:  process.env.BACKEND_URL  || "http://localhost:5000",
 } as const;

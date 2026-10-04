@@ -60,27 +60,45 @@ export async function createVisit(req: Request, res: Response, next: NextFunctio
 
 export async function createPrescription(req: Request, res: Response, next: NextFunction) {
   try {
-    const doctor = await resolveDoctor(req);
     const parsed = createPrescriptionSchema.safeParse(req.body);
     if (!parsed.success) { res.status(422).json({ success: false, message: "Validation failed" }); return; }
+    const role = req.user!.role;
+    let doctorId: string;
+    if (role === "SUPER_ADMIN" || role === "ADMIN") {
+      // Admin must pass doctorId in body, or we pick first available doctor
+      if (parsed.data.doctorId) {
+        doctorId = parsed.data.doctorId;
+      } else {
+        const doc = await svc.getAnyDoctor();
+        doctorId = doc.id;
+      }
+    } else {
+      doctorId = (await resolveDoctor(req)).id;
+    }
     res.status(201).json(successResponse("প্রেসক্রিপশন তৈরি হয়েছে।",
-      await svc.createDoctorPrescription(req.params.patientId, doctor.id, parsed.data, req.user!.userId)));
+      await svc.createDoctorPrescription(req.params.patientId, doctorId, parsed.data, req.user!.userId)));
   } catch (e) { next(e); }
 }
 
 export async function getPrescription(req: Request, res: Response, next: NextFunction) {
   try {
-    const doctor = await resolveDoctor(req);
+    const role = req.user!.role;
+    const doctorId = (role === "SUPER_ADMIN" || role === "ADMIN")
+      ? undefined
+      : (await resolveDoctor(req)).id;
     res.json(successResponse("Prescription",
-      await svc.getDoctorPrescription(req.params.rxId, doctor.id)));
+      await svc.getDoctorPrescription(req.params.rxId, doctorId)));
   } catch (e) { next(e); }
 }
 
 export async function getPrescriptions(req: Request, res: Response, next: NextFunction) {
   try {
-    const doctor = await resolveDoctor(req);
+    const role = req.user!.role;
+    const doctorId = (role === "SUPER_ADMIN" || role === "ADMIN")
+      ? undefined
+      : (await resolveDoctor(req)).id;
     const { page = "1", limit = "20" } = req.query as Record<string, string>;
     res.json(successResponse("Prescriptions",
-      await svc.getDoctorPrescriptions(doctor.id, parseInt(page), parseInt(limit))));
+      await svc.getDoctorPrescriptions(doctorId, parseInt(page), parseInt(limit))));
   } catch (e) { next(e); }
 }

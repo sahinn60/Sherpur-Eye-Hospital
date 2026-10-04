@@ -8,16 +8,19 @@ export function DoctorsSection() {
   const { t } = useLang();
 
   return (
-    <section className="py-16 md:py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-primary-600 text-sm font-semibold uppercase tracking-wider">
+    <section className="py-12 sm:py-16 md:py-20 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+          <span className="text-primary-600 text-xs sm:text-sm font-semibold uppercase tracking-wider">
             {t("আমাদের চিকিৎসক", "Our Doctors")}
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
+          <h2
+            className="font-bold text-gray-900 mt-2 mb-3"
+            style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)" }}
+          >
             {t("অভিজ্ঞ বিশেষজ্ঞ চিকিৎসক দল", "Experienced Specialist Medical Team")}
           </h2>
-          <p className="text-gray-500">
+          <p className="text-gray-500 text-sm sm:text-base">
             {t(
               "আমাদের চিকিৎসকরা আপনার চোখের সর্বোত্তম যত্নে প্রতিশ্রুতিবদ্ধ।",
               "Our doctors are committed to providing the best care for your eyes."
@@ -25,14 +28,15 @@ export function DoctorsSection() {
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* 1 col mobile, 2 col sm, 3 col lg */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {DOCTORS.map((doctor) => (
             <div
               key={doctor.slug}
               className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all group"
             >
               {/* Doctor image */}
-              <div className="bg-gradient-to-br from-primary-100 to-primary-50 h-52 flex items-center justify-center">
+              <div className="bg-gradient-to-br from-primary-100 to-primary-50 h-44 sm:h-52 flex items-center justify-center">
                 {doctor.image ? (
                   <img
                     src={doctor.image}
@@ -41,8 +45,8 @@ export function DoctorsSection() {
                   />
                 ) : (
                   <div className="text-center">
-                    <div className="w-24 h-24 rounded-full bg-primary-200 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-4xl">👨‍⚕️</span>
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary-200 flex items-center justify-center mx-auto mb-2">
+                      <span className="text-3xl sm:text-4xl">👨‍⚕️</span>
                     </div>
                     <p className="text-primary-400 text-xs">
                       {t("ছবি শীঘ্রই আসছে", "Photo coming soon")}
@@ -52,8 +56,8 @@ export function DoctorsSection() {
               </div>
 
               {/* Info */}
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-700 transition-colors">
+              <div className="p-4 sm:p-5">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-primary-700 transition-colors">
                   {t(doctor.nameBn, doctor.nameEn)}
                 </h3>
                 <p className="text-primary-600 text-sm font-medium mt-0.5">
@@ -79,10 +83,10 @@ export function DoctorsSection() {
           ))}
         </div>
 
-        <div className="text-center mt-10">
+        <div className="text-center mt-8 sm:mt-10">
           <Link
             href="/doctors"
-            className="inline-flex items-center gap-2 border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white font-semibold px-6 py-3 rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm sm:text-base"
           >
             {t("সকল চিকিৎসক দেখুন", "View All Doctors")}
           </Link>

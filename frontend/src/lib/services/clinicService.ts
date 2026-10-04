@@ -56,7 +56,7 @@ export async function createClinicVisit(patientId: string, data: {
 }
 
 export async function createClinicPrescription(patientId: string, data: {
-  visitId?: string; diagnosis?: string; instructions?: string;
+  visitId?: string; doctorId?: string; diagnosis?: string; instructions?: string;
   doctorNotes?: string; followUpDate?: string;
   items: { medicineName: string; dose?: string; frequency?: string; duration?: string; instructions?: string }[];
 }): Promise<ClinicPrescription> {

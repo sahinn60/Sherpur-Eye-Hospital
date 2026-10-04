@@ -24,7 +24,11 @@ export async function getPublicSettings() {
 
 export async function upsertSettings(settings: Record<string, string>) {
   const ops = Object.entries(settings).map(([key, value]) =>
-    prisma.siteSetting.update({ where: { key }, data: { value } })
+    prisma.siteSetting.upsert({
+      where: { key },
+      update: { value },
+      create: { key, value, group: "general", labelBn: key, labelEn: key, type: "text" },
+    })
   );
   await Promise.all(ops);
   return getPublicSettings();
@@ -101,4 +105,22 @@ export async function updateNotice(id: string, data: {
 
 export async function deleteNotice(id: string) {
   return prisma.notice.delete({ where: { id } });
+}
+
+// ─── Contact Messages ─────────────────────────────────────────────────────────
+
+export async function createContactMessage(data: { name: string; phone: string; subject: string; message: string }) {
+  return prisma.contactMessage.create({ data });
+}
+
+export async function listContactMessages() {
+  return prisma.contactMessage.findMany({ orderBy: { createdAt: "desc" } });
+}
+
+export async function markMessageRead(id: string) {
+  return prisma.contactMessage.update({ where: { id }, data: { isRead: true } });
+}
+
+export async function deleteContactMessage(id: string) {
+  return prisma.contactMessage.delete({ where: { id } });
 }

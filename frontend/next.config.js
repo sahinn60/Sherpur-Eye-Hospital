@@ -2,12 +2,28 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  async rewrites() {
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: "http://localhost:5000/uploads/:path*",
+      },
+    ];
+  },
+
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
         hostname:  "res.cloudinary.com",
         pathname:  "/**",
+      },
+      {
+        protocol: "http",
+        hostname:  "localhost",
+        port:      "5000",
+        pathname:  "/uploads/**",
       },
     ],
     formats: ["image/avif", "image/webp"],

@@ -16,6 +16,7 @@ import billingRoutes from "./billing.routes";
 import financeRoutes from "./finance.routes";
 import surgeryRoutes from "./surgery.routes";
 import inventoryRoutes from "./inventory.routes";
+import prescriptionRoutes from "./prescription.routes";
 import cmsRoutes from "./cms.routes";
 import auditRoutes from "./audit.routes";
 
@@ -42,6 +43,7 @@ router.use("/billing",       billingRoutes);
 router.use("/finance",       financeRoutes);
 router.use("/surgery",       surgeryRoutes);
 router.use("/inventory",     inventoryRoutes);
+router.use("/prescriptions",  prescriptionRoutes);
 router.use("/cms",           cmsRoutes);
 router.use("/audit",         auditRoutes);
 

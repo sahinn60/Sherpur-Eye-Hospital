@@ -15,21 +15,24 @@ export function StatsSection() {
   ];
 
   return (
-    <section className="py-14 bg-primary-700 text-white">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+    <section className="py-10 sm:py-14 bg-primary-700 text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8">
           {stats.map((stat) => (
             <div key={stat.labelEn} className="text-center">
-              <p className="text-4xl md:text-5xl font-bold text-white mb-1">
+              <p
+                className="font-bold text-white mb-1"
+                style={{ fontSize: "clamp(1.75rem, 6vw, 3rem)" }}
+              >
                 {t(stat.valueBn, stat.valueEn)}
               </p>
-              <p className="text-primary-200 text-sm font-medium">
+              <p className="text-primary-200 text-xs sm:text-sm font-medium">
                 {t(stat.labelBn, stat.labelEn)}
               </p>
             </div>
           ))}
         </div>
-        <p className="text-center text-primary-300 text-xs mt-8">
+        <p className="text-center text-primary-300 text-xs mt-6 sm:mt-8">
           {t("* সংখ্যাগুলো আনুমানিক এবং নিয়মিত আপডেট করা হয়", "* Numbers are approximate and regularly updated")}
         </p>
       </div>

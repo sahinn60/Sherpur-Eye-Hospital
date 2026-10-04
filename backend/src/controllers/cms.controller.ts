@@ -1,12 +1,26 @@
 import { Request, Response, NextFunction } from "express";
 import { successResponse } from "../utils/response";
 import * as cms from "../services/cms.service";
+import { config } from "../config/env";
 import {
   upsertSettingsSchema,
   bulkUpdateSectionsSchema,
   createNoticeSchema,
   updateNoticeSchema,
 } from "../validators/cms.validator";
+
+// ─── Image Upload ───────────────────────────────────────────────────────────────────────────────
+
+export async function uploadImage(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.file) {
+      res.status(400).json({ success: false, message: "কোনো ফাইল পাওয়া যায়নি" });
+      return;
+    }
+    const filename = req.file.filename;
+    res.json(successResponse("আপলোড সফল", { filename }));
+  } catch (e) { next(e); }
+}
 
 // ─── Settings ────────────────────────────────────────────────────────────────
 
@@ -77,5 +91,40 @@ export async function removeNotice(req: Request, res: Response, next: NextFuncti
   try {
     await cms.deleteNotice(req.params.id);
     res.json(successResponse("নোটিশ মুছে গেছে"));
+  } catch (e) { next(e); }
+}
+
+// ─── Contact Messages ─────────────────────────────────────────────────────────
+
+export async function submitContact(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { name, phone, subject, message } = req.body;
+    if (!name || !phone || !message) {
+      res.status(400).json({ success: false, message: "নাম, ফোন ও বার্তা আবশ্যক" });
+      return;
+    }
+    const data = await cms.createContactMessage({ name, phone, subject: subject || "", message });
+    res.status(201).json(successResponse("বার্তা পাঠানো হয়েছে", data));
+  } catch (e) { next(e); }
+}
+
+export async function getContactMessages(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await cms.listContactMessages();
+    res.json(successResponse("ok", data));
+  } catch (e) { next(e); }
+}
+
+export async function markContactRead(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await cms.markMessageRead(req.params.id);
+    res.json(successResponse("ok", data));
+  } catch (e) { next(e); }
+}
+
+export async function deleteContactMessage(req: Request, res: Response, next: NextFunction) {
+  try {
+    await cms.deleteContactMessage(req.params.id);
+    res.json(successResponse("মুছে গেছে"));
   } catch (e) { next(e); }
 }

@@ -152,6 +152,7 @@ model Doctor {
   prescriptions   Prescription[] @relation("PrescriptionDoctor")
   invoices        Invoice[]
   surgeries       Surgery[]      @relation("SurgeryDoctor")
+  prescriptionSettings DoctorPrescriptionSettings?
 
   @@map("doctors")
 }
@@ -409,26 +410,95 @@ model Visit {
   @@map("visits")
 }
 
-model Prescription {
-  id           String             @id @default(cuid())
-  patientId    String
-  patient      Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  visitId      String?
-  visit        Visit?             @relation(fields: [visitId], references: [id])
-  doctorId     String?
-  doctor       Doctor?            @relation("PrescriptionDoctor", fields: [doctorId], references: [id])
-  diagnosis    String?            @db.Text
-  instructions String?            @db.Text
-  doctorNotes  String?            @db.Text
-  followUpDate DateTime?
-  createdBy    String?            // userId
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+model DoctorPrescriptionSettings {
+  id              String   @id @default(cuid())
+  doctorId        String   @unique
+  doctor          Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  // Header info (snapshot at prescription time)
+  nameBn          String   @default("")
+  nameEn          String   @default("")
+  qualificationBn String   @default("")
+  qualificationEn String   @default("")
+  designationBn   String   @default("")
+  designationEn   String   @default("")
+  specialtyBn     String   @default("")
+  specialtyEn     String   @default("")
+  bmdcNo          String   @default("")
+  chamberName     String   @default("")
+  chamberAddress  String   @default("")
+  chamberPhone    String   @default("")
+  // Signature
+  signatureUrl    String?  // stored in uploads/signatures/
+  signatureMode   String   @default("handwritten") // "uploaded" | "handwritten" | "none"
+  // Preferences
+  preferredLang   String   @default("bn") // "bn" | "en"
+  showHeader      Boolean  @default(true)
+  showFooter      Boolean  @default(true)
+  updatedAt       DateTime @updatedAt
 
-  items        PrescriptionItem[]
+  @@map("doctor_prescription_settings")
+}
+
+model Prescription {
+  id             String       @id @default(cuid())
+  rxNo           String       @unique @default(cuid()) // human-readable RX-YYYY-NNNN
+  patientId      String
+  patient        Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  visitId        String?
+  visit          Visit?       @relation(fields: [visitId], references: [id])
+  doctorId       String?
+  doctor         Doctor?      @relation("PrescriptionDoctor", fields: [doctorId], references: [id])
+
+  // Type
+  rxType         String       @default("clinical") // "clinical" | "spectacle"
+
+  // Status
+  status         String       @default("DRAFT") // "DRAFT" | "FINALIZED"
+  finalizedAt    DateTime?
+  finalizedBy    String?      // userId
+
+  // Immutable snapshot saved at finalization
+  snapshot       Json?        // full prescription data frozen at finalize
+
+  // Clinical fields
+  chiefComplaint String?      @db.Text
+  history        String?      @db.Text
+  allergies      String?      @db.Text
+  currentMeds    String?      @db.Text
+
+  // Eye examination
+  vaRightEye     String?      // Visual Acuity Right
+  vaLeftEye      String?      // Visual Acuity Left
+  refractionRE   String?      // Refraction Right Eye
+  refractionLE   String?      // Refraction Left Eye
+  iopRightEye    String?      // IOP Right
+  iopLeftEye     String?      // IOP Left
+  examNotes      String?      @db.Text
+
+  diagnosis      String?      @db.Text
+  investigations String?      @db.Text
+  instructions   String?      @db.Text
+  advice         String?      @db.Text
+  doctorNotes    String?      @db.Text
+  followUpDate   DateTime?
+  followUpNote   String?
+
+  // Spectacle prescription fields (stored as JSON)
+  spectacleData  Json?        // { RE: {sph,cyl,axis,add,pd}, LE: {sph,cyl,axis,add,pd}, lensAdvice, notes }
+
+  // Doctor info snapshot (frozen at finalization)
+  doctorSnapshot Json?        // DoctorPrescriptionSettings at time of finalization
+
+  createdBy      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  items          PrescriptionItem[]
+  amendments     PrescriptionAmendment[]
 
   @@index([patientId])
   @@index([doctorId])
+  @@index([status])
   @@map("prescriptions")
 }
 
@@ -437,14 +507,31 @@ model PrescriptionItem {
   prescriptionId String
   prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
   medicineName   String
+  strength       String?      // e.g. "0.5%", "500mg"
+  dosageForm     String?      // e.g. "Eye Drop", "Tablet"
+  route          String?      // e.g. "Topical", "Oral"
+  eye            String?      // "RE" | "LE" | "BE" | null
   dose           String?
-  frequency      String?      // e.g. "দিনে ৩ বার"
-  duration       String?      // e.g. "৭ দিন"
-  instructions   String?      // e.g. "খাবার পরে"
+  frequency      String?
+  duration       String?
+  instructions   String?
   sortOrder      Int          @default(0)
 
   @@index([prescriptionId])
   @@map("prescription_items")
+}
+
+model PrescriptionAmendment {
+  id             String       @id @default(cuid())
+  prescriptionId String
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  reason         String       @db.Text
+  amendedBy      String       // userId
+  snapshot       Json         // previous state
+  createdAt      DateTime     @default(now())
+
+  @@index([prescriptionId])
+  @@map("prescription_amendments")
 }
 
 enum LeaveType {
@@ -850,6 +937,18 @@ model Notice {
   updatedAt DateTime  @updatedAt
 
   @@map("notices")
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  subject   String   @default("")
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("contact_messages")
 }
 
 model NewsArticle {

@@ -23,9 +23,9 @@ export function AppointmentSection() {
   const { t } = useLang();
 
   return (
-    <section className="py-16 md:py-20 bg-gray-50 min-h-[60vh]">
-      <div className="max-w-3xl mx-auto px-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
+    <section className="py-10 sm:py-16 md:py-20 bg-gray-50 min-h-[60vh]">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8 md:p-10">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900">
               {t("অ্যাপয়েন্টমেন্ট অনুরোধ", "Appointment Request")}

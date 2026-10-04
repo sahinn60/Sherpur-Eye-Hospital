@@ -18,6 +18,15 @@ export async function getDoctorByUserId(userId: string) {
   return doctor;
 }
 
+export async function getAnyDoctor() {
+  const doctor = await prisma.doctor.findFirst({
+    where: { isActive: true },
+    select: { id: true },
+  });
+  if (!doctor) throw new AppError("কোনো সক্রিয় চিকিৎসক পাওয়া যায়নি।", 404);
+  return doctor;
+}
+
 // ─── Today's queue ────────────────────────────────────────────────────────────
 
 export async function getTodayQueue(doctorId: string) {
@@ -221,21 +230,22 @@ export async function createDoctorPrescription(
 
 // ─── Get prescription (doctor must own it) ────────────────────────────────────
 
-export async function getDoctorPrescription(rxId: string, doctorId: string) {
+export async function getDoctorPrescription(rxId: string, doctorId?: string) {
   const rx = await prisma.prescription.findUnique({ where: { id: rxId }, select: PRESCRIPTION_SELECT });
   if (!rx) throw new AppError("প্রেসক্রিপশন পাওয়া যায়নি।", 404);
-  if (rx.doctor?.id !== doctorId) throw new AppError("এই প্রেসক্রিপশনে আপনার অ্যাক্সেস নেই।", 403);
+  if (doctorId && rx.doctor?.id !== doctorId) throw new AppError("এই প্রেসক্রিপশনে আপনার অ্যাক্সেস নেই।", 403);
   return rx;
 }
 
 // ─── Doctor's recent prescriptions ───────────────────────────────────────────
 
-export async function getDoctorPrescriptions(doctorId: string, page = 1, limit = 20) {
+export async function getDoctorPrescriptions(doctorId: string | undefined, page = 1, limit = 20) {
+  const where = doctorId ? { doctorId } : {};
   const skip = (page - 1) * limit;
   const [total, items] = await Promise.all([
-    prisma.prescription.count({ where: { doctorId } }),
+    prisma.prescription.count({ where }),
     prisma.prescription.findMany({
-      where: { doctorId }, skip, take: limit,
+      where, skip, take: limit,
       select: PRESCRIPTION_SELECT,
       orderBy: { createdAt: "desc" },
     }),

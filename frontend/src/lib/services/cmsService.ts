@@ -60,3 +60,42 @@ export async function updateNotice(id: string, data: Partial<Notice>): Promise<N
 export async function deleteNotice(id: string): Promise<void> {
   await api.delete(`${BASE}/notices/${id}`);
 }
+
+export async function uploadCmsImage(file: File): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await api.post(`${BASE}/upload`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  const { filename } = res.data.data;
+  return { url: `/uploads/${filename}` };
+}
+
+// ─── Contact Messages ─────────────────────────────────────────────────────────
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  phone: string;
+  subject: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export async function submitContactMessage(data: { name: string; phone: string; subject: string; message: string }): Promise<void> {
+  await api.post(`${BASE}/public/contact`, data);
+}
+
+export async function fetchContactMessages(): Promise<ContactMessage[]> {
+  const res = await api.get(`${BASE}/contact-messages`);
+  return res.data.data;
+}
+
+export async function markContactMessageRead(id: string): Promise<void> {
+  await api.patch(`${BASE}/contact-messages/${id}`);
+}
+
+export async function deleteContactMessage(id: string): Promise<void> {
+  await api.delete(`${BASE}/contact-messages/${id}`);
+}

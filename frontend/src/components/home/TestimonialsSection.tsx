@@ -24,16 +24,19 @@ export function TestimonialsSection() {
   const { t } = useLang();
 
   return (
-    <section className="py-16 md:py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-primary-600 text-sm font-semibold uppercase tracking-wider">
+    <section className="py-12 sm:py-16 md:py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+          <span className="text-primary-600 text-xs sm:text-sm font-semibold uppercase tracking-wider">
             {t("রোগীদের মতামত", "Patient Reviews")}
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
+          <h2
+            className="font-bold text-gray-900 mt-2 mb-3"
+            style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)" }}
+          >
             {t("আমাদের রোগীরা কী বলেন", "What Our Patients Say")}
           </h2>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 text-xs sm:text-sm">
             {t(
               "* এগুলো প্রতিনিধিত্বমূলক মতামত। বাস্তব রোগীদের মতামত শীঘ্রই যুক্ত করা হবে।",
               "* These are representative reviews. Real patient reviews will be added soon."
@@ -41,18 +44,19 @@ export function TestimonialsSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        {/* 1 col mobile, 3 col md */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {TESTIMONIALS.map((item, i) => (
             <div
               key={i}
-              className="bg-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-primary-200 hover:shadow-sm transition-all"
+              className="bg-gray-50 rounded-2xl p-5 sm:p-6 border border-gray-100 hover:border-primary-200 hover:shadow-sm transition-all"
             >
               <StarRating rating={item.rating} />
-              <p className="text-gray-600 text-sm leading-relaxed mt-4 mb-5 italic">
+              <p className="text-gray-600 text-sm leading-relaxed mt-3 mb-4 italic">
                 "{t(item.textBn, item.textEn)}"
               </p>
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3 pt-3 border-t border-gray-200">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
                   <span className="text-primary-600 font-bold text-sm">
                     {t(item.nameBn, item.nameEn).charAt(0)}
                   </span>

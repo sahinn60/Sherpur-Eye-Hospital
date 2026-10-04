@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
+import path from "path";
 import { config } from "./config/env";
 import routes from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
@@ -20,7 +21,7 @@ app.use(
         defaultSrc: ["'self'"],
         scriptSrc:  ["'self'"],
         styleSrc:   ["'self'", "'unsafe-inline'"],
-        imgSrc:     ["'self'", "data:", "https://res.cloudinary.com"],
+        imgSrc:     ["'self'", "data:", "blob:", "https://res.cloudinary.com", "http://localhost:5000", "http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
         connectSrc: ["'self'"],
         frameSrc:   ["'none'"],
         objectSrc:  ["'none'"],
@@ -35,7 +36,7 @@ app.use(
     origin: config.frontendUrl,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -61,14 +62,17 @@ app.use(
   })
 );
 
-// Parsing — tight body size limit
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+// Parsing — allow larger body for base64 image uploads
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser(config.cookie.secret));
 
 // Apply strict limiter to auth routes before main router
 app.use("/api/v1/auth/login",    authLimiter);
 app.use("/api/v1/auth/register", authLimiter);
+
+// Static uploads
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Routes
 app.use("/api/v1", routes);

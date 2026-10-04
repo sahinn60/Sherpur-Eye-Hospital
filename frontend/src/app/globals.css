@@ -5,15 +5,26 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-white text-gray-900 antialiased;
+    overflow-x: hidden;
+    width: 100%;
   }
 
-  /* Improve tap target sizes on mobile */
-  button, a {
-    min-height: 44px;
+  /* Box sizing reset — prevents overflow from padding */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  /* Images always responsive */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
   }
 
   /* Respect reduced motion */
@@ -28,6 +39,12 @@
 @layer utilities {
   .font-bangla {
     font-family: 'Noto Sans Bengali', sans-serif;
+  }
+
+  /* Touch-friendly tap targets — only for standalone buttons/links, not inline */
+  .btn-touch {
+    min-height: 44px;
+    min-width: 44px;
   }
 
   /* Notice ticker marquee */
