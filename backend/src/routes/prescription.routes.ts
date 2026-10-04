@@ -3,11 +3,24 @@ import { authenticate, authorize } from "../middleware/auth";
 import { signatureUpload, uploadToCloudinary } from "../middleware/upload";
 import * as ctrl from "../controllers/prescription.controller";
 import * as tmpl from "../controllers/template.controller";
+import * as admin from "../controllers/admin.prescription.controller";
 
 const router = Router();
 const doctorAccess = [authenticate, authorize("DOCTOR", "SUPER_ADMIN", "ADMIN")];
 const doctorOnly   = [authenticate, authorize("DOCTOR")];
+const adminOnly    = [authenticate, authorize("SUPER_ADMIN", "ADMIN")];
 
+// ── Admin: Hospital Rx Settings ───────────────────────────────────────────────
+router.get   ("/admin/hospital-settings",       adminOnly, admin.getHospitalRxSettings);
+router.post  ("/admin/hospital-settings",       adminOnly, admin.saveHospitalRxSettings);
+router.post  ("/admin/hospital-settings/logo",  adminOnly, signatureUpload.single("logo"), uploadToCloudinary("rx_logos"), admin.uploadHospitalLogo);
+
+// ── Admin: Doctor Rx Settings ─────────────────────────────────────────────────
+router.get   ("/admin/doctors",                                    adminOnly, admin.listDoctorsWithSettings);
+router.get   ("/admin/doctors/:doctorId/settings",                 adminOnly, admin.getDoctorRxSettings);
+router.put   ("/admin/doctors/:doctorId/settings",                 adminOnly, admin.saveDoctorRxSettings);
+router.post  ("/admin/doctors/:doctorId/settings/signature",       adminOnly, signatureUpload.single("signature"), uploadToCloudinary("signatures"), admin.uploadDoctorSignature);
+router.delete("/admin/doctors/:doctorId/settings/signature",       adminOnly, admin.removeDoctorSignature);
 // Settings
 router.get ("/settings",            doctorOnly,   ctrl.getMySettings);
 router.post("/settings",            doctorOnly,   ctrl.saveMySettings);

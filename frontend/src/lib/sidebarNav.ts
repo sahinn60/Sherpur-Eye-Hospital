@@ -67,9 +67,10 @@ export const SIDEBAR_NAV: NavGroup[] = [
   {
     group: "সিস্টেম",
     items: [
-      { href: "/dashboard/users",    label: "ব্যবহারকারী", icon: "ShieldCheck", roles: ["SUPER_ADMIN","ADMIN"] },
-      { href: "/dashboard/audit",    label: "অডিট লগ",      icon: "ClipboardList", roles: ["SUPER_ADMIN","ADMIN"] },
-      { href: "/dashboard/settings", label: "সেটিংস",      icon: "Settings",    roles: ["SUPER_ADMIN","ADMIN"] },
+      { href: "/dashboard/users",                   label: "ব্যবহারকারী",          icon: "ShieldCheck",   roles: ["SUPER_ADMIN","ADMIN"] },
+      { href: "/dashboard/audit",                   label: "অডিট লগ",              icon: "ClipboardList", roles: ["SUPER_ADMIN","ADMIN"] },
+      { href: "/dashboard/settings",                label: "সেটিংস",              icon: "Settings",      roles: ["SUPER_ADMIN","ADMIN"] },
+      { href: "/dashboard/settings/prescription",   label: "Rx সেটিংস",           icon: "FileText",      roles: ["SUPER_ADMIN","ADMIN"] },
     ],
   },
 ];
