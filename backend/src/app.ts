@@ -38,6 +38,7 @@ app.use(
         config.frontendUrl,
         "https://sherpur-eye-hospital-kappa.vercel.app",
         "https://frontend-nine-taupe-48.vercel.app",
+        "https://frontend-six-psi-30.vercel.app",
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
