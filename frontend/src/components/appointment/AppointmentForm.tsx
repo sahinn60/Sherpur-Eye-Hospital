@@ -20,12 +20,12 @@ const schema = z.object({
   phone: z.string().min(10, "সঠিক ফোন নম্বর দিন / Enter a valid phone number"),
   email: z.string().email("সঠিক ইমেইল দিন / Invalid email").optional().or(z.literal("")),
   age: z.coerce.number({ invalid_type_error: "বয়স দিন / Enter age" }).int().min(1).max(120),
-  gender: z.enum(["MALE", "FEMALE", "OTHER"], { required_error: "লিঙ্গ নির্বাচন করুন / Select gender" }),
+  gender: z.string().min(1, "লিঙ্গ নির্বাচন করুন / Select gender"),
   doctorId: z.string().optional(),
   serviceId: z.string().optional(),
   preferredDate: z.string().min(1, "তারিখ নির্বাচন করুন / Select a date"),
   preferredTime: z.string().min(1, "সময় নির্বাচন করুন / Select a time"),
-  reason: z.string().min(5, "সমস্যার বিবরণ দিন / Describe your problem"),
+  reason: z.string().min(3, "সমস্যার বিবরণ দিন / Describe your problem"),
   message: z.string().optional(),
 });
 
