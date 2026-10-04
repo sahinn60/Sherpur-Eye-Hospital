@@ -36,6 +36,7 @@ app.use(
     origin: (origin, callback) => {
       const allowed = [
         config.frontendUrl,
+        "https://sherpur-eye-hospital-kappa.vercel.app",
         "https://frontend-nine-taupe-48.vercel.app",
         "http://localhost:3000",
         "http://localhost:3001",
