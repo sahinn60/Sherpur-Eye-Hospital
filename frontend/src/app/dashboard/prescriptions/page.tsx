@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, FileText, Printer, Plus, X, UserRound } from "lucide-react";
+import { Search, FileText, Printer, Plus, UserRound } from "lucide-react";
 import { RouteGuard } from "@/components/auth";
 import { Button, Modal } from "@/components/ui";
-import { PrescriptionEditor, PrescriptionPrint } from "@/components/clinic";
+import { PrescriptionPrint } from "@/components/clinic";
 import {
   fetchClinicPrescriptions, fetchClinicPrescription,
-  createClinicPrescription,
 } from "@/lib/services/clinicService";
 import { fetchPatients } from "@/lib/services/patientService";
 import { ClinicPrescription } from "@/types/clinic";
 import { Patient } from "@/types/patient";
+import { useRouter } from "next/navigation";
 
 function fmt(d: string) {
   return new Date(d).toLocaleDateString("bn-BD", { day: "numeric", month: "short", year: "numeric" });
@@ -31,7 +31,6 @@ export default function PrescriptionsPage() {
   const [patientQuery,      setPatientQuery]      = useState("");
   const [patients,          setPatients]          = useState<Patient[]>([]);
   const [patientLoading,    setPatientLoading]    = useState(false);
-  const [selectedPatient,   setSelectedPatient]   = useState<Patient | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -77,22 +76,17 @@ export default function PrescriptionsPage() {
   function openNewRx() {
     setPatientQuery("");
     setPatients([]);
-    setSelectedPatient(null);
     setShowPatientSearch(true);
   }
 
-  function selectPatient(p: Patient) {
-    setSelectedPatient(p);
-    setShowPatientSearch(false);
-  }
+  const router = useRouter();
 
-  async function handleSaveRx(data: any) {
-    if (!selectedPatient) throw new Error("রোগী নির্বাচন করুন");
-    return createClinicPrescription(selectedPatient.id, data);
+  function selectPatient(p: Patient) {
+    setShowPatientSearch(false);
+    router.push(`/dashboard/patients/${p.id}/prescription/new`);
   }
 
   function handleRxSaved(rx: ClinicPrescription) {
-    setSelectedPatient(null);
     setPrintRx(rx);
     load();
   }
@@ -239,18 +233,6 @@ export default function PrescriptionsPage() {
         </Modal>
       )}
 
-      {selectedPatient && (
-        <Modal open onClose={() => setSelectedPatient(null)} title="নতুন প্রেসক্রিপশন" size="xl">
-          <PrescriptionEditor
-            patientId={selectedPatient.id}
-            patientName={selectedPatient.nameBn}
-            patientAge={selectedPatient.age}
-            onSave={handleSaveRx}
-            onPrint={handleRxSaved}
-            onCancel={() => setSelectedPatient(null)}
-          />
-        </Modal>
-      )}
 
       {/* Print modal */}
       {printRx && (
