@@ -1,2 +1,4 @@
 "use client";
-export { default } from "../_editor";
+export default function NewPrescriptionPage() {
+  return null;
+}
