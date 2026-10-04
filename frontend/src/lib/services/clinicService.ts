@@ -57,8 +57,11 @@ export async function createClinicVisit(patientId: string, data: {
 
 export async function createClinicPrescription(patientId: string, data: {
   visitId?: string; doctorId?: string; diagnosis?: string; instructions?: string;
-  doctorNotes?: string; followUpDate?: string;
-  items: { medicineName: string; dose?: string; frequency?: string; duration?: string; instructions?: string }[];
+  doctorNotes?: string; followUpDate?: string; followUpNote?: string;
+  chiefComplaint?: string; history?: string; examNotes?: string; investigations?: string; advice?: string;
+  vaRightEye?: string; vaLeftEye?: string; iopRightEye?: string; iopLeftEye?: string;
+  refractionRE?: string; refractionLE?: string;
+  items: { medicineName: string; dose?: string; frequency?: string; duration?: string; instructions?: string; sortOrder?: number }[];
 }): Promise<ClinicPrescription> {
   const res = await api.post(`/clinic/patients/${patientId}/prescriptions`, data);
   return res.data.data;

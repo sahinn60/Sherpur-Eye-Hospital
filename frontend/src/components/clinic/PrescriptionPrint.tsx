@@ -134,7 +134,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:12px;color:#111;backgro
 
   const doctor = rx.doctor;
   const patient = rx.patient;
-  const settings = (rx as any).doctorSettings;
+  const settings = doctor?.prescriptionSettings;
 
   // Parse refraction if stored
   let refractionRE: any = null;

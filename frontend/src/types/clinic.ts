@@ -71,17 +71,31 @@ export interface PrescriptionItem {
 }
 
 export interface ClinicPrescription {
-  id:           string;
-  diagnosis:    string | null;
-  instructions: string | null;
-  doctorNotes:  string | null;
-  followUpDate: string | null;
-  createdBy:    string | null;
-  createdAt:    string;
-  updatedAt:    string;
+  id:             string;
+  rxNo?:          string | null;
+  diagnosis:      string | null;
+  instructions:   string | null;
+  doctorNotes:    string | null;
+  chiefComplaint?: string | null;
+  history?:        string | null;
+  examNotes?:      string | null;
+  investigations?: string | null;
+  advice?:         string | null;
+  vaRightEye?:     string | null;
+  vaLeftEye?:      string | null;
+  iopRightEye?:    string | null;
+  iopLeftEye?:     string | null;
+  refractionRE?:   string | null;
+  refractionLE?:   string | null;
+  followUpDate:   string | null;
+  followUpNote?:  string | null;
+  createdBy:      string | null;
+  createdAt:      string;
+  updatedAt:      string;
   doctor: {
     id: string; nameBn: string; nameEn: string;
     designationBn: string; qualificationBn: string; phone: string | null;
+    prescriptionSettings?: { bmdcNo?: string; signatureUrl?: string | null } | null;
   } | null;
   visit:   { id: string; visitDate: string; chiefComplaint: string | null } | null;
   patient: {
