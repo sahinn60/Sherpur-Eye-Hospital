@@ -4,3 +4,5 @@ export { PrescriptionPrint }  from "./PrescriptionPrint";
 export { RxPrintPreview }     from "./RxPrintPreview";
 export { ConsultationModal }  from "./ConsultationModal";
 export { buildRxHTML }        from "./rxPrintBuilder";
+export { LiveRxPreview }      from "./LiveRxPreview";
+export type { LivePreviewData } from "./LiveRxPreview";
