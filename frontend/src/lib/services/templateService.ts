@@ -16,7 +16,9 @@ export async function fetchTemplate(id: string): Promise<PrescriptionTemplate> {
 
 export async function createTemplate(data: {
   name: string; nameBn: string; category: string;
+  chiefComplaint?: string; history?: string;
   diagnosis?: string; advice?: string; instructions?: string;
+  followUpNote?: string; followUpDays?: number | null;
   isShared?: boolean;
   items: TemplateItem[];
 }): Promise<PrescriptionTemplate> {
@@ -26,10 +28,17 @@ export async function createTemplate(data: {
 
 export async function updateTemplate(id: string, data: Partial<{
   name: string; nameBn: string; category: string;
+  chiefComplaint?: string; history?: string;
   diagnosis?: string; advice?: string; instructions?: string;
+  followUpNote?: string; followUpDays?: number | null;
   isShared?: boolean; items: TemplateItem[];
 }>): Promise<PrescriptionTemplate> {
   const res = await api.put(`/prescriptions/templates/${id}`, data);
+  return res.data.data;
+}
+
+export async function duplicateTemplate(id: string): Promise<PrescriptionTemplate> {
+  const res = await api.post(`/prescriptions/templates/${id}/duplicate`);
   return res.data.data;
 }
 

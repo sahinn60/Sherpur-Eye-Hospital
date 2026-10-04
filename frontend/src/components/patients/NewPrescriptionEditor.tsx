@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft, Plus, Trash2, Save, User, Phone, Hash,
   AlertCircle, CheckCircle, ChevronDown, ChevronUp,
-  Search, X, GripVertical, Edit2, Check,
+  Search, X, GripVertical, Edit2, Check, BookOpen,
 } from "lucide-react";
 import { PatientDetail, GENDER_BN } from "@/types/patient";
 import { Doctor } from "@/types/doctor";
@@ -13,6 +13,8 @@ import { fetchPatient, createPrescription } from "@/lib/services/patientService"
 import { fetchDoctors } from "@/lib/services/doctorService";
 import { Button } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
+import { TemplateSelector } from "@/components/prescriptions";
+import { PrescriptionTemplate } from "@/types/prescription";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -668,6 +670,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
   const [saving,   setSaving]   = useState(false);
   const [error,    setError]    = useState("");
   const [success,  setSuccess]  = useState(false);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
   // Doctor
   const [doctorId, setDoctorId] = useState("");
@@ -721,6 +724,37 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
   }, [patientId, user]);
 
   useEffect(() => { load(); }, [load]);
+
+  function applyTemplate(t: PrescriptionTemplate) {
+    // Populate fields from template — doctor reviews before saving
+    if (t.chiefComplaint) setChiefComplaint(t.chiefComplaint);
+    if (t.history)        setHistory(t.history);
+    if (t.diagnosis) {
+      const parts = t.diagnosis.split(/;\s*/).filter(Boolean);
+      setDiagnoses(parts.map((text) => ({ id: uid(), text })));
+    }
+    if (t.advice)       setAdvice(t.advice);
+    if (t.instructions) setInstructions(t.instructions);
+    if (t.followUpNote) setFollowUpNote(t.followUpNote);
+    if (t.followUpDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + t.followUpDays);
+      setFollowUpDate(d.toISOString().split("T")[0]);
+    }
+    if (t.items.length > 0) {
+      setMedicines(t.items.map((item, i) => ({
+        id: uid(),
+        medicineName: item.medicineName,
+        genericName:  "",
+        strength:     item.strength     || "",
+        dose:         item.dose         || "",
+        frequency:    item.frequency    || "",
+        duration:     item.duration     || "",
+        route:        item.dosageForm   || "",
+        instructions: item.instructions || "",
+      })));
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -826,10 +860,21 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           <ArrowLeft size={16} /> Back
         </button>
         <h1 className="flex-1 text-lg font-bold text-gray-900 truncate">New Prescription</h1>
+        <button type="button" onClick={() => setShowTemplateSelector(true)}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors shrink-0">
+          <BookOpen size={15} /> Use Template
+        </button>
         <Button type="submit" loading={saving} className="flex items-center gap-2 shrink-0">
           <Save size={15} /> Save
         </Button>
       </div>
+
+      {showTemplateSelector && (
+        <TemplateSelector
+          onApply={applyTemplate}
+          onClose={() => setShowTemplateSelector(false)}
+        />
+      )}
 
       {error && (
         <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">

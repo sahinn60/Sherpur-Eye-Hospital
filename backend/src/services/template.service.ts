@@ -3,7 +3,9 @@ import { AppError } from "../utils/response";
 
 const TEMPLATE_SELECT = {
   id: true, name: true, nameBn: true, category: true,
+  chiefComplaint: true, history: true,
   diagnosis: true, advice: true, instructions: true,
+  followUpNote: true, followUpDays: true,
   isShared: true, doctorId: true, createdBy: true,
   createdAt: true, updatedAt: true,
   items: {
@@ -15,6 +17,20 @@ const TEMPLATE_SELECT = {
     orderBy: { sortOrder: "asc" as const },
   },
 };
+
+function itemsData(items: any[]) {
+  return (items || []).map((item: any, i: number) => ({
+    medicineName: item.medicineName,
+    strength:     item.strength     || null,
+    dosageForm:   item.dosageForm   || null,
+    eye:          item.eye          || null,
+    dose:         item.dose         || null,
+    frequency:    item.frequency    || null,
+    duration:     item.duration     || null,
+    instructions: item.instructions || null,
+    sortOrder:    item.sortOrder    ?? i,
+  }));
+}
 
 export async function listTemplates(query: {
   doctorId?: string; search?: string; category?: string;
@@ -57,28 +73,20 @@ export async function getTemplate(id: string, doctorId?: string) {
 export async function createTemplate(doctorId: string, createdBy: string, input: any) {
   return prisma.prescriptionTemplate.create({
     data: {
-      name:         input.name,
-      nameBn:       input.nameBn,
-      category:     input.category || "GENERAL",
-      diagnosis:    input.diagnosis || null,
-      advice:       input.advice || null,
-      instructions: input.instructions || null,
-      isShared:     input.isShared ?? false,
+      name:           input.name,
+      nameBn:         input.nameBn,
+      category:       input.category     || "GENERAL",
+      chiefComplaint: input.chiefComplaint || null,
+      history:        input.history       || null,
+      diagnosis:      input.diagnosis     || null,
+      advice:         input.advice        || null,
+      instructions:   input.instructions  || null,
+      followUpNote:   input.followUpNote  || null,
+      followUpDays:   input.followUpDays  ? parseInt(input.followUpDays) : null,
+      isShared:       input.isShared      ?? false,
       doctorId,
       createdBy,
-      items: {
-        create: (input.items || []).map((item: any, i: number) => ({
-          medicineName: item.medicineName,
-          strength:     item.strength || null,
-          dosageForm:   item.dosageForm || null,
-          eye:          item.eye || null,
-          dose:         item.dose || null,
-          frequency:    item.frequency || null,
-          duration:     item.duration || null,
-          instructions: item.instructions || null,
-          sortOrder:    item.sortOrder ?? i,
-        })),
-      },
+      items: { create: itemsData(input.items) },
     },
     select: TEMPLATE_SELECT,
   });
@@ -94,26 +102,45 @@ export async function updateTemplate(id: string, doctorId: string, input: any) {
   return prisma.prescriptionTemplate.update({
     where: { id },
     data: {
-      name:         input.name,
-      nameBn:       input.nameBn,
-      category:     input.category || "GENERAL",
-      diagnosis:    input.diagnosis || null,
-      advice:       input.advice || null,
-      instructions: input.instructions || null,
-      isShared:     input.isShared ?? false,
-      items: {
-        create: (input.items || []).map((item: any, i: number) => ({
-          medicineName: item.medicineName,
-          strength:     item.strength || null,
-          dosageForm:   item.dosageForm || null,
-          eye:          item.eye || null,
-          dose:         item.dose || null,
-          frequency:    item.frequency || null,
-          duration:     item.duration || null,
-          instructions: item.instructions || null,
-          sortOrder:    item.sortOrder ?? i,
-        })),
-      },
+      name:           input.name,
+      nameBn:         input.nameBn,
+      category:       input.category     || "GENERAL",
+      chiefComplaint: input.chiefComplaint || null,
+      history:        input.history       || null,
+      diagnosis:      input.diagnosis     || null,
+      advice:         input.advice        || null,
+      instructions:   input.instructions  || null,
+      followUpNote:   input.followUpNote  || null,
+      followUpDays:   input.followUpDays  ? parseInt(input.followUpDays) : null,
+      isShared:       input.isShared      ?? false,
+      items: { create: itemsData(input.items) },
+    },
+    select: TEMPLATE_SELECT,
+  });
+}
+
+export async function duplicateTemplate(id: string, doctorId: string, createdBy: string) {
+  const t = await prisma.prescriptionTemplate.findUnique({ where: { id }, select: TEMPLATE_SELECT });
+  if (!t) throw new AppError("টেমপ্লেট পাওয়া যায়নি।", 404);
+  if (!t.isShared && t.doctorId !== doctorId)
+    throw new AppError("এই টেমপ্লেট কপি করার অনুমতি নেই।", 403);
+
+  return prisma.prescriptionTemplate.create({
+    data: {
+      name:           `${t.name} (Copy)`,
+      nameBn:         `${t.nameBn} (কপি)`,
+      category:       t.category,
+      chiefComplaint: t.chiefComplaint,
+      history:        t.history,
+      diagnosis:      t.diagnosis,
+      advice:         t.advice,
+      instructions:   t.instructions,
+      followUpNote:   t.followUpNote,
+      followUpDays:   t.followUpDays,
+      isShared:       false,
+      doctorId,
+      createdBy,
+      items: { create: t.items.map((item, i) => ({ ...item, id: undefined, sortOrder: i })) },
     },
     select: TEMPLATE_SELECT,
   });

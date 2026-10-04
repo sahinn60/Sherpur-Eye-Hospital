@@ -523,21 +523,25 @@ model PrescriptionItem {
 }
 
 model PrescriptionTemplate {
-  id           String   @id @default(cuid())
-  name         String
-  nameBn       String
-  category     String   @default("GENERAL")
-  diagnosis    String?  @db.Text
-  advice       String?  @db.Text
-  instructions String?  @db.Text
-  isShared     Boolean  @default(false)
-  doctorId     String?
-  doctor       Doctor?  @relation(fields: [doctorId], references: [id], onDelete: SetNull)
-  createdBy    String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  nameBn         String
+  category       String   @default("GENERAL")
+  chiefComplaint String?  @db.Text
+  history        String?  @db.Text
+  diagnosis      String?  @db.Text
+  advice         String?  @db.Text
+  instructions   String?  @db.Text
+  followUpNote   String?
+  followUpDays   Int?
+  isShared       Boolean  @default(false)
+  doctorId       String?
+  doctor         Doctor?  @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  items        PrescriptionTemplateItem[]
+  items          PrescriptionTemplateItem[]
 
   @@index([doctorId])
   @@index([category])

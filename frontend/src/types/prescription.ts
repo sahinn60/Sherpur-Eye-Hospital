@@ -1,10 +1,11 @@
 // ─── Prescription Template ────────────────────────────────────────────────────
 
 export interface TemplateItem {
+  id?:          string;
   medicineName: string;
   strength?:    string;
   dosageForm?:  string;
-  eye?:         string; // "RE" | "LE" | "BE"
+  eye?:         string;
   dose?:        string;
   frequency?:   string;
   duration?:    string;
@@ -13,19 +14,23 @@ export interface TemplateItem {
 }
 
 export interface PrescriptionTemplate {
-  id:          string;
-  name:        string;       // e.g. "Post-op Cataract"
-  nameBn:      string;       // e.g. "ছানি অপারেশন পরবর্তী"
-  category:    string;       // e.g. "CATARACT" | "GLAUCOMA" | "GENERAL"
-  diagnosis?:  string;
-  advice?:     string;
-  instructions?: string;
-  isShared:    boolean;      // visible to all doctors vs private
-  doctorId?:   string;
-  createdBy:   string;
-  createdAt:   string;
-  updatedAt:   string;
-  items:       TemplateItem[];
+  id:             string;
+  name:           string;
+  nameBn:         string;
+  category:       string;
+  chiefComplaint?: string;
+  history?:       string;
+  diagnosis?:     string;
+  advice?:        string;
+  instructions?:  string;
+  followUpNote?:  string;
+  followUpDays?:  number | null;
+  isShared:       boolean;
+  doctorId?:      string;
+  createdBy:      string;
+  createdAt:      string;
+  updatedAt:      string;
+  items:          TemplateItem[];
 }
 
 export interface TemplateListResponse {

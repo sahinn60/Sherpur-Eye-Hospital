@@ -1,17 +1,21 @@
 -- CreateTable
 CREATE TABLE "prescription_templates" (
-    "id"           TEXT NOT NULL,
-    "name"         TEXT NOT NULL,
-    "nameBn"       TEXT NOT NULL,
-    "category"     TEXT NOT NULL DEFAULT 'GENERAL',
-    "diagnosis"    TEXT,
-    "advice"       TEXT,
-    "instructions" TEXT,
-    "isShared"     BOOLEAN NOT NULL DEFAULT false,
-    "doctorId"     TEXT,
-    "createdBy"    TEXT NOT NULL,
-    "createdAt"    TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt"    TIMESTAMP(3) NOT NULL,
+    "id"             TEXT NOT NULL,
+    "name"           TEXT NOT NULL,
+    "nameBn"         TEXT NOT NULL,
+    "category"       TEXT NOT NULL DEFAULT 'GENERAL',
+    "chiefComplaint" TEXT,
+    "history"        TEXT,
+    "diagnosis"      TEXT,
+    "advice"         TEXT,
+    "instructions"   TEXT,
+    "followUpNote"   TEXT,
+    "followUpDays"   INTEGER,
+    "isShared"       BOOLEAN NOT NULL DEFAULT false,
+    "doctorId"       TEXT,
+    "createdBy"      TEXT NOT NULL,
+    "createdAt"      TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt"      TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "prescription_templates_pkey" PRIMARY KEY ("id")
 );

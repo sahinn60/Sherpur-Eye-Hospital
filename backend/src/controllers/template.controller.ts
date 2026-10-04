@@ -55,6 +55,14 @@ export async function update(req: Request, res: Response, next: NextFunction) {
   } catch (e) { next(e); }
 }
 
+export async function duplicate(req: Request, res: Response, next: NextFunction) {
+  try {
+    const doc = await resolveDoctor(req);
+    const data = await svc.duplicateTemplate(req.params.id, doc.id, req.user!.userId);
+    res.status(201).json(successResponse("টেমপ্লেট কপি হয়েছে।", data));
+  } catch (e) { next(e); }
+}
+
 export async function remove(req: Request, res: Response, next: NextFunction) {
   try {
     let doctorId = "";

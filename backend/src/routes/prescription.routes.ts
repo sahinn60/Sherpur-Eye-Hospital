@@ -15,11 +15,12 @@ router.post("/settings/signature",  doctorOnly,   signatureUpload.single("signat
 router.delete("/settings/signature",doctorOnly,   ctrl.removeSignature);
 
 // Templates
-router.get   ("/templates",     doctorAccess, tmpl.list);
-router.post  ("/templates",     doctorOnly,   tmpl.create);
-router.get   ("/templates/:id", doctorAccess, tmpl.get);
-router.put   ("/templates/:id", doctorOnly,   tmpl.update);
-router.delete("/templates/:id", doctorOnly,   tmpl.remove);
+router.get   ("/templates",              doctorAccess, tmpl.list);
+router.post  ("/templates",              doctorOnly,   tmpl.create);
+router.get   ("/templates/:id",          doctorAccess, tmpl.get);
+router.put   ("/templates/:id",          doctorOnly,   tmpl.update);
+router.post  ("/templates/:id/duplicate",doctorOnly,   tmpl.duplicate);
+router.delete("/templates/:id",          doctorOnly,   tmpl.remove);
 
 // Prescriptions
 router.get ("/",           doctorAccess, ctrl.listRx);

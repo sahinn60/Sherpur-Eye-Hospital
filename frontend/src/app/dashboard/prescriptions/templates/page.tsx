@@ -6,7 +6,7 @@ import { RouteGuard } from "@/components/auth";
 import { Button, Modal } from "@/components/ui";
 import { TemplateCard, TemplateForm } from "@/components/prescriptions";
 import {
-  fetchTemplates, createTemplate, updateTemplate, deleteTemplate,
+  fetchTemplates, createTemplate, updateTemplate, deleteTemplate, duplicateTemplate,
 } from "@/lib/services/templateService";
 import { PrescriptionTemplate, TEMPLATE_CATEGORIES } from "@/types/prescription";
 
@@ -64,6 +64,13 @@ export default function TemplatesPage() {
       setFormError(e?.response?.data?.message || "সমস্যা হয়েছে");
       throw e;
     }
+  }
+
+  async function handleDuplicate(t: PrescriptionTemplate) {
+    try {
+      await duplicateTemplate(t.id);
+      load();
+    } catch (e: any) { alert(e?.response?.data?.message || "কপি করা যায়নি"); }
   }
 
   async function handleDelete(t: PrescriptionTemplate) {
@@ -127,6 +134,7 @@ export default function TemplatesPage() {
               template={t}
               canEdit={true}
               onEdit={(tmpl) => { setEditTarget(tmpl); setFormError(""); setShowForm(true); }}
+              onDuplicate={handleDuplicate}
               onDelete={handleDelete}
             />
           ))}
