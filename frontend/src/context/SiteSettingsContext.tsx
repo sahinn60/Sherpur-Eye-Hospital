@@ -128,11 +128,11 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
           tagline_bn:       map.hospital_tagline_bn || "",
           tagline_en:       map.hospital_tagline_en || "",
           // Contact
-          phone:         map.contact_phone      || "",
-          email:         map.contact_email      || "",
-          address_bn:    map.contact_address_bn || "",
-          address_en:    map.contact_address_en || "",
-          map_embed_url: map.contact_map_url    || "",
+          phone:         map.contact_phone      || map.phone         || "",
+          email:         map.contact_email      || map.email         || "",
+          address_bn:    map.contact_address_bn || map.address_bn    || "",
+          address_en:    map.contact_address_en || map.address_en    || "",
+          map_embed_url: map.contact_map_url    || map.map_embed_url || "",
           // Hours
           hours_bn:  map.hours_weekday_bn || "",
           hours_en:  map.hours_weekday_en || "",
