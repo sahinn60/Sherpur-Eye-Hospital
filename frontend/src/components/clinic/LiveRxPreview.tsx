@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { buildRxHTML } from "./rxPrintBuilder";
-import { fetchHospitalRxSettings, HospitalRxSettings } from "@/lib/services/adminPrescriptionService";
+import { fetchHospitalRxSettings, fetchDoctorRxSettings, HospitalRxSettings } from "@/lib/services/adminPrescriptionService";
 import { fetchRxSettings, DoctorPrescriptionSettings } from "@/lib/services/prescriptionService";
 import type { RxItem } from "@/lib/services/prescriptionService";
 
@@ -52,6 +52,14 @@ export function LiveRxPreview({ data, doctorSettings }: Props) {
       setReady(true);
     });
   }, []);
+
+  // Fetch selected doctor's settings when doctorId changes
+  useEffect(() => {
+    if (!data.doctorId) return;
+    fetchDoctorRxSettings(data.doctorId).then((s) => {
+      if (s) setLiveSettings(s);
+    }).catch(() => {});
+  }, [data.doctorId]);
 
   const effectiveSettings = useMemo(
     () => doctorSettings ?? liveSettings,

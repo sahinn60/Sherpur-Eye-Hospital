@@ -583,6 +583,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
   const diagnosisText = diagnoses.map((d) => d.text).join("; ");
 
   const previewData = useMemo(() => ({
+    doctorId: doctorId || undefined,
     patient: patient ? {
       id: patient.id, patientId: patient.patientId,
       nameBn: patient.nameBn, nameEn: patient.nameEn || "",
