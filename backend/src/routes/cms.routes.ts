@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth";
-import { upload } from "../middleware/upload";
+import { upload, uploadToCloudinary } from "../middleware/upload";
 import * as ctrl from "../controllers/cms.controller";
 
 const router = Router();
@@ -15,7 +15,7 @@ router.post("/public/contact", ctrl.submitContact);
 // Admin
 router.get("/settings",          authenticate, ADMIN, ctrl.getSettings);
 router.post("/settings",         authenticate, ADMIN, ctrl.saveSettings);
-router.post("/upload",           authenticate, ADMIN, upload.single("file"), ctrl.uploadImage);
+router.post("/upload",           authenticate, ADMIN, upload.single("file"), uploadToCloudinary("cms"), ctrl.uploadImage);
 router.get("/sections",          authenticate, ADMIN, ctrl.getSections);
 router.post("/sections",         authenticate, ADMIN, ctrl.saveSections);
 router.get("/notices",           authenticate, ADMIN, ctrl.getNotices);

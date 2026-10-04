@@ -3,8 +3,7 @@ import { successResponse, AppError } from "../utils/response";
 import * as svc from "../services/prescription.service";
 import { getDoctorByUserId } from "../services/clinic.service";
 import { auditCtx } from "../utils/auditCtx";
-import path from "path";
-import fs from "fs";
+import { cloudinary } from "../middleware/upload";
 
 // ─── Resolve doctor from request ─────────────────────────────────────────────
 
@@ -34,7 +33,7 @@ export async function uploadSignature(req: Request, res: Response, next: NextFun
   try {
     const doctor = await resolveDoctor(req);
     if (!req.file) { res.status(400).json({ success: false, message: "ফাইল পাওয়া যায়নি।" }); return; }
-    const signatureUrl = `/uploads/signatures/${req.file.filename}`;
+    const signatureUrl = (req.file as any).cloudinaryUrl || req.file.filename;
     const data = await svc.saveSignature(doctor.id, signatureUrl);
     res.json(successResponse("স্বাক্ষর আপলোড হয়েছে।", { signatureUrl, settings: data }));
   } catch (e) { next(e); }
@@ -44,9 +43,10 @@ export async function removeSignature(req: Request, res: Response, next: NextFun
   try {
     const doctor = await resolveDoctor(req);
     const settings = await svc.getDoctorSettings(doctor.id);
-    if (settings?.signatureUrl) {
-      const filePath = path.join(process.cwd(), "uploads", "signatures", path.basename(settings.signatureUrl));
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    // Delete from Cloudinary if it's a Cloudinary URL
+    if (settings?.signatureUrl && settings.signatureUrl.includes("cloudinary")) {
+      const publicId = (settings.signatureUrl as string).split("/").slice(-2).join("/").replace(/\.[^.]+$/, "");
+      await cloudinary.uploader.destroy(publicId).catch(() => {});
     }
     const data = await svc.removeSignature(doctor.id);
     res.json(successResponse("স্বাক্ষর মুছে গেছে।", data));

@@ -67,8 +67,9 @@ export async function uploadCmsImage(file: File): Promise<{ url: string }> {
   const res = await api.post(`${BASE}/upload`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  const { filename } = res.data.data;
-  return { url: `/uploads/${filename}` };
+  const { url, filename } = res.data.data;
+  // url is Cloudinary URL, filename fallback for backward compat
+  return { url: url || filename };
 }
 
 // ─── Contact Messages ─────────────────────────────────────────────────────────

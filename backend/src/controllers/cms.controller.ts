@@ -17,8 +17,8 @@ export async function uploadImage(req: Request, res: Response, next: NextFunctio
       res.status(400).json({ success: false, message: "কোনো ফাইল পাওয়া যায়নি" });
       return;
     }
-    const filename = req.file.filename;
-    res.json(successResponse("আপলোড সফল", { filename }));
+    const url = (req.file as any).cloudinaryUrl || req.file.filename;
+    res.json(successResponse("আপলোড সফল", { filename: url, url }));
   } catch (e) { next(e); }
 }
 

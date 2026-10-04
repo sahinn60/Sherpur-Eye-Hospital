@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth";
-import { signatureUpload } from "../middleware/upload";
+import { signatureUpload, uploadToCloudinary } from "../middleware/upload";
 import * as ctrl from "../controllers/prescription.controller";
 
 const router = Router();
@@ -10,7 +10,7 @@ const doctorOnly   = [authenticate, authorize("DOCTOR")];
 // Settings
 router.get ("/settings",            doctorOnly,   ctrl.getMySettings);
 router.post("/settings",            doctorOnly,   ctrl.saveMySettings);
-router.post("/settings/signature",  doctorOnly,   signatureUpload.single("signature"), ctrl.uploadSignature);
+router.post("/settings/signature",  doctorOnly,   signatureUpload.single("signature"), uploadToCloudinary("signatures"), ctrl.uploadSignature);
 router.delete("/settings/signature",doctorOnly,   ctrl.removeSignature);
 
 // Prescriptions
