@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import { CalendarCheck, CheckCircle } from "lucide-react";
 import { useLang } from "@/context/LangContext";
 import { useDoctors } from "@/hooks/useDoctors";
@@ -81,7 +80,6 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 
 export function AppointmentForm() {
   const { t } = useLang();
-  const searchParams = useSearchParams();
   const [submitted, setSubmitted] = useState<Appointment | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
