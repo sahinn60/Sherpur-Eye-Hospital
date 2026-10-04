@@ -38,7 +38,17 @@ export const RX_SELECT = {
     select: {
       id: true, nameBn: true, nameEn: true,
       designationBn: true, qualificationBn: true, phone: true,
-      prescriptionSettings: { select: { signatureUrl: true, signatureMode: true, bmdcNo: true, chamberName: true, chamberAddress: true, chamberPhone: true } },
+      prescriptionSettings: {
+        select: {
+          nameBn: true, nameEn: true,
+          qualificationBn: true, qualificationEn: true,
+          designationBn: true, designationEn: true,
+          specialtyBn: true, specialtyEn: true,
+          bmdcNo: true, chamberName: true, chamberAddress: true, chamberPhone: true,
+          signatureUrl: true, signatureMode: true,
+          preferredLang: true, showHeader: true, showFooter: true,
+        },
+      },
     },
   },
   patient: {

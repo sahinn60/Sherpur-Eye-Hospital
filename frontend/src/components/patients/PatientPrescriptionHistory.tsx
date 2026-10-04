@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FileText, Printer, Copy, Eye, Download, AlertCircle,
-  ChevronLeft, ChevronRight, Plus, Clock, User, Hash,
+  ChevronLeft, ChevronRight, Clock, User,
   Pill, Stethoscope,
 } from "lucide-react";
-import { Prescription, GENDER_BN } from "@/types/patient";
-import { ClinicPrescription } from "@/types/clinic";
+import { Prescription } from "@/types/patient";
 import {
-  fetchPatientPrescriptions, createPrescription,
+  fetchPatientPrescriptions,
 } from "@/lib/services/patientService";
-import { fetchClinicPrescription } from "@/lib/services/clinicService";
+import { createRx } from "@/lib/services/prescriptionService";
 import { Button, Modal } from "@/components/ui";
-import { PrescriptionPrint } from "@/components/clinic";
+import { useRouter } from "next/navigation";
 
 interface Props {
   patientId: string;
@@ -155,9 +154,10 @@ function RxDetailModal({ rx, onClose, onPrint }: {
 function CopyConfirmModal({ rx, patientId, onDone, onClose }: {
   rx: Prescription;
   patientId: string;
-  onDone: () => void;
+  onDone: (newRxId: string) => void;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -165,20 +165,36 @@ function CopyConfirmModal({ rx, patientId, onDone, onClose }: {
     setSaving(true);
     setError("");
     try {
-      await createPrescription(patientId, {
+      const saved = await createRx({
+        patientId,
+        doctorId: rx.doctor?.id || undefined,
+        chiefComplaint: (rx as any).chiefComplaint || undefined,
+        history: (rx as any).history || undefined,
+        vaRightEye: (rx as any).vaRightEye || undefined,
+        vaLeftEye: (rx as any).vaLeftEye || undefined,
+        iopRightEye: (rx as any).iopRightEye || undefined,
+        iopLeftEye: (rx as any).iopLeftEye || undefined,
+        refractionRE: (rx as any).refractionRE || undefined,
+        refractionLE: (rx as any).refractionLE || undefined,
         diagnosis: rx.diagnosis || undefined,
-        instructions: rx.instructions || undefined,
+        investigations: (rx as any).investigations || undefined,
         advice: (rx as any).advice || undefined,
+        instructions: rx.instructions || undefined,
         followUpNote: rx.followUpNote || undefined,
-        items: rx.items.map((item) => ({
+        items: rx.items.map((item, i) => ({
           medicineName: item.medicineName,
-          dose: item.dose || undefined,
-          frequency: item.frequency || undefined,
-          duration: item.duration || undefined,
+          strength:     (item as any).strength     || undefined,
+          dosageForm:   (item as any).dosageForm   || undefined,
+          route:        (item as any).route        || undefined,
+          eye:          (item as any).eye          || undefined,
+          dose:         item.dose         || undefined,
+          frequency:    item.frequency    || undefined,
+          duration:     item.duration     || undefined,
           instructions: item.instructions || undefined,
+          sortOrder: i,
         })),
       });
-      onDone();
+      onDone((saved as any).id);
     } catch {
       setError("কপি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
@@ -213,84 +229,6 @@ function CopyConfirmModal({ rx, patientId, onDone, onClose }: {
   );
 }
 
-// ─── Print wrapper — converts Prescription → ClinicPrescription shape ─────────
-
-function PrintWrapper({ rx, patientName, patientIdCode, age, gender, phone, onClose }: {
-  rx: Prescription;
-  patientName: string;
-  patientIdCode: string;
-  age: number | null;
-  gender: string;
-  phone: string;
-  onClose: () => void;
-}) {
-  const [fullRx, setFullRx] = useState<ClinicPrescription | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Try to fetch full clinic prescription for richer print data
-    fetchClinicPrescription(rx.id)
-      .then(setFullRx)
-      .catch(() => {
-        // Fallback: build a ClinicPrescription-shaped object from Prescription
-        setFullRx({
-          id: rx.id,
-          rxNo: (rx as any).rxNo,
-          diagnosis: rx.diagnosis,
-          instructions: rx.instructions,
-          doctorNotes: null,
-          advice: (rx as any).advice,
-          chiefComplaint: (rx as any).chiefComplaint,
-          examNotes: (rx as any).examNotes,
-          investigations: (rx as any).investigations,
-          vaRightEye: (rx as any).vaRightEye,
-          vaLeftEye: (rx as any).vaLeftEye,
-          iopRightEye: (rx as any).iopRightEye,
-          iopLeftEye: (rx as any).iopLeftEye,
-          refractionRE: (rx as any).refractionRE,
-          refractionLE: (rx as any).refractionLE,
-          followUpDate: rx.followUpDate,
-          followUpNote: rx.followUpNote,
-          createdBy: rx.createdBy,
-          createdAt: rx.createdAt,
-          updatedAt: rx.updatedAt,
-          doctor: rx.doctor ? {
-            id: rx.doctor.id,
-            nameBn: rx.doctor.nameBn,
-            nameEn: rx.doctor.nameEn,
-            designationBn: rx.doctor.designationBn,
-            qualificationBn: (rx.doctor as any).qualificationBn || "",
-            phone: (rx.doctor as any).phone || null,
-            prescriptionSettings: (rx.doctor as any).prescriptionSettings || null,
-          } : null,
-          visit: rx.visit,
-          patient: {
-            id: "",
-            patientId: patientIdCode,
-            nameBn: patientName,
-            nameEn: "",
-            phone,
-            age,
-            gender: gender as any,
-            address: null,
-          },
-          items: rx.items,
-        } as ClinicPrescription);
-      })
-      .finally(() => setLoading(false));
-  }, [rx.id]);
-
-  if (loading) return (
-    <div className="flex items-center justify-center h-40">
-      <div className="w-7 h-7 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-
-  if (!fullRx) return <p className="text-center text-gray-400 py-10">লোড করা যায়নি</p>;
-
-  return <PrescriptionPrint rx={fullRx} onClose={onClose} />;
-}
-
 // ─── Prescription Card ────────────────────────────────────────────────────────
 
 function RxCard({ rx, patientId, patientName, patientIdCode, age, gender, phone, onCopied }: {
@@ -303,15 +241,8 @@ function RxCard({ rx, patientId, patientName, patientIdCode, age, gender, phone,
   phone: string;
   onCopied: () => void;
 }) {
-  const [modal, setModal] = useState<"view" | "print" | "copy" | null>(null);
-
-  function handleDownload() {
-    // Open print dialog in a new window — browser can save as PDF
-    const win = window.open("", "_blank", "width=900,height=1100");
-    if (!win) return;
-    // We trigger print modal which has its own handlePrint; for download we just open print
-    setModal("print");
-  }
+  const router = useRouter();
+  const [modal, setModal] = useState<"view" | "copy" | null>(null);
 
   const rxLabel = (rx as any).rxNo ? `Rx# ${(rx as any).rxNo}` : `#${rx.id.slice(-8).toUpperCase()}`;
 
@@ -328,6 +259,12 @@ function RxCard({ rx, patientId, patientName, patientIdCode, age, gender, phone,
               <span className="text-xs text-gray-400 flex items-center gap-1">
                 <Clock size={11} /> {fmt(rx.createdAt)}
               </span>
+              {(rx as any).status === "FINALIZED" && (
+                <span className="text-xs bg-emerald-50 text-emerald-600 border border-emerald-100 px-1.5 py-0.5 rounded">✓ Final</span>
+              )}
+              {(rx as any).status === "DRAFT" && (
+                <span className="text-xs bg-amber-50 text-amber-600 border border-amber-100 px-1.5 py-0.5 rounded">Draft</span>
+              )}
             </div>
             {rx.doctor && (
               <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -376,13 +313,13 @@ function RxCard({ rx, patientId, patientName, patientIdCode, age, gender, phone,
             <Eye size={13} /> দেখুন
           </button>
           <button
-            onClick={() => setModal("print")}
+            onClick={() => router.push(`/dashboard/prescriptions/${rx.id}/preview`)}
             className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-800 font-medium px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <Printer size={13} /> প্রিন্ট
           </button>
           <button
-            onClick={handleDownload}
+            onClick={() => router.push(`/dashboard/prescriptions/${rx.id}/preview`)}
             className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-800 font-medium px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <Download size={13} /> PDF
@@ -402,22 +339,7 @@ function RxCard({ rx, patientId, patientName, patientIdCode, age, gender, phone,
           <RxDetailModal
             rx={rx}
             onClose={() => setModal(null)}
-            onPrint={() => setModal("print")}
-          />
-        </Modal>
-      )}
-
-      {/* Print modal */}
-      {modal === "print" && (
-        <Modal open onClose={() => setModal(null)} title="প্রেসক্রিপশন প্রিন্ট" size="xl">
-          <PrintWrapper
-            rx={rx}
-            patientName={patientName}
-            patientIdCode={patientIdCode}
-            age={age}
-            gender={gender}
-            phone={phone}
-            onClose={() => setModal(null)}
+            onPrint={() => router.push(`/dashboard/prescriptions/${rx.id}/preview`)}
           />
         </Modal>
       )}
@@ -428,7 +350,7 @@ function RxCard({ rx, patientId, patientName, patientIdCode, age, gender, phone,
           <CopyConfirmModal
             rx={rx}
             patientId={patientId}
-            onDone={() => { setModal(null); onCopied(); }}
+            onDone={(newRxId) => { setModal(null); onCopied(); router.push(`/dashboard/prescriptions/${newRxId}/preview`); }}
             onClose={() => setModal(null)}
           />
         </Modal>

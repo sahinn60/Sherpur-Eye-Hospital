@@ -93,7 +93,8 @@ export async function amendRx(req: Request, res: Response, next: NextFunction) {
 
 export async function getRx(req: Request, res: Response, next: NextFunction) {
   try {
-    const isAdmin = ["SUPER_ADMIN", "ADMIN"].includes(req.user!.role);
+    const role = req.user!.role;
+    const isAdmin = ["SUPER_ADMIN", "ADMIN", "RECEPTION"].includes(role);
     let doctorId: string | undefined;
     if (!isAdmin) {
       const doctor = await resolveDoctor(req);
@@ -106,7 +107,8 @@ export async function getRx(req: Request, res: Response, next: NextFunction) {
 
 export async function listRx(req: Request, res: Response, next: NextFunction) {
   try {
-    const isAdmin = ["SUPER_ADMIN", "ADMIN"].includes(req.user!.role);
+    const role = req.user!.role;
+    const isAdmin = ["SUPER_ADMIN", "ADMIN", "RECEPTION"].includes(role);
     const { patientId, status, rxType, page = "1", limit = "20" } = req.query as Record<string, string>;
     let doctorId: string | undefined;
     if (!isAdmin) {

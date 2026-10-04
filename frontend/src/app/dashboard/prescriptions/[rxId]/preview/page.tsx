@@ -29,8 +29,11 @@ export default function RxPreviewPage() {
   }, [rxId]);
 
   const isFinalized = rx?.status === "FINALIZED";
+  // For finalized: use frozen doctorSnapshot. For draft: use live prescriptionSettings.
   const effectiveSettings =
-    isFinalized && rx?.doctorSnapshot ? rx.doctorSnapshot : (rx?.doctor?.prescriptionSettings ?? {});
+    isFinalized && rx?.doctorSnapshot
+      ? rx.doctorSnapshot
+      : (rx?.doctor?.prescriptionSettings ?? {});
 
   const html = !loading && rx ? buildRxHTML(rx, effectiveSettings, hospital, isFinalized) : "";
 

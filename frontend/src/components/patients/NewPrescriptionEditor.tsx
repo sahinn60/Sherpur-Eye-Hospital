@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { PatientDetail, GENDER_BN } from "@/types/patient";
 import { Doctor } from "@/types/doctor";
-import { fetchPatient, createPrescription } from "@/lib/services/patientService";
+import { fetchPatient } from "@/lib/services/patientService";
+import { createRx } from "@/lib/services/prescriptionService";
 import { fetchDoctors } from "@/lib/services/doctorService";
 import { Button } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
@@ -769,7 +770,8 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
 
     setSaving(true);
     try {
-      const saved = await createPrescription(patientId, {
+      const saved = await createRx({
+        patientId,
         doctorId: doctorId || undefined,
         chiefComplaint: chiefComplaint || undefined,
         history: history || undefined,
@@ -796,14 +798,17 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
         followUpDate: followUpDate || undefined,
         followUpNote: followUpNote || undefined,
         items: medicines.map((m, i) => ({
-          medicineName: [m.route, m.medicineName, m.strength].filter(Boolean).join(" "),
-          dose: m.dose || undefined,
-          frequency: m.frequency || undefined,
-          duration: m.duration || undefined,
+          medicineName: m.medicineName,
+          strength:     m.strength     || undefined,
+          dosageForm:   m.route        || undefined,
+          route:        m.route        || undefined,
+          dose:         m.dose         || undefined,
+          frequency:    m.frequency    || undefined,
+          duration:     m.duration     || undefined,
           instructions: [m.genericName ? `(${m.genericName})` : "", m.instructions].filter(Boolean).join(" ") || undefined,
           sortOrder: i,
         })),
-      } as any);
+      });
 
       setSavedRxId((saved as any).id);
       setSuccess(true);

@@ -35,7 +35,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;li
 .rx-body{display:grid;grid-template-columns:82mm 1px 1fr;gap:0}
 .col-left{padding-right:9px;padding-top:2px}
 .col-divider{background:#c8d8ee;margin:0 5px}
-.col-right{padding-left:11px;padding-top:2px;display:flex;flex-direction:column}
+.col-right{padding-left:11px;padding-top:2px;display:flex;flex-direction:column;min-height:180mm}
 
 .sec-head{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;border-bottom:1px solid #c8d8ee;padding-bottom:2px;margin-bottom:5px;margin-top:11px;page-break-after:avoid}
 .sec-head:first-child{margin-top:0}
@@ -126,14 +126,14 @@ export function buildRxHTML(
   const showLogo   = hospital.rx_show_logo !== "false";
   const footerText = hospital.rx_footer_text       || "";
 
-  const drName  = settings.nameBn         || "";
-  const drQual  = settings.qualificationBn || "";
-  const drDesg  = settings.designationBn  || "";
-  const drSpec  = settings.specialtyBn    || "";
-  const drBmdc  = settings.bmdcNo         || "";
-  const drPhone = settings.chamberPhone   || "";
-  const sigUrl  = settings.signatureUrl   || null;
-  const sigMode = settings.signatureMode  || "handwritten";
+  const drName  = settings.nameBn          || "";
+  const drQual  = settings.qualificationBn  || "";
+  const drDesg  = settings.designationBn   || "";
+  const drSpec  = settings.specialtyBn     || "";
+  const drBmdc  = settings.bmdcNo          || "";
+  const drPhone = settings.chamberPhone    || "";
+  const sigUrl  = settings.signatureUrl    || null;
+  const sigMode = settings.signatureMode   || "handwritten";
 
   const rxNo = rx.rxNo || (rx.id ? rx.id.slice(-8).toUpperCase() : "—");
 
@@ -158,12 +158,15 @@ export function buildRxHTML(
     if (item.frequency)    parts.push(item.frequency);
     if (item.duration)     parts.push(`× ${item.duration}`);
     if (item.instructions) parts.push(`(${item.instructions})`);
+    // Build display name: medicineName + strength (stored separately)
+    const dispName = item.medicineName;
+    const strength = (item as any).strength || "";
     return `
       <li class="med-item">
         <div>
           <span class="med-num">${i + 1}.</span>
-          <span class="med-name">${item.medicineName}</span>
-          ${(item as any).strength ? `<span style="font-size:10px;color:#555;margin-left:3px">${(item as any).strength}</span>` : ""}
+          <span class="med-name">${dispName}</span>
+          ${strength ? `<span style="font-size:10px;color:#555;margin-left:4px;font-weight:600">${strength}</span>` : ""}
         </div>
         ${parts.length ? `<div class="med-detail">${parts.join('<span class="dot">·</span>')}</div>` : ""}
       </li>`;

@@ -6,7 +6,7 @@ import * as tmpl from "../controllers/template.controller";
 import * as admin from "../controllers/admin.prescription.controller";
 
 const router = Router();
-const doctorAccess = [authenticate, authorize("DOCTOR", "SUPER_ADMIN", "ADMIN")];
+const doctorAccess = [authenticate, authorize("DOCTOR", "SUPER_ADMIN", "ADMIN", "RECEPTION")];
 const doctorOnly   = [authenticate, authorize("DOCTOR")];
 const adminOnly    = [authenticate, authorize("SUPER_ADMIN", "ADMIN")];
 
