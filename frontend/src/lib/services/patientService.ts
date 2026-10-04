@@ -65,9 +65,9 @@ export async function fetchPatientPrescriptions(patientId: string, page = 1, lim
 }
 
 export async function createPrescription(patientId: string, data: {
-  visitId?: string; doctorId?: string;
-  medicines: { name: string; dose?: string; frequency?: string; duration?: string }[];
-  instructions?: string; followUpDate?: string;
+  visitId?: string; doctorId?: string; diagnosis?: string;
+  instructions?: string; advice?: string; followUpDate?: string; followUpNote?: string;
+  items: { medicineName: string; dose?: string; frequency?: string; duration?: string; instructions?: string }[];
 }) {
   const res = await api.post(`/patients/${patientId}/prescriptions`, data);
   return res.data.data;

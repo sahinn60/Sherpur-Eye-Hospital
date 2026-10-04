@@ -79,15 +79,15 @@ function VisitForm({ patientId, onDone }: { patientId: string; onDone: () => voi
 // ─── Prescription Form ────────────────────────────────────────────────────────
 
 function PrescriptionForm({ patientId, onDone }: { patientId: string; onDone: () => void }) {
-  const [medicines, setMedicines] = useState([{ name: "", dose: "", frequency: "", duration: "" }]);
+  const [items, setItems] = useState([{ medicineName: "", dose: "", frequency: "", duration: "" }]);
   const [instructions, setInstructions] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
   const [saving, setSaving] = useState(false);
 
-  function addMed() { setMedicines((m) => [...m, { name: "", dose: "", frequency: "", duration: "" }]); }
-  function removeMed(i: number) { setMedicines((m) => m.filter((_, idx) => idx !== i)); }
-  function updateMed(i: number, key: string, val: string) {
-    setMedicines((m) => m.map((med, idx) => idx === i ? { ...med, [key]: val } : med));
+  function addItem() { setItems((m) => [...m, { medicineName: "", dose: "", frequency: "", duration: "" }]); }
+  function removeItem(i: number) { setItems((m) => m.filter((_, idx) => idx !== i)); }
+  function updateItem(i: number, key: string, val: string) {
+    setItems((m) => m.map((item, idx) => idx === i ? { ...item, [key]: val } : item));
   }
 
   async function submit(e: React.FormEvent) {
@@ -95,7 +95,7 @@ function PrescriptionForm({ patientId, onDone }: { patientId: string; onDone: ()
     setSaving(true);
     try {
       await createPrescription(patientId, {
-        medicines: medicines.filter((m) => m.name.trim()),
+        items: items.filter((m) => m.medicineName.trim()),
         instructions, followUpDate,
       });
       onDone();
@@ -106,20 +106,20 @@ function PrescriptionForm({ patientId, onDone }: { patientId: string; onDone: ()
     <form onSubmit={submit} className="space-y-3 bg-gray-50 rounded-xl p-4 border border-gray-200">
       <p className="text-sm font-semibold text-gray-700">নতুন প্রেসক্রিপশন</p>
       <div className="space-y-2">
-        {medicines.map((med, i) => (
+        {items.map((item, i) => (
           <div key={i} className="grid grid-cols-4 gap-2 items-center">
-            {(["name", "dose", "frequency", "duration"] as const).map((k) => (
-              <input key={k} value={med[k]}
-                onChange={(e) => updateMed(i, k, e.target.value)}
-                placeholder={k === "name" ? "ওষুধের নাম" : k === "dose" ? "মাত্রা" : k === "frequency" ? "সময়" : "মেয়াদ"}
+            {(["medicineName", "dose", "frequency", "duration"] as const).map((k) => (
+              <input key={k} value={item[k]}
+                onChange={(e) => updateItem(i, k, e.target.value)}
+                placeholder={k === "medicineName" ? "ওষুধের নাম" : k === "dose" ? "মাত্রা" : k === "frequency" ? "সময়" : "মেয়াদ"}
                 className="text-xs border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500" />
             ))}
-            {medicines.length > 1 && (
-              <button type="button" onClick={() => removeMed(i)} className="text-red-400 hover:text-red-600 text-xs col-span-4 text-right">বাদ দিন</button>
+            {items.length > 1 && (
+              <button type="button" onClick={() => removeItem(i)} className="text-red-400 hover:text-red-600 text-xs col-span-4 text-right">বাদ দিন</button>
             )}
           </div>
         ))}
-        <button type="button" onClick={addMed} className="text-xs text-primary-600 hover:underline flex items-center gap-1">
+        <button type="button" onClick={addItem} className="text-xs text-primary-600 hover:underline flex items-center gap-1">
           <Plus size={12} /> ওষুধ যোগ
         </button>
       </div>
@@ -375,7 +375,7 @@ export function PatientProfileDrawer({ patientId, onClose, canWrite }: Props) {
                             </span>
                           )}
                         </div>
-                        {rx.medicines.length > 0 && (
+                        {(rx.items || []).length > 0 && (
                           <div className="bg-gray-50 rounded-lg overflow-hidden">
                             <table className="w-full text-xs">
                               <thead>
@@ -386,12 +386,12 @@ export function PatientProfileDrawer({ patientId, onClose, canWrite }: Props) {
                                 </tr>
                               </thead>
                               <tbody>
-                                {rx.medicines.map((m, i) => (
-                                  <tr key={i} className="border-t border-gray-100">
-                                    <td className="px-3 py-1.5 font-medium text-gray-800">{m.name}</td>
-                                    <td className="px-3 py-1.5 text-gray-600">{m.dose || "—"}</td>
-                                    <td className="px-3 py-1.5 text-gray-600">{m.frequency || "—"}</td>
-                                    <td className="px-3 py-1.5 text-gray-600">{m.duration || "—"}</td>
+                                {(rx.items || []).map((item, i) => (
+                                  <tr key={item.id || i} className="border-t border-gray-100">
+                                    <td className="px-3 py-1.5 font-medium text-gray-800">{item.medicineName}</td>
+                                    <td className="px-3 py-1.5 text-gray-600">{item.dose || "—"}</td>
+                                    <td className="px-3 py-1.5 text-gray-600">{item.frequency || "—"}</td>
+                                    <td className="px-3 py-1.5 text-gray-600">{item.duration || "—"}</td>
                                   </tr>
                                 ))}
                               </tbody>

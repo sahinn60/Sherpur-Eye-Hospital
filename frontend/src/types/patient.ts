@@ -26,16 +26,31 @@ export interface Visit {
   prescriptions:  { id: string; medicines: Medicine[]; instructions: string | null; followUpDate: string | null; createdAt: string }[];
 }
 
+export interface PrescriptionItem {
+  id:           string;
+  medicineName: string;
+  dose:         string | null;
+  frequency:    string | null;
+  duration:     string | null;
+  instructions: string | null;
+  sortOrder:    number;
+}
+
 export interface Prescription {
   id:           string;
-  medicines:    Medicine[];
+  diagnosis:    string | null;
   instructions: string | null;
+  advice:       string | null;
   followUpDate: string | null;
+  followUpNote: string | null;
   createdBy:    string | null;
   createdAt:    string;
   updatedAt:    string;
   doctor: { id: string; nameBn: string; nameEn: string; designationBn: string } | null;
   visit:  { id: string; visitDate: string; chiefComplaint: string | null } | null;
+  items:  PrescriptionItem[];
+  // legacy compat
+  medicines?: Medicine[];
 }
 
 export interface PatientAppointment {
