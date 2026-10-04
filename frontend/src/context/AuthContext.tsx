@@ -33,11 +33,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await api.post("/auth/login", { email, password });
-    setUser(res.data.data);
+    const data = res.data.data;
+    if (data.token) localStorage.setItem("auth_token", data.token);
+    setUser(data);
   }, []);
 
   const logout = useCallback(async () => {
-    await api.post("/auth/logout");
+    await api.post("/auth/logout").catch(() => {});
+    localStorage.removeItem("auth_token");
     setUser(null);
     router.push("/login");
   }, [router]);

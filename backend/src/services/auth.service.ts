@@ -11,9 +11,9 @@ const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 export const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: config.cookie.secure,
-  sameSite: (config.env === "production" ? "strict" : "lax") as "strict" | "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  secure: true,
+  sameSite: (config.env === "production" ? "none" : "lax") as "none" | "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
   path: "/",
 };
 
@@ -92,6 +92,7 @@ export async function loginService(input: LoginInput, res: Response) {
 
   const fullUser = await getUserWithPermissions(user.id);
   return {
+    token,
     id: fullUser!.id,
     email: fullUser!.email,
     name: fullUser!.name,

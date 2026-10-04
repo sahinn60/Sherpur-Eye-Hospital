@@ -33,7 +33,17 @@ app.use(
 
 app.use(
   cors({
-    origin: config.frontendUrl,
+    origin: (origin, callback) => {
+      const allowed = [
+        config.frontendUrl,
+        "https://frontend-nine-taupe-48.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+      ];
+      if (!origin || allowed.includes(origin)) callback(null, true);
+      else callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

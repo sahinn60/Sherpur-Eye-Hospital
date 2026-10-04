@@ -12,7 +12,11 @@ declare global {
 }
 
 export function authenticate(req: Request, _res: Response, next: NextFunction): void {
-  const token = req.cookies?.token as string | undefined;
+  const cookieToken = req.cookies?.token as string | undefined;
+  const headerToken = req.headers.authorization?.startsWith("Bearer ")
+    ? req.headers.authorization.slice(7)
+    : undefined;
+  const token = cookieToken || headerToken;
 
   if (!token) {
     return next(new AppError("Authentication required", 401));
