@@ -237,6 +237,76 @@ async function main() {
   console.log("   Admin: admin@sherpureyehospital.com / admin123");
   console.log("   Doctors: 3 | Services: 8 | Permissions: 14");
   console.log("   ⚠️  Update names and info from the admin panel");
+
+  // ── CMS Settings ─────────────────────────────────────────────────────────
+  const cmsSettings = [
+    // Hospital
+    { key: "hospital_name_bn",    value: "শেরপুর আধুনিক চক্ষু হাসপাতাল", group: "hospital", labelBn: "হাসপাতালের নাম (বাংলা)",    labelEn: "Hospital Name (Bangla)",    type: "text" },
+    { key: "hospital_name_en",    value: "Sherpur Modern Eye Hospital",    group: "hospital", labelBn: "হাসপাতালের নাম (ইংরেজি)",  labelEn: "Hospital Name (English)",  type: "text" },
+    { key: "hospital_tagline_bn", value: "আপনার দৃষ্টি, আমাদের অঙ্গীকার", group: "hospital", labelBn: "ট্যাগলাইন (বাংলা)",         labelEn: "Tagline (Bangla)",         type: "text" },
+    { key: "hospital_tagline_en", value: "Your Vision, Our Commitment",    group: "hospital", labelBn: "ট্যাগলাইন (ইংরেজি)",       labelEn: "Tagline (English)",       type: "text" },
+    { key: "hospital_logo",       value: "",                               group: "hospital", labelBn: "হাসপাতাল লোগো",            labelEn: "Hospital Logo",            type: "image" },
+    { key: "hospital_founded",    value: "২০১০",                           group: "hospital", labelBn: "প্রতিষ্ঠার সাল",           labelEn: "Founded Year",             type: "text" },
+    // Contact
+    { key: "contact_address_bn",  value: "শেরপুর সদর, শেরপুর",            group: "contact",  labelBn: "ঠিকানা (বাংলা)",           labelEn: "Address (Bangla)",         type: "textarea" },
+    { key: "contact_address_en",  value: "Sherpur Sadar, Sherpur",         group: "contact",  labelBn: "ঠিকানা (ইংরেজি)",         labelEn: "Address (English)",       type: "textarea" },
+    { key: "contact_phone",       value: "01700-000000",                   group: "contact",  labelBn: "ফোন নম্বর",               labelEn: "Phone Number",             type: "text" },
+    { key: "contact_email",       value: "info@sherpureyehospital.com",    group: "contact",  labelBn: "ইমেইল",                   labelEn: "Email",                    type: "text" },
+    { key: "contact_map_url",     value: "",                               group: "contact",  labelBn: "Google Map Embed URL",     labelEn: "Google Map Embed URL",     type: "url" },
+    // Hours
+    { key: "hours_weekday_bn",    value: "শনি – বৃহস্পতি: সকাল ৯টা – রাত ৮টা", group: "hours", labelBn: "সাপ্তাহিক সময়সূচি (বাংলা)", labelEn: "Weekday Hours (Bangla)", type: "text" },
+    { key: "hours_weekend_bn",    value: "শুক্রবার: বিকাল ৩টা – রাত ৮টা",      group: "hours", labelBn: "শুক্রবার সময়সূচি (বাংলা)",  labelEn: "Friday Hours (Bangla)",  type: "text" },
+    { key: "hours_emergency",     value: "জরুরি সেবা: ২৪ ঘণ্টা",               group: "hours", labelBn: "জরুরি সেবার সময়",          labelEn: "Emergency Hours",        type: "text" },
+    // Social
+    { key: "social_facebook",     value: "", group: "social", labelBn: "Facebook URL",  labelEn: "Facebook URL",  type: "url" },
+    { key: "social_youtube",      value: "", group: "social", labelBn: "YouTube URL",   labelEn: "YouTube URL",   type: "url" },
+    { key: "social_instagram",    value: "", group: "social", labelBn: "Instagram URL", labelEn: "Instagram URL", type: "url" },
+    // Hero
+    { key: "hero_title_bn",       value: "আপনার দৃষ্টি রক্ষায় আমরা প্রতিশ্রুতিবদ্ধ", group: "hero", labelBn: "হিরো শিরোনাম (বাংলা)",  labelEn: "Hero Title (Bangla)",  type: "text" },
+    { key: "hero_subtitle_bn",    value: "আধুনিক প্রযুক্তি ও অভিজ্ঞ চিকিৎসক দল",   group: "hero", labelBn: "হিরো সাবটাইটেল (বাংলা)", labelEn: "Hero Subtitle (Bangla)", type: "text" },
+    { key: "hero_image",          value: "", group: "hero", labelBn: "হিরো ব্যাকগ্রাউন্ড ছবি", labelEn: "Hero Background Image", type: "image" },
+    // Stats
+    { key: "stats_patients",      value: "৫০,০০০+", group: "stats", labelBn: "মোট রোগী",       labelEn: "Total Patients",    type: "text" },
+    { key: "stats_surgeries",     value: "১০,০০০+", group: "stats", labelBn: "সফল অপারেশন",   labelEn: "Successful Surgeries", type: "text" },
+    { key: "stats_doctors",       value: "১০+",     group: "stats", labelBn: "বিশেষজ্ঞ চিকিৎসক", labelEn: "Expert Doctors",   type: "text" },
+    { key: "stats_experience",    value: "১৫+",     group: "stats", labelBn: "বছরের অভিজ্ঞতা",  labelEn: "Years Experience",  type: "text" },
+    // About
+    { key: "about_title_bn",      value: "আমাদের সম্পর্কে",                group: "about", labelBn: "শিরোনাম (বাংলা)",    labelEn: "Title (Bangla)",    type: "text" },
+    { key: "about_desc_bn",       value: "শেরপুর আধুনিক চক্ষু হাসপাতাল একটি অত্যাধুনিক চক্ষু চিকিৎসা কেন্দ্র।", group: "about", labelBn: "বিবরণ (বাংলা)", labelEn: "Description (Bangla)", type: "textarea" },
+    { key: "about_image_1",       value: "", group: "about", labelBn: "About ছবি ১", labelEn: "About Image 1", type: "image" },
+    { key: "about_image_2",       value: "", group: "about", labelBn: "About ছবি ২", labelEn: "About Image 2", type: "image" },
+  ];
+
+  for (const s of cmsSettings) {
+    await prisma.siteSetting.upsert({
+      where: { key: s.key },
+      update: {},
+      create: s,
+    });
+  }
+
+  // ── Homepage Sections ─────────────────────────────────────────────────────
+  const homeSections = [
+    { key: "hero",         labelBn: "হিরো সেকশন",       labelEn: "Hero Section",       isVisible: true,  sortOrder: 1 },
+    { key: "stats",        labelBn: "পরিসংখ্যান",        labelEn: "Stats Section",      isVisible: true,  sortOrder: 2 },
+    { key: "services",     labelBn: "সেবাসমূহ",          labelEn: "Services Section",   isVisible: true,  sortOrder: 3 },
+    { key: "doctors",      labelBn: "চিকিৎসকগণ",         labelEn: "Doctors Section",    isVisible: true,  sortOrder: 4 },
+    { key: "about",        labelBn: "আমাদের সম্পর্কে",   labelEn: "About Section",      isVisible: true,  sortOrder: 5 },
+    { key: "gallery",      labelBn: "গ্যালারি",           labelEn: "Gallery Section",    isVisible: true,  sortOrder: 6 },
+    { key: "testimonials", labelBn: "রোগীদের মতামত",    labelEn: "Testimonials",       isVisible: true,  sortOrder: 7 },
+    { key: "news",         labelBn: "সংবাদ",             labelEn: "News Section",       isVisible: true,  sortOrder: 8 },
+    { key: "contact",      labelBn: "যোগাযোগ",           labelEn: "Contact Section",    isVisible: true,  sortOrder: 9 },
+  ];
+
+  for (const sec of homeSections) {
+    await prisma.homepageSection.upsert({
+      where: { key: sec.key },
+      update: {},
+      create: sec,
+    });
+  }
+
+  console.log("✅ CMS settings & sections seeded");
 }
 
 main()
