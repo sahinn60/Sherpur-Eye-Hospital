@@ -166,7 +166,23 @@ export function AppointmentForm() {
     setValue,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    mode: "onSubmit",
+    defaultValues: {
+      patientName: "",
+      phone: "",
+      email: "",
+      age: undefined,
+      gender: "",
+      doctorId: "",
+      serviceId: "",
+      preferredDate: "",
+      preferredTime: "",
+      reason: "",
+      message: "",
+    },
+  });
 
   // Pre-fill doctor/service from URL params
   useEffect(() => {
