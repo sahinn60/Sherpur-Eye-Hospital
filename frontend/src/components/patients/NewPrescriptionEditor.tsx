@@ -143,7 +143,7 @@ function Section({ title, badge, children, defaultOpen = true, accent = false }:
         </div>
         {open ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
       </button>
-      {open && <div className="p-5">{children}</div>}
+      {open && <div className="p-5 overflow-x-auto">{children}</div>}
     </div>
   );
 }
