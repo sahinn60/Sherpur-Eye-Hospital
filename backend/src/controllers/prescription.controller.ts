@@ -2,12 +2,22 @@ import { Request, Response, NextFunction } from "express";
 import { successResponse, AppError } from "../utils/response";
 import * as svc from "../services/prescription.service";
 import { getDoctorByUserId } from "../services/clinic.service";
+import { prisma } from "../config/database";
 import { auditCtx } from "../utils/auditCtx";
 import { cloudinary } from "../middleware/upload";
 
 // ─── Resolve doctor from request ─────────────────────────────────────────────
 
 async function resolveDoctor(req: Request) {
+  const role = req.user!.role;
+  const isAdmin = ["SUPER_ADMIN", "ADMIN", "RECEPTION"].includes(role);
+  if (isAdmin) {
+    const doctorId = req.body.doctorId || req.query.doctorId;
+    if (!doctorId) throw new AppError("চিকিৎসক নির্বাচন করুন।", 400);
+    const doctor = await prisma.doctor.findUnique({ where: { id: doctorId }, select: { id: true } });
+    if (!doctor) throw new AppError("চিকিৎসক পাওয়া যায়নি।", 404);
+    return doctor;
+  }
   return getDoctorByUserId(req.user!.userId);
 }
 
