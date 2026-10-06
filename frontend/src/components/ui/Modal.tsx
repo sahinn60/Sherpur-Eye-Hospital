@@ -65,7 +65,7 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
       <div
         ref={panelRef}
         className={cn(
-          "relative bg-white rounded-2xl shadow-2xl w-full flex flex-col max-h-[90vh]",
+          "relative bg-white rounded-2xl shadow-2xl w-full flex flex-col max-h-[90vh] overflow-x-auto",
           sizes[size]
         )}
       >
@@ -84,7 +84,7 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto flex-1 px-6 py-5">{children}</div>
+        <div className="overflow-y-auto overflow-x-auto flex-1 px-6 py-5">{children}</div>
       </div>
     </div>
   );
