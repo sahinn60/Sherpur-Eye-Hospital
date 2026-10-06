@@ -55,10 +55,13 @@ export function LiveRxPreview({ data, doctorSettings }: Props) {
 
   // Fetch selected doctor's settings when doctorId changes
   useEffect(() => {
-    if (!data.doctorId) return;
+    if (!data.doctorId) {
+      setLiveSettings({});
+      return;
+    }
     fetchDoctorRxSettings(data.doctorId).then((s) => {
-      if (s) setLiveSettings(s);
-    }).catch(() => {});
+      setLiveSettings(s ?? {});
+    }).catch(() => { setLiveSettings({}); });
   }, [data.doctorId]);
 
   const effectiveSettings = useMemo(

@@ -618,7 +618,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
       sortOrder: i,
     })),
   }), [
-    patient, chiefComplaint, history, vaRE, vaLE, iopRE, iopLE,
+    doctorId, patient, chiefComplaint, history, vaRE, vaLE, iopRE, iopLE,
     reRE, reLE, examNotes, diagnosisText, investigations,
     advice, instructions, followUpDate, followUpNote, medicines,
   ]);
