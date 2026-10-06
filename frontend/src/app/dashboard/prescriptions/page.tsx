@@ -1,15 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, FileText, Printer, Plus, UserRound } from "lucide-react";
+import { Search, FileText, Plus, UserRound, Eye } from "lucide-react";
 import { RouteGuard } from "@/components/auth";
 import { Button, Modal } from "@/components/ui";
-import { PrescriptionPrint } from "@/components/clinic";
-import {
-  fetchClinicPrescriptions, fetchClinicPrescription,
-} from "@/lib/services/clinicService";
+import { fetchRxList, Prescription } from "@/lib/services/prescriptionService";
 import { fetchPatients } from "@/lib/services/patientService";
-import { ClinicPrescription } from "@/types/clinic";
 import { Patient } from "@/types/patient";
 import { useRouter } from "next/navigation";
 
@@ -18,15 +14,15 @@ function fmt(d: string) {
 }
 
 export default function PrescriptionsPage() {
-  const [prescriptions, setPrescriptions] = useState<ClinicPrescription[]>([]);
+  const router = useRouter();
+
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [total,         setTotal]         = useState(0);
   const [totalPages,    setTotalPages]    = useState(1);
   const [page,          setPage]          = useState(1);
   const [loading,       setLoading]       = useState(true);
-  const [search,        setSearch]        = useState("");
-  const [printRx,       setPrintRx]       = useState<ClinicPrescription | null>(null);
 
-  // new prescription flow
+  // new prescription — patient search
   const [showPatientSearch, setShowPatientSearch] = useState(false);
   const [patientQuery,      setPatientQuery]      = useState("");
   const [patients,          setPatients]          = useState<Patient[]>([]);
@@ -35,43 +31,28 @@ export default function PrescriptionsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetchClinicPrescriptions({ page, limit: 20 });
-      let items = res.items || [];
-      if (search) {
-        const q = search.toLowerCase();
-        items = items.filter((rx) =>
-          rx.patient?.nameBn?.toLowerCase().includes(q) ||
-          rx.patient?.patientId?.toLowerCase().includes(q)
-        );
-      }
-      setPrescriptions(items);
+      const res = await fetchRxList({ page, limit: 20 });
+      setPrescriptions(res.items);
       setTotal(res.total);
       setTotalPages(res.totalPages);
     } finally { setLoading(false); }
-  }, [page, search]);
+  }, [page]);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { setPage(1); }, [search]);
 
-  // patient search
+  // patient search with debounce
   useEffect(() => {
     if (!patientQuery.trim()) { setPatients([]); return; }
     const t = setTimeout(async () => {
       setPatientLoading(true);
       try {
-        const res = await fetchPatients({ search: patientQuery, limit: 10 });
+        const res = await fetchPatients({ search: patientQuery.trim(), limit: 10 });
         setPatients(res.items);
-      } finally { setPatientLoading(false); }
+      } catch { setPatients([]); }
+      finally { setPatientLoading(false); }
     }, 400);
     return () => clearTimeout(t);
   }, [patientQuery]);
-
-  async function handlePrint(rx: ClinicPrescription) {
-    try {
-      const full = await fetchClinicPrescription(rx.id);
-      setPrintRx(full);
-    } catch { setPrintRx(rx); }
-  }
 
   function openNewRx() {
     setPatientQuery("");
@@ -79,16 +60,9 @@ export default function PrescriptionsPage() {
     setShowPatientSearch(true);
   }
 
-  const router = useRouter();
-
   function selectPatient(p: Patient) {
     setShowPatientSearch(false);
     router.push(`/dashboard/patients/${p.id}/prescription/new`);
-  }
-
-  function handleRxSaved(rx: ClinicPrescription) {
-    setPrintRx(rx);
-    load();
   }
 
   return (
@@ -104,16 +78,6 @@ export default function PrescriptionsPage() {
           <Button onClick={openNewRx} className="flex items-center gap-2">
             <Plus size={15} /> নতুন প্রেসক্রিপশন
           </Button>
-        </div>
-
-        {/* Search */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="relative max-w-md">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" placeholder="রোগীর নাম বা আইডি..." value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary-500" />
-          </div>
         </div>
 
         {/* List */}
@@ -142,11 +106,14 @@ export default function PrescriptionsPage() {
                   {rx.doctor && (
                     <span className="text-xs text-gray-500">— ডা. {rx.doctor.nameBn}</span>
                   )}
+                  <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${rx.status === "FINALIZED" ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
+                    {rx.status === "FINALIZED" ? "চূড়ান্ত" : "ড্রাফট"}
+                  </span>
                 </div>
-                {rx.diagnosis && <p className="text-xs text-gray-600 mb-1">{rx.diagnosis}</p>}
+                {rx.diagnosis && <p className="text-xs text-gray-600 mb-1 truncate">{rx.diagnosis}</p>}
                 <div className="flex flex-wrap gap-1">
-                  {rx.items.slice(0, 4).map((item) => (
-                    <span key={item.id} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                  {rx.items.slice(0, 4).map((item, i) => (
+                    <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
                       {item.medicineName}
                     </span>
                   ))}
@@ -158,10 +125,12 @@ export default function PrescriptionsPage() {
                   <p className="text-xs text-emerald-600 mt-1">ফলো-আপ: {fmt(rx.followUpDate)}</p>
                 )}
               </div>
-              <Button size="sm" variant="secondary" onClick={() => handlePrint(rx)}
-                className="flex items-center gap-1.5 flex-shrink-0">
-                <Printer size={13} /> প্রিন্ট
-              </Button>
+              <button
+                onClick={() => router.push(`/dashboard/prescriptions/${rx.id}/preview`)}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors shrink-0"
+              >
+                <Eye size={13} /> দেখুন
+              </button>
             </div>
           ))}
         </div>
@@ -188,10 +157,10 @@ export default function PrescriptionsPage() {
               <input
                 autoFocus
                 type="text"
-                placeholder="নাম, ফোন বা আইডি দিয়ে খুঁজুন..."
+                placeholder="নাম, ফোন নম্বর বা রোগী আইডি (PAT-...) দিয়ে খুঁজুন"
                 value={patientQuery}
                 onChange={(e) => setPatientQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
 
@@ -203,12 +172,12 @@ export default function PrescriptionsPage() {
               </div>
             )}
 
-            {!patientLoading && patients.length === 0 && patientQuery.trim() && (
+            {!patientLoading && patientQuery.trim() && patients.length === 0 && (
               <p className="text-sm text-gray-400 text-center py-6">কোনো রোগী পাওয়া যায়নি</p>
             )}
 
-            {!patientLoading && patients.length === 0 && !patientQuery.trim() && (
-              <p className="text-sm text-gray-400 text-center py-6">রোগীর নাম বা আইডি টাইপ করুন</p>
+            {!patientLoading && !patientQuery.trim() && (
+              <p className="text-sm text-gray-400 text-center py-6">রোগীর নাম, ফোন বা আইডি টাইপ করুন</p>
             )}
 
             <div className="space-y-2 max-h-72 overflow-y-auto">
@@ -230,14 +199,6 @@ export default function PrescriptionsPage() {
               ))}
             </div>
           </div>
-        </Modal>
-      )}
-
-
-      {/* Print modal */}
-      {printRx && (
-        <Modal open onClose={() => setPrintRx(null)} title="প্রেসক্রিপশন প্রিন্ট" size="xl">
-          <PrescriptionPrint rx={printRx} onClose={() => setPrintRx(null)} />
         </Modal>
       )}
     </RouteGuard>
