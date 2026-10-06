@@ -7,7 +7,7 @@ import * as admin from "../controllers/admin.prescription.controller";
 
 const router = Router();
 const doctorAccess = [authenticate, authorize("DOCTOR", "SUPER_ADMIN", "ADMIN", "RECEPTION")];
-const doctorOnly   = [authenticate, authorize("DOCTOR")];
+const doctorOnly   = [authenticate, authorize("DOCTOR", "SUPER_ADMIN", "ADMIN", "RECEPTION")];
 const adminOnly    = [authenticate, authorize("SUPER_ADMIN", "ADMIN")];
 
 // ── Admin: Hospital Rx Settings ───────────────────────────────────────────────
