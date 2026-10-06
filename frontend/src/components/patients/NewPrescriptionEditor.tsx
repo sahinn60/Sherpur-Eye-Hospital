@@ -132,7 +132,7 @@ function Section({ title, badge, children, defaultOpen = true, accent = false }:
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={`rounded-2xl border overflow-hidden shadow-sm bg-white ${accent ? "border-blue-200" : "border-gray-200"}`}>
+    <div className={`rounded-2xl border shadow-sm bg-white ${accent ? "border-blue-200" : "border-gray-200"}`}>
       <button type="button" onClick={() => setOpen((v) => !v)}
         className={`w-full flex items-center justify-between px-5 py-3.5 transition-colors ${accent ? "bg-blue-50 hover:bg-blue-100" : "bg-gray-50 hover:bg-gray-100"}`}>
         <div className="flex items-center gap-2.5">
@@ -767,7 +767,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
 
         {/* ── LEFT: Editor ── */}
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
 
           <PatientBanner patient={patient} />
 

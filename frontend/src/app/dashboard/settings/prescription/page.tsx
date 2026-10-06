@@ -366,7 +366,7 @@ function DoctorSettingsCard({ doctor, isExpanded, onToggle, onSaved }: {
   const hasSettings = !!existing;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-200">
       {/* Card header — always visible */}
       <button type="button" onClick={onToggle}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors text-left">
@@ -398,7 +398,7 @@ function DoctorSettingsCard({ doctor, isExpanded, onToggle, onSaved }: {
 
       {/* Expanded form */}
       {isExpanded && (
-        <div className="border-t border-gray-100 p-5 space-y-5">
+        <div className="border-t border-gray-100 p-5 space-y-5 overflow-x-auto">
           {error && (
             <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
               <AlertCircle size={14} /> {error}
