@@ -10,7 +10,7 @@ export const PRINT_CSS = `
 *{margin:0;padding:0;box-sizing:border-box}
 @page{size:A4 portrait;margin:14mm 12mm 12mm}
 html,body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;line-height:1.4}
+body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;line-height:1.4;padding:20px 24px 0}
 
 .rx-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:7px;border-bottom:2px solid #1a3a6b;margin-bottom:8px;page-break-inside:avoid}
 .hosp-left{display:flex;align-items:flex-start;gap:9px}
@@ -191,7 +191,7 @@ export function buildRxHTML(
 <style>${PRINT_CSS}</style>
 </head>
 <body>
-<div style="width:186mm;min-height:277mm;margin:0 auto;position:relative;background:#fff;padding-top:6mm">
+<div style="min-height:277mm;position:relative;background:#fff">
 
 ${!isFinalized ? `<div class="draft-stamp">DRAFT</div>` : ""}
 
