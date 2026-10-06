@@ -217,7 +217,7 @@ ${!isFinalized ? `<div class="draft-stamp">DRAFT</div>` : ""}
 ${patient ? `
 <div class="patient-bar">
   <div class="pb-cell"><span class="pb-label">Patient</span><span class="pb-value">${patient.nameBn}</span></div>
-  <div class="pb-cell"><span class="pb-label">Patient ID</span><span class="pb-value">${patient.patientId}</span></div>
+  <div class="pb-cell"><span class="pb-label">Serial No.</span><span class="pb-value">${parseInt(patient.patientId?.split("-").pop() || "0", 10) || patient.patientId}</span></div>
   <div class="pb-cell"><span class="pb-label">Age / Sex</span><span class="pb-value">${patient.age ? `${patient.age}y` : "—"} / ${genderChar}</span></div>
   <div class="pb-cell"><span class="pb-label">Date</span><span class="pb-value">${fmtEn(rx.createdAt)}</span></div>
   <div class="pb-cell"><span class="pb-label">Rx No.</span><span class="pb-value" style="font-family:monospace;font-size:9.5px">${rxNo}</span></div>

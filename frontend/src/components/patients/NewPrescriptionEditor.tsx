@@ -22,6 +22,8 @@ import { Doctor } from "@/types/doctor";
 import { fetchPatient } from "@/lib/services/patientService";
 import { createRx } from "@/lib/services/prescriptionService";
 import { fetchDoctors } from "@/lib/services/doctorService";
+import { fetchHospitalRxSettings, fetchDoctorRxSettings } from "@/lib/services/adminPrescriptionService";
+import { buildRxHTML } from "@/components/clinic/rxPrintBuilder";
 import { Button } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { TemplateSelector } from "@/components/prescriptions";
@@ -673,8 +675,21 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           sortOrder: i,
         })),
       });
-      setSavedRxId((saved as any).id);
+      const rxId = (saved as any).id;
+      setSavedRxId(rxId);
       setSuccess(true);
+      // Auto-print
+      try {
+        const [hospRes, drRes] = await Promise.allSettled([
+          fetchHospitalRxSettings(),
+          doctorId ? fetchDoctorRxSettings(doctorId) : Promise.resolve(null),
+        ]);
+        const hosp = hospRes.status === "fulfilled" ? hospRes.value : {};
+        const drSettings = drRes.status === "fulfilled" ? drRes.value ?? {} : {};
+        const html = buildRxHTML(saved as any, drSettings, hosp, false);
+        const win = window.open("", "_blank", "width=900,height=1200");
+        if (win) { win.document.write(html); win.document.close(); win.focus(); setTimeout(() => win.print(), 600); }
+      } catch {}
     } catch (e: any) {
       setError(e?.response?.data?.message || "Failed to save prescription.");
     } finally {
@@ -709,17 +724,18 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
       <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
         <CheckCircle size={32} className="text-emerald-500" />
       </div>
-      <p className="text-lg font-bold text-gray-800">Prescription Saved!</p>
+      <p className="text-lg font-bold text-gray-800">প্রেসক্রিপশন সংরক্ষিত হয়েছে!</p>
+      <p className="text-sm text-gray-400">প্রিন্ট উইন্ডো খুলছে...</p>
       <div className="flex items-center gap-3">
         {savedRxId && (
           <button onClick={() => router.push(`/dashboard/prescriptions/${savedRxId}/preview`)}
             className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-sm">
-            Preview &amp; Print
+            প্রিভিউ দেখুন
           </button>
         )}
         <button onClick={() => router.push(`/dashboard/patients?open=${patientId}&tab=prescriptions`)}
           className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-          Back to Patient
+          রোগীর পেজে যান
         </button>
       </div>
     </div>
