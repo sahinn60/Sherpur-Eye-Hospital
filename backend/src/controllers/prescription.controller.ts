@@ -124,14 +124,14 @@ export async function listRx(req: Request, res: Response, next: NextFunction) {
   try {
     const role = req.user!.role;
     const isAdmin = ["SUPER_ADMIN", "ADMIN", "RECEPTION"].includes(role);
-    const { patientId, status, rxType, page = "1", limit = "20" } = req.query as Record<string, string>;
+    const { patientId, status, rxType, search, page = "1", limit = "20" } = req.query as Record<string, string>;
     let doctorId: string | undefined;
     if (!isAdmin) {
       const doctor = await resolveDoctor(req);
       doctorId = doctor.id;
     }
     const data = await svc.listPrescriptions({
-      doctorId, patientId, status, rxType,
+      doctorId, patientId, status, rxType, search,
       page: parseInt(page), limit: parseInt(limit),
     });
     res.json(successResponse("ok", data));

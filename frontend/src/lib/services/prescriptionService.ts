@@ -117,7 +117,7 @@ export async function fetchRx(rxId: string): Promise<Prescription> {
 }
 
 export async function fetchRxList(params?: {
-  patientId?: string; status?: string; rxType?: string; page?: number; limit?: number;
+  patientId?: string; status?: string; rxType?: string; search?: string; page?: number; limit?: number;
 }): Promise<{ items: Prescription[]; total: number; totalPages: number; page: number }> {
   const res = await api.get(BASE, { params });
   return res.data.data;

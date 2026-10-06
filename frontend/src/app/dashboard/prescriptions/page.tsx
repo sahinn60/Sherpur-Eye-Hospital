@@ -21,6 +21,8 @@ export default function PrescriptionsPage() {
   const [totalPages,    setTotalPages]    = useState(1);
   const [page,          setPage]          = useState(1);
   const [loading,       setLoading]       = useState(true);
+  const [search,        setSearch]        = useState("");
+  const [searchInput,   setSearchInput]   = useState("");
 
   // new prescription — patient search
   const [showPatientSearch, setShowPatientSearch] = useState(false);
@@ -31,14 +33,20 @@ export default function PrescriptionsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetchRxList({ page, limit: 20 });
+      const res = await fetchRxList({ page, limit: 20, search: search || undefined });
       setPrescriptions(res.items);
       setTotal(res.total);
       setTotalPages(res.totalPages);
     } finally { setLoading(false); }
-  }, [page]);
+  }, [page, search]);
 
   useEffect(() => { load(); }, [load]);
+
+  // debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => { setSearch(searchInput); setPage(1); }, 400);
+    return () => clearTimeout(t);
+  }, [searchInput]);
 
   // patient search with debounce
   useEffect(() => {
@@ -78,6 +86,21 @@ export default function PrescriptionsPage() {
           <Button onClick={openNewRx} className="flex items-center gap-2">
             <Plus size={15} /> নতুন প্রেসক্রিপশন
           </Button>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="রোগীর নাম, ফোন, রোগী আইডি বা RX নম্বর দিয়ে খুঁজুন..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+          />
+          {searchInput && (
+            <button onClick={() => { setSearchInput(""); setSearch(""); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+          )}
         </div>
 
         {/* List */}

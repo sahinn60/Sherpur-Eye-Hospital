@@ -296,13 +296,23 @@ export async function getPrescription(rxId: string, doctorId?: string) {
 
 export async function listPrescriptions(query: {
   doctorId?: string; patientId?: string; status?: string; rxType?: string;
-  page: number; limit: number;
+  search?: string; page: number; limit: number;
 }) {
   const where: any = {};
   if (query.doctorId)  where.doctorId  = query.doctorId;
   if (query.patientId) where.patientId = query.patientId;
   if (query.status)    where.status    = query.status;
   if (query.rxType)    where.rxType    = query.rxType;
+  if (query.search) {
+    const s = query.search.trim();
+    where.OR = [
+      { rxNo:    { contains: s, mode: "insensitive" } },
+      { patient: { nameBn: { contains: s, mode: "insensitive" } } },
+      { patient: { nameEn: { contains: s, mode: "insensitive" } } },
+      { patient: { phone:  { contains: s } } },
+      { patient: { patientId: { contains: s, mode: "insensitive" } } },
+    ];
+  }
 
   const skip = (query.page - 1) * query.limit;
   const [total, items] = await Promise.all([
