@@ -212,7 +212,10 @@ function SaveTemplateModal({ data, onClose }: { data: TemplateData; onClose: () 
       });
       setDone(true);
       setTimeout(onClose, 1200);
-    } catch { setErr("Save করতে সমস্যা হয়েছে"); }
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || "";
+      setErr(`Save হয়নি: ${msg}`);
+    }
     finally { setSaving(false); }
   }
 

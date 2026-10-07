@@ -8,7 +8,7 @@ async function resolveDoctor(req: Request) {
 }
 
 function isAdmin(req: Request) {
-  return ["SUPER_ADMIN", "ADMIN"].includes(req.user!.role);
+  return ["SUPER_ADMIN", "ADMIN", "RECEPTION"].includes(req.user!.role);
 }
 
 export async function list(req: Request, res: Response, next: NextFunction) {
