@@ -22,13 +22,14 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface Props {
-  patient?:  Patient | null;
-  onSubmit:  (data: any) => Promise<void>;
-  onCancel:  () => void;
-  error?:    string;
+  patient?:     Patient | null;
+  initialData?: { nameBn?: string; phone?: string; age?: number; gender?: string };
+  onSubmit:     (data: any) => Promise<void>;
+  onCancel:     () => void;
+  error?:       string;
 }
 
-export function PatientForm({ patient, onSubmit, onCancel, error }: Props) {
+export function PatientForm({ patient, initialData, onSubmit, onCancel, error }: Props) {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: patient ? {
@@ -42,7 +43,12 @@ export function PatientForm({ patient, onSubmit, onCancel, error }: Props) {
       emergencyContact: patient.emergencyContact || "",
       medicalHistory:   patient.medicalHistory || "",
       notes:            patient.notes || "",
-    } : { gender: "OTHER" },
+    } : {
+      gender:  (initialData?.gender as any) || "OTHER",
+      nameBn:  initialData?.nameBn || "",
+      phone:   initialData?.phone  || "",
+      age:     initialData?.age    ?? undefined,
+    },
   });
 
   const f = (label: string, name: keyof FormData, type = "text", placeholder = "") => (

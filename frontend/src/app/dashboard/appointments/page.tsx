@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Filter, CalendarDays, CheckCircle, XCircle, Clock } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Filter, CalendarDays, CheckCircle, XCircle, Clock, FileText, UserPlus, X } from "lucide-react";
 import { RouteGuard } from "@/components/auth";
-import { Button } from "@/components/ui";
+import { Button, Modal } from "@/components/ui";
+import { PatientForm } from "@/components/patients";
 import api from "@/lib/api";
 import { Appointment, AppointmentStatus } from "@/types/appointment";
+import { fetchPatients, createPatient } from "@/lib/services/patientService";
 
 const STATUS_BN: Record<AppointmentStatus, string> = {
   PENDING: "অপেক্ষমাণ", CONFIRMED: "নিশ্চিত", CANCELLED: "বাতিল",
@@ -24,12 +27,16 @@ function fmt(d: string) {
 }
 
 export default function AppointmentsPage() {
+  const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [total,        setTotal]        = useState(0);
   const [loading,      setLoading]      = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [search,       setSearch]       = useState("");
   const [actionId,     setActionId]     = useState<string | null>(null);
+  const [rxLoading,    setRxLoading]    = useState<string | null>(null);
+  const [registerAppt, setRegisterAppt] = useState<Appointment | null>(null);
+  const [formError,    setFormError]    = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -61,6 +68,35 @@ export default function AppointmentsPage() {
     } catch (e: any) {
       alert(e?.response?.data?.message || "সমস্যা হয়েছে");
     } finally { setActionId(null); }
+  }
+
+  async function goToPrescription(a: Appointment) {
+    setRxLoading(a.id);
+    try {
+      const res = await fetchPatients({ search: a.phone, limit: 5 });
+      const match = res.items.find((p) => p.phone === a.phone);
+      if (match) {
+        router.push(`/dashboard/patients/${match.id}/prescription/new`);
+      } else {
+        setRegisterAppt(a);
+        setFormError("");
+      }
+    } catch {
+      setRegisterAppt(a);
+      setFormError("");
+    } finally { setRxLoading(null); }
+  }
+
+  async function handleRegisterAndPrescribe(data: any) {
+    setFormError("");
+    try {
+      const patient = await createPatient(data);
+      setRegisterAppt(null);
+      router.push(`/dashboard/patients/${patient.id}/prescription/new`);
+    } catch (e: any) {
+      setFormError(e?.response?.data?.message || "রেজিস্ট্রেশন হয়নি");
+      throw e;
+    }
   }
 
   const statCounts = {
@@ -123,7 +159,7 @@ export default function AppointmentsPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  {["রিকোয়েস্ট আইডি", "রোগী", "চিকিৎসক", "তারিখ / সময়", "স্ট্যাটাস", "কার্যক্রম"].map((h) => (
+                  {["রিকোয়েস্ট আইডি", "রোগী", "চিকিৎসক", "তারিখ / সময়", "স্ট্যাটাস", "কার্যক্রম", ""].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
                   ))}
                 </tr>
@@ -131,13 +167,13 @@ export default function AppointmentsPage() {
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
                   Array.from({ length: 6 }).map((_, i) => (
-                    <tr key={i}>{Array.from({ length: 6 }).map((_, j) => (
+                    <tr key={i}>{Array.from({ length: 7 }).map((_, j) => (
                       <td key={j} className="px-4 py-3"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>
                     ))}</tr>
                   ))
                 ) : appointments.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center">
+                    <td colSpan={7} className="py-16 text-center">
                       <CalendarDays size={40} className="mx-auto text-gray-200 mb-3" />
                       <p className="text-gray-400 text-sm">কোনো অ্যাপয়েন্টমেন্ট পাওয়া যায়নি</p>
                     </td>
@@ -193,6 +229,18 @@ export default function AppointmentsPage() {
                         )}
                       </div>
                     </td>
+                    <td className="px-4 py-3">
+                      <button
+                        disabled={rxLoading === a.id}
+                        onClick={() => goToPrescription(a)}
+                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-semibold whitespace-nowrap"
+                      >
+                        {rxLoading === a.id
+                          ? <span className="animate-spin inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
+                          : <FileText size={12} />}
+                        প্রেসক্রিপশন
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -200,6 +248,28 @@ export default function AppointmentsPage() {
           </div>
         </div>
       </div>
+
+      {registerAppt && (
+        <Modal open onClose={() => setRegisterAppt(null)}
+          title="রোগী নিবন্ধন করুন" size="lg">
+          <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700">
+            <p className="font-semibold mb-1">⚠️ এই ফোন নম্বরে কোনো রোগী পাওয়া যায়নি</p>
+            <p className="text-xs">অ্যাপয়েন্টমেন্ট: <span className="font-mono">{registerAppt.patientName}</span> — {registerAppt.phone}</p>
+          </div>
+          <PatientForm
+            patient={null}
+            initialData={{
+              nameBn: registerAppt.patientName,
+              phone: registerAppt.phone,
+              age: registerAppt.age,
+              gender: registerAppt.gender,
+            }}
+            onSubmit={handleRegisterAndPrescribe}
+            onCancel={() => setRegisterAppt(null)}
+            error={formError}
+          />
+        </Modal>
+      )}
     </RouteGuard>
   );
 }
