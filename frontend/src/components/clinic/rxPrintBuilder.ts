@@ -32,10 +32,10 @@ body{font-family:'Times New Roman',Times,serif;font-size:10.5px;color:#1a1a1a;li
 .pb-label{font-size:8px;text-transform:uppercase;letter-spacing:0.04em;color:#777;display:block;margin-bottom:1px}
 .pb-value{font-weight:700;color:#1a1a1a;font-size:10px}
 
-.rx-body{display:flex;flex-direction:row;gap:0;align-items:stretch}
+.rx-body{display:flex;flex-direction:row;gap:0;align-items:stretch;position:relative}
 .col-left{width:78mm;flex-shrink:0;padding-right:8px;padding-top:2px}
 .col-divider{width:1px;background:#c8d8ee;margin:0 4px;flex-shrink:0}
-.col-right{flex:1;padding-left:10px;padding-top:2px;display:flex;flex-direction:column}
+.col-right{flex:1;padding-left:10px;padding-top:2px;padding-bottom:60px}
 
 .sec-head{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;border-bottom:1px solid #c8d8ee;padding-bottom:2px;margin-bottom:4px;margin-top:9px;page-break-after:avoid}
 .sec-head:first-child{margin-top:0}
@@ -73,7 +73,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:10.5px;color:#1a1a1a;li
 .fu-date{font-size:10.5px;font-weight:700;color:#1a1a1a}
 .fu-note{font-size:9px;color:#555}
 
-.sig-area{margin-top:auto;padding-top:14px;display:flex;justify-content:flex-end;page-break-inside:avoid}
+.sig-area{position:absolute;bottom:0;right:0;padding-top:14px;page-break-inside:avoid}
 .sig-block{text-align:center;min-width:130px}
 .sig-img{height:38px;max-width:120px;object-fit:contain;display:block;margin:0 auto 4px}
 .sig-line{border-top:1px solid #333;padding-top:3px;margin-top:2px}
@@ -296,17 +296,17 @@ ${patient ? `
         ${rx.followUpNote ? `<span class="fu-note">— ${rx.followUpNote}</span>` : ""}
       </div>
     </div>` : ""}
+  </div>
+</div>
 
-    <div class="sig-area">
-      <div class="sig-block">
-        ${sigHTML}
-        <div class="sig-line">
-          <div class="sig-name">${drName}</div>
-          ${drQual ? `<div class="sig-qual">${drQual}</div>` : ""}
-          ${drSpec ? `<div class="sig-qual">${drSpec}</div>` : ""}
-          ${drBmdc ? `<div class="sig-bmdc">BMDC Reg. No: ${drBmdc}</div>` : ""}
-        </div>
-      </div>
+<div class="sig-area">
+  <div class="sig-block">
+    ${sigHTML}
+    <div class="sig-line">
+      <div class="sig-name">${drName}</div>
+      ${drQual ? `<div class="sig-qual">${drQual}</div>` : ""}
+      ${drSpec ? `<div class="sig-qual">${drSpec}</div>` : ""}
+      ${drBmdc ? `<div class="sig-bmdc">BMDC Reg. No: ${drBmdc}</div>` : ""}
     </div>
   </div>
 </div>
