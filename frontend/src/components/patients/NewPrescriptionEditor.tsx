@@ -1119,9 +1119,13 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
             প্রিভিউ দেখুন
           </button>
         )}
-        <button onClick={() => router.push(`/dashboard/patients?open=${patientId}&tab=prescriptions`)}
+        <button onClick={() => router.push("/dashboard/prescriptions")}
           className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-          রোগীর পেজে যান
+          প্রেসক্রিপশন তালিকা
+        </button>
+        <button onClick={() => router.push(`/dashboard/patients?open=${patientId}&tab=prescriptions`)}
+          className="px-4 py-2.5 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+          রোগীর পেজ
         </button>
       </div>
     </div>
