@@ -28,7 +28,7 @@ import { Button } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { TemplateSelector } from "@/components/prescriptions";
 import { PrescriptionTemplate, TEMPLATE_CATEGORIES } from "@/types/prescription";
-import { createTemplate, fetchTemplates } from "@/lib/services/templateService";
+import { createTemplate, fetchTemplates, updateTemplate, deleteTemplate } from "@/lib/services/templateService";
 import { LiveRxPreview } from "@/components/clinic";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -283,27 +283,71 @@ function SectionTemplateDropdown({ onApply }: { onApply: (t: PrescriptionTemplat
   const [open, setOpen] = useState(false);
   const [templates, setTemplates] = useState<PrescriptionTemplate[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editNameBn, setEditNameBn] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setEditingId(null); }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  async function load() {
+    setLoading(true);
+    try {
+      const res = await fetchTemplates({ limit: 50 });
+      setTemplates(res.items);
+    } catch {}
+    finally { setLoading(false); }
+  }
+
   async function handleOpen() {
     const next = !open;
     setOpen(next);
-    if (next) {
-      setLoading(true);
-      try {
-        const res = await fetchTemplates({ limit: 50 });
-        setTemplates(res.items);
-      } catch {}
-      finally { setLoading(false); }
+    setEditingId(null);
+    if (next) load();
+  }
+
+  async function handleDelete(e: React.MouseEvent, t: PrescriptionTemplate) {
+    e.stopPropagation();
+    if (!confirm(`"${t.nameBn || t.name}" মুছে ফেলতে চান?`)) return;
+    try {
+      await deleteTemplate(t.id);
+      setTemplates((prev) => prev.filter((x) => x.id !== t.id));
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "মুছতে পারেনি");
     }
+  }
+
+  function startEdit(e: React.MouseEvent, t: PrescriptionTemplate) {
+    e.stopPropagation();
+    setEditingId(t.id);
+    setEditName(t.name);
+    setEditNameBn(t.nameBn);
+  }
+
+  async function saveEdit(e: React.MouseEvent, t: PrescriptionTemplate) {
+    e.stopPropagation();
+    if (!editNameBn.trim() && !editName.trim()) return;
+    setEditSaving(true);
+    try {
+      const updated = await updateTemplate(t.id, {
+        name: editName || editNameBn,
+        nameBn: editNameBn || editName,
+        category: t.category,
+        isShared: t.isShared,
+        items: t.items,
+      });
+      setTemplates((prev) => prev.map((x) => x.id === t.id ? updated : x));
+      setEditingId(null);
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Save হয়নি");
+    } finally { setEditSaving(false); }
   }
 
   return (
@@ -314,26 +358,58 @@ function SectionTemplateDropdown({ onApply }: { onApply: (t: PrescriptionTemplat
         <BookOpen size={11} /> Template
       </button>
       {open && (
-        <div className="absolute z-40 top-full right-0 mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+        <div className="absolute z-40 top-full right-0 mt-1 w-72 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
           <div className="px-3 py-2 border-b border-gray-100">
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Saved Templates</p>
           </div>
-          <div className="max-h-56 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto">
             {loading ? (
               <div className="px-4 py-3 text-xs text-gray-400">লোড হচ্ছে...</div>
             ) : templates.length === 0 ? (
               <div className="px-4 py-3 text-xs text-gray-400">কোনো template নেই</div>
             ) : templates.map((t) => (
-              <button key={t.id} type="button"
-                onClick={() => { onApply(t); setOpen(false); }}
-                className="w-full text-left px-3 py-2.5 hover:bg-emerald-50 transition-colors border-b border-gray-50 last:border-0">
-                <p className="text-xs font-semibold text-gray-800 truncate">{t.nameBn || t.name}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">
-                  {t.items.length > 0 && `${t.items.length}টি medicine`}
-                  {t.diagnosis && ` · diagnosis`}
-                  {t.advice && ` · advice`}
-                </p>
-              </button>
+              <div key={t.id} className="border-b border-gray-50 last:border-0">
+                {editingId === t.id ? (
+                  <div className="px-3 py-2 bg-blue-50 space-y-1.5">
+                    <input value={editNameBn} onChange={(e) => setEditNameBn(e.target.value)}
+                      placeholder="বাংলা নাম" onClick={(e) => e.stopPropagation()}
+                      className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                    <input value={editName} onChange={(e) => setEditName(e.target.value)}
+                      placeholder="English name" onClick={(e) => e.stopPropagation()}
+                      className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                    <div className="flex gap-1.5 justify-end">
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setEditingId(null); }}
+                        className="px-2 py-1 text-[10px] text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50">বাতিল</button>
+                      <button type="button" onClick={(e) => saveEdit(e, t)} disabled={editSaving}
+                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                        <Check size={10} /> {editSaving ? "..." : "Save"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 px-2 py-2 hover:bg-emerald-50 transition-colors group">
+                    <button type="button" onClick={() => { onApply(t); setOpen(false); }}
+                      className="flex-1 text-left min-w-0">
+                      <p className="text-xs font-semibold text-gray-800 truncate">{t.nameBn || t.name}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        {t.items.length > 0 && `${t.items.length}টি medicine`}
+                        {t.diagnosis && ` · diagnosis`}
+                        {t.advice && ` · advice`}
+                      </p>
+                    </button>
+                    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button type="button" onClick={(e) => startEdit(e, t)} title="Edit"
+                        className="p-1 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                        <Edit2 size={11} />
+                      </button>
+                      <button type="button" onClick={(e) => handleDelete(e, t)} title="Delete"
+                        className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
