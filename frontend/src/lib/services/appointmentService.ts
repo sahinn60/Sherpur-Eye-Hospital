@@ -29,3 +29,10 @@ export async function updateAppointmentStatus(
   if (!res.data.data) throw new Error("Failed to update");
   return res.data.data;
 }
+
+export async function fetchAppointments(params: {
+  status?: string; search?: string;
+} = {}): Promise<Appointment[]> {
+  const res = await api.get<ApiResponse<Appointment[]>>("/appointments", { params });
+  return res.data.data || [];
+}

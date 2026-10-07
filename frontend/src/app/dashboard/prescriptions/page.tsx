@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, FileText, Plus, UserRound, Eye } from "lucide-react";
+import { Search, FileText, Plus, UserRound, Eye, CalendarDays } from "lucide-react";
 import { RouteGuard } from "@/components/auth";
 import { Button, Modal } from "@/components/ui";
 import { fetchRxList, Prescription } from "@/lib/services/prescriptionService";
-import { fetchPatients } from "@/lib/services/patientService";
+import { fetchPatients, createPatient } from "@/lib/services/patientService";
+import { fetchAppointments } from "@/lib/services/appointmentService";
 import { Patient } from "@/types/patient";
+import { Appointment } from "@/types/appointment";
 import { useRouter } from "next/navigation";
 
 function fmt(d: string) {
@@ -26,9 +28,14 @@ export default function PrescriptionsPage() {
 
   // new prescription — patient search
   const [showPatientSearch, setShowPatientSearch] = useState(false);
+  const [tab,               setTab]               = useState<"patients" | "appointments">("patients");
   const [patientQuery,      setPatientQuery]      = useState("");
   const [patients,          setPatients]          = useState<Patient[]>([]);
   const [patientLoading,    setPatientLoading]    = useState(false);
+  const [apptQuery,         setApptQuery]         = useState("");
+  const [appointments,      setAppointments]      = useState<Appointment[]>([]);
+  const [apptLoading,       setApptLoading]       = useState(false);
+  const [apptRxLoading,     setApptRxLoading]     = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -62,9 +69,58 @@ export default function PrescriptionsPage() {
     return () => clearTimeout(t);
   }, [patientQuery]);
 
+  // appointment search with debounce
+  useEffect(() => {
+    if (tab !== "appointments") return;
+    const t = setTimeout(async () => {
+      setApptLoading(true);
+      try {
+        const items = await fetchAppointments();
+        const q = apptQuery.trim().toLowerCase();
+        setAppointments(q
+          ? items.filter((a) =>
+              a.patientName.toLowerCase().includes(q) ||
+              a.phone.includes(q) ||
+              a.requestId.toLowerCase().includes(q)
+            )
+          : items.slice(0, 20)
+        );
+      } catch { setAppointments([]); }
+      finally { setApptLoading(false); }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [apptQuery, tab]);
+
+  async function goToRxFromAppt(a: Appointment) {
+    setApptRxLoading(a.id);
+    try {
+      const res = await fetchPatients({ search: a.phone, limit: 5 });
+      const match = res.items.find((p) => p.phone === a.phone);
+      if (match) {
+        setShowPatientSearch(false);
+        router.push(`/dashboard/patients/${match.id}/prescription/new`);
+      } else {
+        // auto-register then go
+        const patient = await createPatient({
+          nameBn: a.patientName,
+          nameEn: a.patientName,
+          phone: a.phone,
+          age: a.age,
+          gender: a.gender,
+        });
+        setShowPatientSearch(false);
+        router.push(`/dashboard/patients/${patient.id}/prescription/new`);
+      }
+    } catch { alert("রোগী তৈরি হয়নি"); }
+    finally { setApptRxLoading(null); }
+  }
+
   function openNewRx() {
     setPatientQuery("");
     setPatients([]);
+    setApptQuery("");
+    setAppointments([]);
+    setTab("patients");
     setShowPatientSearch(true);
   }
 
@@ -175,51 +231,100 @@ export default function PrescriptionsPage() {
       {showPatientSearch && (
         <Modal open onClose={() => setShowPatientSearch(false)} title="রোগী নির্বাচন করুন" size="md">
           <div className="space-y-4">
-            <div className="relative">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                autoFocus
-                type="text"
-                placeholder="নাম, ফোন নম্বর বা রোগী আইডি (PAT-...) দিয়ে খুঁজুন"
-                value={patientQuery}
-                onChange={(e) => setPatientQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
+
+            {/* Tabs */}
+            <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
+              <button type="button"
+                onClick={() => setTab("patients")}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                  tab === "patients" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                }`}>
+                <UserRound size={13} /> নিবন্ধিত রোগী
+              </button>
+              <button type="button"
+                onClick={() => setTab("appointments")}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                  tab === "appointments" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                }`}>
+                <CalendarDays size={13} /> অ্যাপয়েন্টমেন্ট
+              </button>
             </div>
 
-            {patientLoading && (
-              <div className="space-y-2">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />
-                ))}
-              </div>
-            )}
+            {/* Search input */}
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              {tab === "patients" ? (
+                <input autoFocus type="text"
+                  placeholder="নাম, ফোন নম্বর বা রোগী আইডি (PAT-...) দিয়ে খুঁজুন"
+                  value={patientQuery} onChange={(e) => setPatientQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+              ) : (
+                <input autoFocus type="text"
+                  placeholder="নাম, ফোন নম্বর বা রিকোয়েস্ট আইডি দিয়ে খুঁজুন"
+                  value={apptQuery} onChange={(e) => setApptQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+              )}
+            </div>
 
-            {!patientLoading && patientQuery.trim() && patients.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-6">কোনো রোগী পাওয়া যায়নি</p>
-            )}
-
-            {!patientLoading && !patientQuery.trim() && (
-              <p className="text-sm text-gray-400 text-center py-6">রোগীর নাম, ফোন বা আইডি টাইপ করুন</p>
-            )}
-
+            {/* Results */}
             <div className="space-y-2 max-h-72 overflow-y-auto">
-              {patients.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => selectPatient(p)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
-                >
-                  <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                    <UserRound size={16} className="text-blue-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">{p.nameBn}</p>
-                    <p className="text-xs text-gray-500">{p.patientId} · {p.phone}</p>
-                  </div>
-                  {p.age && <span className="text-xs text-gray-400 shrink-0">{p.age} বছর</span>}
-                </button>
-              ))}
+              {tab === "patients" ? (
+                <>
+                  {patientLoading && Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />
+                  ))}
+                  {!patientLoading && patientQuery.trim() && patients.length === 0 && (
+                    <p className="text-sm text-gray-400 text-center py-6">কোনো রোগী পাওয়া যায়নি</p>
+                  )}
+                  {!patientLoading && !patientQuery.trim() && (
+                    <p className="text-sm text-gray-400 text-center py-6">রোগীর নাম, ফোন বা আইডি টাইপ করুন</p>
+                  )}
+                  {patients.map((p) => (
+                    <button key={p.id} onClick={() => selectPatient(p)}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors text-left">
+                      <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                        <UserRound size={16} className="text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900">{p.nameBn}</p>
+                        <p className="text-xs text-gray-500">{p.patientId} · {p.phone}</p>
+                      </div>
+                      {p.age && <span className="text-xs text-gray-400 shrink-0">{p.age} বছর</span>}
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <>
+                  {apptLoading && Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />
+                  ))}
+                  {!apptLoading && appointments.length === 0 && (
+                    <p className="text-sm text-gray-400 text-center py-6">কোনো অ্যাপয়েন্টমেন্ট পাওয়া যায়নি</p>
+                  )}
+                  {appointments.map((a) => (
+                    <button key={a.id} onClick={() => goToRxFromAppt(a)}
+                      disabled={apptRxLoading === a.id}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-left disabled:opacity-60">
+                      <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                        {apptRxLoading === a.id
+                          ? <span className="animate-spin w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full" />
+                          : <CalendarDays size={16} className="text-emerald-600" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900">{a.patientName}</p>
+                        <p className="text-xs text-gray-500">{a.phone} · {a.requestId}</p>
+                      </div>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${
+                        a.status === "CONFIRMED" ? "bg-blue-100 text-blue-700" :
+                        a.status === "PENDING"   ? "bg-amber-100 text-amber-700" :
+                        "bg-gray-100 text-gray-500"
+                      }`}>
+                        {a.status === "CONFIRMED" ? "নিশ্চিত" : a.status === "PENDING" ? "অপেক্ষমাণ" : a.status}
+                      </span>
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         </Modal>
