@@ -28,7 +28,7 @@ import { Button } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { TemplateSelector } from "@/components/prescriptions";
 import { PrescriptionTemplate, TEMPLATE_CATEGORIES } from "@/types/prescription";
-import { createTemplate } from "@/lib/services/templateService";
+import { createTemplate, fetchTemplates } from "@/lib/services/templateService";
 import { LiveRxPreview } from "@/components/clinic";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -277,12 +277,77 @@ function SaveTemplateModal({ data, onClose }: { data: TemplateData; onClose: () 
   );
 }
 
+// ─── Section Template Dropdown ─────────────────────────────────────────────────────
+
+function SectionTemplateDropdown({ onApply }: { onApply: (t: PrescriptionTemplate) => void }) {
+  const [open, setOpen] = useState(false);
+  const [templates, setTemplates] = useState<PrescriptionTemplate[]>([]);
+  const [loading, setLoading] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  async function handleOpen() {
+    setOpen((v) => !v);
+    if (templates.length === 0) {
+      setLoading(true);
+      try {
+        const res = await fetchTemplates({ limit: 50 });
+        setTemplates(res.items);
+      } catch {}
+      finally { setLoading(false); }
+    }
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={(e) => { e.stopPropagation(); handleOpen(); }}
+        title="Template থেকে ফিল করুন"
+        className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors">
+        <BookOpen size={11} /> Template
+      </button>
+      {open && (
+        <div className="absolute z-40 top-full right-0 mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+          <div className="px-3 py-2 border-b border-gray-100">
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Saved Templates</p>
+          </div>
+          <div className="max-h-56 overflow-y-auto">
+            {loading ? (
+              <div className="px-4 py-3 text-xs text-gray-400">লোড হচ্ছে...</div>
+            ) : templates.length === 0 ? (
+              <div className="px-4 py-3 text-xs text-gray-400">কোনো template নেই</div>
+            ) : templates.map((t) => (
+              <button key={t.id} type="button"
+                onClick={() => { onApply(t); setOpen(false); }}
+                className="w-full text-left px-3 py-2.5 hover:bg-emerald-50 transition-colors border-b border-gray-50 last:border-0">
+                <p className="text-xs font-semibold text-gray-800 truncate">{t.nameBn || t.name}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  {t.items.length > 0 && `${t.items.length}টি medicine`}
+                  {t.diagnosis && ` · diagnosis`}
+                  {t.advice && ` · advice`}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
-function Section({ title, badge, children, defaultOpen = true, accent = false, enabled = true, onToggle, onSettings }: {
+function Section({ title, badge, children, defaultOpen = true, accent = false, enabled = true, onToggle, onSettings, onLoadTemplate }: {
   title: string; badge?: number; children: React.ReactNode;
   defaultOpen?: boolean; accent?: boolean;
   enabled?: boolean; onToggle?: () => void; onSettings?: () => void;
+  onLoadTemplate?: (t: PrescriptionTemplate) => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -297,6 +362,7 @@ function Section({ title, badge, children, defaultOpen = true, accent = false, e
           {!enabled && <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full ml-1">OFF</span>}
         </button>
         <div className="flex items-center gap-2 shrink-0">
+          {onLoadTemplate && <SectionTemplateDropdown onApply={onLoadTemplate} />}
           {onSettings && (
             <button type="button" onClick={(e) => { e.stopPropagation(); onSettings(); }}
               title="Template হিসেবে Save করুন"
@@ -1049,7 +1115,8 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
 
           {/* Chief Complaint & History */}
           <Section title="Chief Complaint & History" enabled={secComplaint} onToggle={() => setSecComplaint((v) => !v)}
-            onSettings={() => setTemplateModal(buildTemplateData({ complaint: true }))}>
+            onSettings={() => setTemplateModal(buildTemplateData({ complaint: true }))}
+            onLoadTemplate={applyTemplate}>
             <div className="space-y-4">
               <div>
                 <label className={lbl}>Chief Complaint</label>
@@ -1066,7 +1133,8 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
 
           {/* Eye Examination */}
           <Section title="Eye Examination" accent enabled={secExam} onToggle={() => setSecExam((v) => !v)}
-            onSettings={() => setTemplateModal(buildTemplateData({}))}>
+            onSettings={() => setTemplateModal(buildTemplateData({}))}
+            onLoadTemplate={applyTemplate}>
             <div className="space-y-5">
               {/* VA */}
               <div>
@@ -1230,7 +1298,8 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
 
           {/* Diagnosis */}
           <Section title="Diagnosis" badge={diagnoses.length} enabled={secDiagnosis} onToggle={() => setSecDiagnosis((v) => !v)}
-            onSettings={() => setTemplateModal(buildTemplateData({ diagnosis: true }))}>
+            onSettings={() => setTemplateModal(buildTemplateData({ diagnosis: true }))}
+            onLoadTemplate={applyTemplate}>
             <div className="space-y-4">
               <DiagnosisPanel items={diagnoses} onChange={setDiagnoses} />
               <div>
@@ -1242,19 +1311,22 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
 
           {/* Medicines */}
           <Section title="℞ Medicines" badge={medicines.length} accent enabled={secMedicines} onToggle={() => setSecMedicines((v) => !v)}
-            onSettings={() => setTemplateModal(buildTemplateData({ medicines: true }))}>
+            onSettings={() => setTemplateModal(buildTemplateData({ medicines: true }))}
+            onLoadTemplate={applyTemplate}>
             <MedicinePanel medicines={medicines} onChange={setMedicines} />
           </Section>
 
           {/* Advice */}
           <Section title="Advice & Instructions" defaultOpen={false} enabled={secAdvice} onToggle={() => setSecAdvice((v) => !v)}
-            onSettings={() => setTemplateModal(buildTemplateData({ advice: true }))}>
+            onSettings={() => setTemplateModal(buildTemplateData({ advice: true }))}
+            onLoadTemplate={applyTemplate}>
             <AdvicePanel advice={advice} instructions={instructions} onAdviceChange={setAdvice} onInstructionsChange={setInstructions} />
           </Section>
 
           {/* Follow-up */}
           <Section title="Follow-up" enabled={secFollowUp} onToggle={() => setSecFollowUp((v) => !v)}
-            onSettings={() => setTemplateModal(buildTemplateData({ followUp: true }))}>
+            onSettings={() => setTemplateModal(buildTemplateData({ followUp: true }))}
+            onLoadTemplate={applyTemplate}>
             <FollowUpPanel followUpDate={followUpDate} followUpNote={followUpNote} onDateChange={setFollowUpDate} onNoteChange={setFollowUpNote} />
           </Section>
 
