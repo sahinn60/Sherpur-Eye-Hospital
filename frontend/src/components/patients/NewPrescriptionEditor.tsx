@@ -174,24 +174,41 @@ function uid() { return Math.random().toString(36).slice(2, 9); }
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
-function Section({ title, badge, children, defaultOpen = true, accent = false }: {
+function Section({ title, badge, children, defaultOpen = true, accent = false, enabled = true, onToggle }: {
   title: string; badge?: number; children: React.ReactNode;
   defaultOpen?: boolean; accent?: boolean;
+  enabled?: boolean; onToggle?: () => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={`rounded-2xl border shadow-sm bg-white ${accent ? "border-blue-200" : "border-gray-200"}`}>
-      <button type="button" onClick={() => setOpen((v) => !v)}
-        className={`w-full flex items-center justify-between px-5 py-3.5 transition-colors ${accent ? "bg-blue-50 hover:bg-blue-100" : "bg-gray-50 hover:bg-gray-100"}`}>
-        <div className="flex items-center gap-2.5">
+    <div className={`rounded-2xl border shadow-sm bg-white transition-opacity ${!enabled ? "opacity-50" : ""} ${accent ? "border-blue-200" : "border-gray-200"}`}>
+      <div className={`flex items-center justify-between px-5 py-3.5 ${accent ? "bg-blue-50" : "bg-gray-50"}`}>
+        <button type="button" onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2.5 flex-1 min-w-0">
           <span className={`text-xs font-bold uppercase tracking-widest ${accent ? "text-blue-700" : "text-gray-600"}`}>{title}</span>
           {badge !== undefined && badge > 0 && (
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${accent ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}`}>{badge}</span>
           )}
+          {!enabled && <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full ml-1">OFF</span>}
+        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {onToggle && (
+            <button type="button" onClick={(e) => { e.stopPropagation(); onToggle(); }}
+              title={enabled ? "Section বন্ধ করুন" : "Section চালু করুন"}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                enabled ? "bg-blue-500" : "bg-gray-300"
+              }`}>
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                enabled ? "translate-x-4" : "translate-x-1"
+              }`} />
+            </button>
+          )}
+          <button type="button" onClick={() => setOpen((v) => !v)}>
+            {open ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+          </button>
         </div>
-        {open ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
-      </button>
-      {open && <div className="p-5 overflow-x-auto">{children}</div>}
+      </div>
+      {open && <div className={`p-5 overflow-x-auto ${!enabled ? "pointer-events-none select-none" : ""}`}>{children}</div>}
     </div>
   );
 }
@@ -590,6 +607,14 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
   // Mobile: toggle preview panel
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
+  // Section on/off toggles
+  const [secComplaint,  setSecComplaint]  = useState(true);
+  const [secExam,       setSecExam]       = useState(true);
+  const [secDiagnosis,  setSecDiagnosis]  = useState(true);
+  const [secMedicines,  setSecMedicines]  = useState(true);
+  const [secAdvice,     setSecAdvice]     = useState(true);
+  const [secFollowUp,   setSecFollowUp]   = useState(true);
+
   // Doctor
   const [doctorId, setDoctorId] = useState("");
 
@@ -715,7 +740,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (!diagnosisText && medicines.length === 0) {
+    if ((!secDiagnosis || !diagnosisText) && (!secMedicines || medicines.length === 0)) {
       setError("Please add at least one diagnosis or medicine.");
       return;
     }
@@ -724,15 +749,15 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
       const saved = await createRx({
         patientId,
         doctorId: doctorId || undefined,
-        chiefComplaint: chiefComplaint || undefined,
-        history: history || undefined,
-        vaRightEye: vaRE || undefined,
-        vaLeftEye: vaLE || undefined,
-        iopRightEye: iopRE || undefined,
-        iopLeftEye: iopLE || undefined,
-        refractionRE: (reRE.sph || reRE.cyl || reRE.axis || reRE.add) ? JSON.stringify(reRE) : undefined,
-        refractionLE: (reLE.sph || reLE.cyl || reLE.axis || reLE.add) ? JSON.stringify(reLE) : undefined,
-        examNotes: [
+        chiefComplaint: secComplaint ? chiefComplaint || undefined : undefined,
+        history: secComplaint ? history || undefined : undefined,
+        vaRightEye: secExam ? vaRE || undefined : undefined,
+        vaLeftEye: secExam ? vaLE || undefined : undefined,
+        iopRightEye: secExam ? iopRE || undefined : undefined,
+        iopLeftEye: secExam ? iopLE || undefined : undefined,
+        refractionRE: secExam && (reRE.sph || reRE.cyl || reRE.axis || reRE.add) ? JSON.stringify(reRE) : undefined,
+        refractionLE: secExam && (reLE.sph || reLE.cyl || reLE.axis || reLE.add) ? JSON.stringify(reLE) : undefined,
+        examNotes: secExam ? [
           examNotes,
           (Object.values(examOD).some(Boolean) || Object.values(examOS).some(Boolean)) ? JSON.stringify({ OD: examOD, OS: examOS }) : "",
           cataractOD   ? `Cataract OD: ${cataractOD}`     : "",
@@ -740,14 +765,14 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           surgeryRecOD ? `Surgery OD: ${surgeryRecOD}`    : "",
           surgeryRecOS ? `Surgery OS: ${surgeryRecOS}`    : "",
           clinicalNotes ? `Clinical Notes: ${clinicalNotes}` : "",
-        ].filter(Boolean).join("\n") || undefined,
-        diagnosis: diagnosisText || undefined,
-        investigations: investigations || undefined,
-        advice: advice || undefined,
-        instructions: instructions || undefined,
-        followUpDate: followUpDate || undefined,
-        followUpNote: followUpNote || undefined,
-        items: medicines.map((m, i) => ({
+        ].filter(Boolean).join("\n") || undefined : undefined,
+        diagnosis: secDiagnosis ? diagnosisText || undefined : undefined,
+        investigations: secDiagnosis ? investigations || undefined : undefined,
+        advice: secAdvice ? advice || undefined : undefined,
+        instructions: secAdvice ? instructions || undefined : undefined,
+        followUpDate: secFollowUp ? followUpDate || undefined : undefined,
+        followUpNote: secFollowUp ? followUpNote || undefined : undefined,
+        items: (secMedicines ? medicines : []).map((m, i) => ({
           medicineName: m.medicineName,
           strength:     m.strength     || undefined,
           dosageForm:   m.route        || undefined,
@@ -881,7 +906,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           </div>
 
           {/* Chief Complaint & History */}
-          <Section title="Chief Complaint & History">
+          <Section title="Chief Complaint & History" enabled={secComplaint} onToggle={() => setSecComplaint((v) => !v)}>
             <div className="space-y-4">
               <div>
                 <label className={lbl}>Chief Complaint</label>
@@ -897,7 +922,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           </Section>
 
           {/* Eye Examination */}
-          <Section title="Eye Examination" accent>
+          <Section title="Eye Examination" accent enabled={secExam} onToggle={() => setSecExam((v) => !v)}>
             <div className="space-y-5">
               {/* VA */}
               <div>
@@ -1060,7 +1085,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           </Section>
 
           {/* Diagnosis */}
-          <Section title="Diagnosis" badge={diagnoses.length}>
+          <Section title="Diagnosis" badge={diagnoses.length} enabled={secDiagnosis} onToggle={() => setSecDiagnosis((v) => !v)}>
             <div className="space-y-4">
               <DiagnosisPanel items={diagnoses} onChange={setDiagnoses} />
               <div>
@@ -1071,17 +1096,17 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           </Section>
 
           {/* Medicines */}
-          <Section title="℞ Medicines" badge={medicines.length} accent>
+          <Section title="℞ Medicines" badge={medicines.length} accent enabled={secMedicines} onToggle={() => setSecMedicines((v) => !v)}>
             <MedicinePanel medicines={medicines} onChange={setMedicines} />
           </Section>
 
           {/* Advice */}
-          <Section title="Advice & Instructions" defaultOpen={false}>
+          <Section title="Advice & Instructions" defaultOpen={false} enabled={secAdvice} onToggle={() => setSecAdvice((v) => !v)}>
             <AdvicePanel advice={advice} instructions={instructions} onAdviceChange={setAdvice} onInstructionsChange={setInstructions} />
           </Section>
 
           {/* Follow-up */}
-          <Section title="Follow-up">
+          <Section title="Follow-up" enabled={secFollowUp} onToggle={() => setSecFollowUp((v) => !v)}>
             <FollowUpPanel followUpDate={followUpDate} followUpNote={followUpNote} onDateChange={setFollowUpDate} onNoteChange={setFollowUpNote} />
           </Section>
 
