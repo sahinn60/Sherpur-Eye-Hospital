@@ -8,93 +8,93 @@ function fmtEn(d?: string | null) {
 
 export const PRINT_CSS = `
 *{margin:0;padding:0;box-sizing:border-box}
-@page{size:A4 portrait;margin:14mm 12mm 12mm}
+@page{size:A4 portrait;margin:10mm 10mm 14mm}
 html,body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;line-height:1.4;padding:20px 24px 0}
+body{font-family:'Times New Roman',Times,serif;font-size:10.5px;color:#1a1a1a;line-height:1.35;padding:14px 18px 0}
 
-.rx-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:7px;border-bottom:2px solid #1a3a6b;margin-bottom:8px;page-break-inside:avoid}
-.hosp-left{display:flex;align-items:flex-start;gap:9px}
-.hosp-logo{width:54px;height:54px;object-fit:contain;flex-shrink:0}
-.hosp-name-bn{font-size:16px;font-weight:700;color:#1a3a6b;line-height:1.2;letter-spacing:-0.01em}
-.hosp-name-en{font-size:10.5px;color:#2a4a8b;font-weight:600;margin-top:2px}
-.hosp-contact{font-size:9px;color:#555;margin-top:4px;line-height:1.6}
+.rx-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:6px;border-bottom:2px solid #1a3a6b;margin-bottom:7px;page-break-inside:avoid}
+.hosp-left{display:flex;align-items:flex-start;gap:8px}
+.hosp-logo{width:48px;height:48px;object-fit:contain;flex-shrink:0}
+.hosp-name-bn{font-size:15px;font-weight:700;color:#1a3a6b;line-height:1.2;letter-spacing:-0.01em}
+.hosp-name-en{font-size:9.5px;color:#2a4a8b;font-weight:600;margin-top:2px}
+.hosp-contact{font-size:8.5px;color:#555;margin-top:3px;line-height:1.5}
 .hosp-contact span{display:block}
-.dr-block{text-align:right;min-width:170px;max-width:200px}
-.dr-name{font-size:13.5px;font-weight:700;color:#1a1a1a;font-family:'Times New Roman',serif}
-.dr-qual{font-size:9.5px;color:#333;margin-top:2px;line-height:1.5}
-.dr-spec{font-size:9.5px;color:#1a3a6b;font-weight:600;margin-top:1px}
-.dr-bmdc{font-size:9px;color:#666;margin-top:2px}
-.dr-chamber{font-size:9px;color:#666;margin-top:1px}
+.dr-block{text-align:right;min-width:160px;max-width:190px}
+.dr-name{font-size:13px;font-weight:700;color:#1a1a1a;font-family:'Times New Roman',serif}
+.dr-qual{font-size:9px;color:#333;margin-top:1px;line-height:1.45}
+.dr-spec{font-size:9px;color:#1a3a6b;font-weight:600;margin-top:1px}
+.dr-bmdc{font-size:8.5px;color:#666;margin-top:1px}
+.dr-chamber{font-size:8.5px;color:#666;margin-top:1px}
 
-.patient-bar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;border:1px solid #b8cce4;border-radius:2px;margin-bottom:9px;overflow:hidden;font-size:10px;page-break-inside:avoid}
-.pb-cell{padding:4px 7px;border-right:1px solid #b8cce4}
+.patient-bar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;border:1px solid #b8cce4;border-radius:2px;margin-bottom:7px;overflow:hidden;font-size:9.5px;page-break-inside:avoid}
+.pb-cell{padding:3px 6px;border-right:1px solid #b8cce4}
 .pb-cell:last-child{border-right:none}
-.pb-label{font-size:8.5px;text-transform:uppercase;letter-spacing:0.04em;color:#777;display:block;margin-bottom:1px}
-.pb-value{font-weight:700;color:#1a1a1a;font-size:10.5px}
+.pb-label{font-size:8px;text-transform:uppercase;letter-spacing:0.04em;color:#777;display:block;margin-bottom:1px}
+.pb-value{font-weight:700;color:#1a1a1a;font-size:10px}
 
-.rx-body{display:grid;grid-template-columns:82mm 1px 1fr;gap:0}
-.col-left{padding-right:9px;padding-top:2px}
-.col-divider{background:#c8d8ee;margin:0 5px}
-.col-right{padding-left:11px;padding-top:2px;display:flex;flex-direction:column;min-height:180mm}
+.rx-body{display:grid;grid-template-columns:78mm 1px 1fr;gap:0}
+.col-left{padding-right:8px;padding-top:2px}
+.col-divider{background:#c8d8ee;margin:0 4px}
+.col-right{padding-left:10px;padding-top:2px;display:flex;flex-direction:column}
 
-.sec-head{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;border-bottom:1px solid #c8d8ee;padding-bottom:2px;margin-bottom:5px;margin-top:11px;page-break-after:avoid}
+.sec-head{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;border-bottom:1px solid #c8d8ee;padding-bottom:2px;margin-bottom:4px;margin-top:9px;page-break-after:avoid}
 .sec-head:first-child{margin-top:0}
-.clinical-text{font-size:10.5px;color:#222;line-height:1.65;white-space:pre-line}
+.clinical-text{font-size:10px;color:#222;line-height:1.55;white-space:pre-line}
 
-.eye-tbl{width:100%;border-collapse:collapse;font-size:9.5px;margin-bottom:3px;page-break-inside:avoid}
-.eye-tbl th{background:#e8f0fb;color:#1a3a6b;padding:3px 5px;border:1px solid #b8cce4;font-size:8.5px;font-weight:700;text-align:center}
+.eye-tbl{width:100%;border-collapse:collapse;font-size:9px;margin-bottom:3px;page-break-inside:avoid}
+.eye-tbl th{background:#e8f0fb;color:#1a3a6b;padding:2px 4px;border:1px solid #b8cce4;font-size:8px;font-weight:700;text-align:center}
 .eye-tbl th.left{text-align:left}
-.eye-tbl td{padding:3px 5px;border:1px solid #d4e2f0;text-align:center;font-size:9.5px}
-.eye-tbl td.eye-lbl{font-weight:700;text-align:left;background:#f4f8fd;font-size:9px;color:#1a3a6b}
+.eye-tbl td{padding:2px 4px;border:1px solid #d4e2f0;text-align:center;font-size:9px}
+.eye-tbl td.eye-lbl{font-weight:700;text-align:left;background:#f4f8fd;font-size:8.5px;color:#1a3a6b}
 
-.ref-tbl{width:100%;border-collapse:collapse;font-size:9px;margin-bottom:3px;page-break-inside:avoid}
-.ref-tbl th{background:#e8f0fb;color:#1a3a6b;padding:2px 4px;border:1px solid #b8cce4;font-size:8px;font-weight:700;text-align:center}
-.ref-tbl td{padding:2px 4px;border:1px solid #d4e2f0;text-align:center;font-size:9px}
-.ref-tbl td.lbl{font-weight:700;text-align:left;background:#f4f8fd;color:#1a3a6b;padding-left:5px}
+.ref-tbl{width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:3px;page-break-inside:avoid}
+.ref-tbl th{background:#e8f0fb;color:#1a3a6b;padding:2px 3px;border:1px solid #b8cce4;font-size:7.5px;font-weight:700;text-align:center}
+.ref-tbl td{padding:2px 3px;border:1px solid #d4e2f0;text-align:center;font-size:8.5px}
+.ref-tbl td.lbl{font-weight:700;text-align:left;background:#f4f8fd;color:#1a3a6b;padding-left:4px}
 
-.diag-text{font-size:11px;font-weight:700;color:#1a1a1a;line-height:1.55;padding:3px 0}
+.diag-text{font-size:10.5px;font-weight:700;color:#1a1a1a;line-height:1.5;padding:2px 0}
 
-.rx-sym-row{display:flex;align-items:flex-start;gap:5px;margin-bottom:7px;page-break-after:avoid}
-.rx-sym{font-size:36px;font-weight:900;color:#1a3a6b;line-height:0.85;font-family:'Times New Roman',serif;flex-shrink:0;margin-top:2px}
-.rx-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;padding-top:10px}
+.rx-sym-row{display:flex;align-items:flex-start;gap:4px;margin-bottom:5px;page-break-after:avoid}
+.rx-sym{font-size:30px;font-weight:900;color:#1a3a6b;line-height:0.85;font-family:'Times New Roman',serif;flex-shrink:0;margin-top:2px}
+.rx-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;padding-top:8px}
 
 .med-list{list-style:none}
-.med-item{padding:6px 0;border-bottom:1px dashed #dde8f5;page-break-inside:avoid}
+.med-item{padding:4px 0;border-bottom:1px dashed #dde8f5;page-break-inside:avoid}
 .med-item:last-child{border-bottom:none}
-.med-num{font-size:10.5px;font-weight:700;color:#1a3a6b;margin-right:3px}
-.med-name{font-size:12px;font-weight:700;color:#1a1a1a}
-.med-detail{font-size:10px;color:#444;margin-top:2px;padding-left:16px;line-height:1.6}
-.med-detail .dot{margin:0 5px;color:#bbb}
+.med-num{font-size:10px;font-weight:700;color:#1a3a6b;margin-right:3px}
+.med-name{font-size:11px;font-weight:700;color:#1a1a1a}
+.med-detail{font-size:9.5px;color:#444;margin-top:1px;padding-left:14px;line-height:1.5}
+.med-detail .dot{margin:0 4px;color:#bbb}
 
-.advice-text{font-size:10px;color:#222;line-height:1.75;white-space:pre-line}
+.advice-text{font-size:9.5px;color:#222;line-height:1.65;white-space:pre-line}
 
-.followup-box{border:1px solid #b8cce4;border-radius:2px;padding:5px 8px;margin-top:10px;display:inline-flex;align-items:center;gap:7px;page-break-inside:avoid}
-.fu-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#1a3a6b}
-.fu-date{font-size:11px;font-weight:700;color:#1a1a1a}
-.fu-note{font-size:9.5px;color:#555}
+.followup-box{border:1px solid #b8cce4;border-radius:2px;padding:4px 7px;margin-top:8px;display:inline-flex;align-items:center;gap:6px;page-break-inside:avoid}
+.fu-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#1a3a6b}
+.fu-date{font-size:10.5px;font-weight:700;color:#1a1a1a}
+.fu-note{font-size:9px;color:#555}
 
-.sig-area{margin-top:auto;padding-top:20px;display:flex;justify-content:flex-end;page-break-inside:avoid}
-.sig-block{text-align:center;min-width:150px}
-.sig-img{height:44px;max-width:140px;object-fit:contain;display:block;margin:0 auto 5px}
-.sig-line{border-top:1px solid #333;padding-top:4px;margin-top:2px}
-.sig-name{font-size:11px;font-weight:700;color:#1a1a1a}
-.sig-qual{font-size:9px;color:#555;line-height:1.5;margin-top:1px}
-.sig-bmdc{font-size:8.5px;color:#777;margin-top:1px}
+.sig-area{margin-top:auto;padding-top:14px;display:flex;justify-content:flex-end;page-break-inside:avoid}
+.sig-block{text-align:center;min-width:130px}
+.sig-img{height:38px;max-width:120px;object-fit:contain;display:block;margin:0 auto 4px}
+.sig-line{border-top:1px solid #333;padding-top:3px;margin-top:2px}
+.sig-name{font-size:10.5px;font-weight:700;color:#1a1a1a}
+.sig-qual{font-size:8.5px;color:#555;line-height:1.4;margin-top:1px}
+.sig-bmdc{font-size:8px;color:#777;margin-top:1px}
 
-.rx-footer{border-top:1px solid #c8d8ee;margin-top:8px;padding-top:5px;display:flex;justify-content:space-between;align-items:center;page-break-inside:avoid}
-.footer-left{font-size:8.5px;color:#888;line-height:1.6}
-.footer-right{font-size:8.5px;color:#aaa;font-family:monospace;text-align:right}
+.rx-footer{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #c8d8ee;padding:4px 18px;display:flex;justify-content:space-between;align-items:center;background:#fff}
+.footer-left{font-size:8px;color:#888;line-height:1.5}
+.footer-right{font-size:8px;color:#aaa;font-family:monospace;text-align:right}
 
 .draft-stamp{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:72px;font-weight:900;color:rgba(239,68,68,0.08);pointer-events:none;white-space:nowrap;z-index:0;letter-spacing:0.1em}
 
 @media print{
+  html,body{height:auto!important;overflow:visible!important}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
   .rx-header,.patient-bar{page-break-inside:avoid}
   .med-item{page-break-inside:avoid}
   .sig-area{page-break-inside:avoid}
-  .rx-footer{page-break-inside:avoid}
-  .rx-body{page-break-inside:auto}
-  .col-left,.col-right{page-break-inside:auto}
+  .rx-body{page-break-inside:avoid}
+  .rx-footer{position:fixed;bottom:0;left:0;right:0}
 }
 `;
 
@@ -192,7 +192,7 @@ export function buildRxHTML(
 <style>${PRINT_CSS}</style>
 </head>
 <body>
-<div style="min-height:277mm;position:relative;background:#fff">
+<div style="position:relative;background:#fff">
 
 ${!isFinalized ? `<div class="draft-stamp">DRAFT</div>` : ""}
 
@@ -226,11 +226,11 @@ ${patient ? `
 
 <div class="rx-body">
   <div class="col-left">
-    ${rx.chiefComplaint ? `<div class="sec-head">Chief Complaint</div><p class="clinical-text">${rx.chiefComplaint}</p>` : ""}
-    ${rx.history ? `<div class="sec-head">History</div><p class="clinical-text">${rx.history}</p>` : ""}
+    ${rx.chiefComplaint ? `<div class="sec-head">প্রধান অভিযোগ</div><p class="clinical-text">${rx.chiefComplaint}</p>` : ""}
+    ${rx.history ? `<div class="sec-head">রোগের ইতিহাস</div><p class="clinical-text">${rx.history}</p>` : ""}
 
     ${(hasVA || hasIOP) ? `
-    <div class="sec-head">Eye Examination</div>
+    <div class="sec-head">চোখ পরীক্ষা</div>
     <table class="eye-tbl">
       <thead><tr>
         <th class="left" style="width:30%">Eye</th>
@@ -252,7 +252,7 @@ ${patient ? `
     </table>` : ""}
 
     ${hasRef ? `
-    <div class="sec-head" style="margin-top:8px">Refraction</div>
+    <div class="sec-head" style="margin-top:8px">রিফ্র্যাকশন</div>
     <table class="ref-tbl">
       <thead><tr>
         <th style="text-align:left;padding-left:5px">Eye</th>
@@ -270,9 +270,9 @@ ${patient ? `
       </tbody>
     </table>` : ""}
 
-    ${rx.diagnosis ? `<div class="sec-head">Diagnosis</div><p class="diag-text">${rx.diagnosis}</p>` : ""}
-    ${rx.investigations ? `<div class="sec-head">Investigation</div><p class="clinical-text">${rx.investigations}</p>` : ""}
-    ${rx.examNotes ? `<div class="sec-head">Examination Notes</div><p class="clinical-text" style="font-size:9.5px;color:#444">${rx.examNotes}</p>` : ""}
+    ${rx.diagnosis ? `<div class="sec-head">রোগ নির্ণয়</div><p class="diag-text">${rx.diagnosis}</p>` : ""}
+    ${rx.investigations ? `<div class="sec-head">পরীক্ষা-নিরীক্ষা</div><p class="clinical-text">${rx.investigations}</p>` : ""}
+    ${rx.examNotes ? `<div class="sec-head">পরীক্ষার বিবরণ</div><p class="clinical-text" style="font-size:9px;color:#444;word-break:break-word;overflow-wrap:break-word">${rx.examNotes}</p>` : ""}
   </div>
 
   <div class="col-divider"></div>
@@ -285,13 +285,13 @@ ${patient ? `
     </div>
     <ul class="med-list">${medRows}</ul>` : ""}
 
-    ${adviceText ? `<div class="sec-head" style="margin-top:16px">Advice</div><p class="advice-text">${adviceText.replace(/\n/g,"<br/>")}</p>` : ""}
+    ${adviceText ? `<div class="sec-head" style="margin-top:12px">পরামর্শ</div><p class="advice-text">${adviceText.replace(/\n/g,"<br/>")}</p>` : ""}
 
     ${rx.followUpDate ? `
-    <div style="margin-top:14px">
-      <div class="sec-head">Follow-up</div>
+    <div style="margin-top:10px">
+      <div class="sec-head">ফলো-আপ</div>
       <div class="followup-box">
-        <span class="fu-label">Next Visit:</span>
+        <span class="fu-label">পরবর্তী ভিজিট:</span>
         <span class="fu-date">${fmtEn(rx.followUpDate)}</span>
         ${rx.followUpNote ? `<span class="fu-note">— ${rx.followUpNote}</span>` : ""}
       </div>
