@@ -115,6 +115,52 @@ const FOLLOWUP_PRESETS = [
   { label: "3 Months", days: 90 },
 ];
 
+// ─── Common Eye Medicines ─────────────────────────────────────────────────────
+
+const COMMON_MEDICINES: { medicineName: string; genericName: string; strength: string; route: string; dose: string; frequency: string; duration: string }[] = [
+  // Glaucoma
+  { medicineName: "Timolol", genericName: "Timolol Maleate", strength: "0.5%", route: "Eye Drop", dose: "1 drop", frequency: "BD (Twice daily)", duration: "Ongoing" },
+  { medicineName: "Latanoprost", genericName: "Latanoprost", strength: "0.005%", route: "Eye Drop", dose: "1 drop", frequency: "OD (Once daily)", duration: "Ongoing" },
+  { medicineName: "Dorzolamide", genericName: "Dorzolamide HCl", strength: "2%", route: "Eye Drop", dose: "1 drop", frequency: "TDS (Three times daily)", duration: "Ongoing" },
+  { medicineName: "Brimonidine", genericName: "Brimonidine Tartrate", strength: "0.2%", route: "Eye Drop", dose: "1 drop", frequency: "BD (Twice daily)", duration: "Ongoing" },
+  { medicineName: "Bimatoprost", genericName: "Bimatoprost", strength: "0.03%", route: "Eye Drop", dose: "1 drop", frequency: "OD (Once daily)", duration: "Ongoing" },
+  // Antibiotics
+  { medicineName: "Moxifloxacin", genericName: "Moxifloxacin HCl", strength: "0.5%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "7 days" },
+  { medicineName: "Ciprofloxacin", genericName: "Ciprofloxacin HCl", strength: "0.3%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "7 days" },
+  { medicineName: "Tobramycin", genericName: "Tobramycin", strength: "0.3%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "7 days" },
+  { medicineName: "Chloramphenicol", genericName: "Chloramphenicol", strength: "0.5%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "7 days" },
+  { medicineName: "Ofloxacin", genericName: "Ofloxacin", strength: "0.3%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "7 days" },
+  // Steroids / Anti-inflammatory
+  { medicineName: "Prednisolone", genericName: "Prednisolone Acetate", strength: "1%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "14 days" },
+  { medicineName: "Dexamethasone", genericName: "Dexamethasone", strength: "0.1%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "14 days" },
+  { medicineName: "Fluorometholone", genericName: "Fluorometholone", strength: "0.1%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "14 days" },
+  { medicineName: "Ketorolac", genericName: "Ketorolac Tromethamine", strength: "0.5%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "14 days" },
+  // Lubricants / Dry Eye
+  { medicineName: "Carboxymethylcellulose", genericName: "CMC", strength: "0.5%", route: "Eye Drop", dose: "1 drop", frequency: "TDS (Three times daily)", duration: "Ongoing" },
+  { medicineName: "Hydroxypropyl Methylcellulose", genericName: "HPMC", strength: "0.3%", route: "Eye Drop", dose: "1 drop", frequency: "TDS (Three times daily)", duration: "Ongoing" },
+  { medicineName: "Sodium Hyaluronate", genericName: "Hyaluronic Acid", strength: "0.1%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "Ongoing" },
+  { medicineName: "Polyethylene Glycol", genericName: "PEG 400", strength: "0.4%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "Ongoing" },
+  // Anti-allergy
+  { medicineName: "Olopatadine", genericName: "Olopatadine HCl", strength: "0.1%", route: "Eye Drop", dose: "1 drop", frequency: "BD (Twice daily)", duration: "14 days" },
+  { medicineName: "Ketotifen", genericName: "Ketotifen Fumarate", strength: "0.025%", route: "Eye Drop", dose: "1 drop", frequency: "BD (Twice daily)", duration: "14 days" },
+  { medicineName: "Azelastine", genericName: "Azelastine HCl", strength: "0.05%", route: "Eye Drop", dose: "1 drop", frequency: "BD (Twice daily)", duration: "14 days" },
+  // Mydriatics / Cycloplegics
+  { medicineName: "Atropine", genericName: "Atropine Sulfate", strength: "1%", route: "Eye Drop", dose: "1 drop", frequency: "OD (Once daily)", duration: "7 days" },
+  { medicineName: "Tropicamide", genericName: "Tropicamide", strength: "1%", route: "Eye Drop", dose: "1 drop", frequency: "OD (Once daily)", duration: "3 days" },
+  { medicineName: "Cyclopentolate", genericName: "Cyclopentolate HCl", strength: "1%", route: "Eye Drop", dose: "1 drop", frequency: "BD (Twice daily)", duration: "7 days" },
+  // Post-op Cataract
+  { medicineName: "Moxifloxacin + Dexamethasone", genericName: "Moxifloxacin/Dexamethasone", strength: "0.5%/0.1%", route: "Eye Drop", dose: "1 drop", frequency: "QID (Four times daily)", duration: "1 month" },
+  { medicineName: "Nepafenac", genericName: "Nepafenac", strength: "0.1%", route: "Eye Drop", dose: "1 drop", frequency: "TDS (Three times daily)", duration: "1 month" },
+  // Antifungal
+  { medicineName: "Natamycin", genericName: "Natamycin", strength: "5%", route: "Eye Drop", dose: "1 drop", frequency: "Every 4 hours", duration: "14 days" },
+  { medicineName: "Voriconazole", genericName: "Voriconazole", strength: "1%", route: "Eye Drop", dose: "1 drop", frequency: "Every 4 hours", duration: "14 days" },
+  // Antiviral
+  { medicineName: "Acyclovir", genericName: "Acyclovir", strength: "3%", route: "Eye Ointment", dose: "Apply", frequency: "5 times daily", duration: "14 days" },
+  // Oral
+  { medicineName: "Acetazolamide", genericName: "Acetazolamide", strength: "250mg", route: "Oral", dose: "1 tab", frequency: "BD (Twice daily)", duration: "7 days" },
+  { medicineName: "Vitamin C", genericName: "Ascorbic Acid", strength: "500mg", route: "Oral", dose: "1 tab", frequency: "BD (Twice daily)", duration: "1 month" },
+];
+
 const CATARACT_GRADES = ["Immature","Mature","Hypermature","Nuclear","Cortical","PSC","Mixed"];
 const SURGERY_RECS    = ["Advised","Urgent","Elective","Not indicated","Deferred","Post-op follow-up"];
 
@@ -197,6 +243,7 @@ function MedicinePanel({ medicines, onChange }: {
   const [showForm,  setShowForm]  = useState(false);
   const [draft,     setDraft]     = useState<MedRow | null>(null);
   const [search,    setSearch]    = useState("");
+  const [medFocused, setMedFocused] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   function emptyMed(): MedRow {
@@ -231,6 +278,26 @@ function MedicinePanel({ medicines, onChange }: {
 
   function setField(key: keyof MedRow, val: string) { setDraft((d) => d ? { ...d, [key]: val } : d); }
   function handleSearch(val: string) { setSearch(val); setField("medicineName", val); }
+
+  const filteredMeds = (search || draft?.medicineName)
+    ? COMMON_MEDICINES.filter((m) =>
+        m.medicineName.toLowerCase().includes((search || draft?.medicineName || "").toLowerCase())
+      ).slice(0, 8)
+    : COMMON_MEDICINES.slice(0, 8);
+
+  function applyMedSuggestion(m: typeof COMMON_MEDICINES[0]) {
+    setDraft((d) => d ? { ...d,
+      medicineName: m.medicineName,
+      genericName: m.genericName,
+      strength: m.strength,
+      route: m.route,
+      dose: m.dose,
+      frequency: m.frequency,
+      duration: m.duration,
+    } : d);
+    setSearch(m.medicineName);
+    setMedFocused(false);
+  }
 
   return (
     <div className="space-y-3">
@@ -279,7 +346,24 @@ function MedicinePanel({ medicines, onChange }: {
             <label className={lbl}>Medicine Name *</label>
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input ref={searchRef} value={search || draft.medicineName} onChange={(e) => handleSearch(e.target.value)} placeholder="Type medicine name..." className={`${inp} pl-9`} />
+              <input ref={searchRef} value={search || draft.medicineName}
+                onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => setMedFocused(true)}
+                onBlur={() => setTimeout(() => setMedFocused(false), 150)}
+                placeholder="Type medicine name..."
+                className={`${inp} pl-9`} />
+              {medFocused && filteredMeds.length > 0 && (
+                <div className="absolute z-30 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden max-h-56 overflow-y-auto">
+                  {filteredMeds.map((m) => (
+                    <button key={m.medicineName} type="button"
+                      onMouseDown={() => applyMedSuggestion(m)}
+                      className="w-full text-left px-4 py-2.5 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-0">
+                      <p className="text-sm font-semibold text-gray-800">{m.medicineName} <span className="text-gray-400 font-normal text-xs">{m.strength}</span></p>
+                      <p className="text-xs text-gray-400">{m.genericName} · {m.route} · {m.frequency}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
