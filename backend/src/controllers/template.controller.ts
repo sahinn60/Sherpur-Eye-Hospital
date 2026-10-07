@@ -41,24 +41,44 @@ export async function get(req: Request, res: Response, next: NextFunction) {
 
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
-    const doc = await resolveDoctor(req);
-    const data = await svc.createTemplate(doc.id, req.user!.userId, req.body);
+    let doctorId: string;
+    if (isAdmin(req)) {
+      // Admin can pass doctorId in body, or use a placeholder
+      doctorId = req.body.doctorId || req.user!.userId;
+    } else {
+      const doc = await resolveDoctor(req);
+      doctorId = doc.id;
+    }
+    const data = await svc.createTemplate(doctorId, req.user!.userId, req.body);
     res.status(201).json(successResponse("টেমপ্লেট তৈরি হয়েছে।", data));
   } catch (e) { next(e); }
 }
 
 export async function update(req: Request, res: Response, next: NextFunction) {
   try {
-    const doc = await resolveDoctor(req);
-    const data = await svc.updateTemplate(req.params.id, doc.id, req.body);
+    let doctorId: string;
+    if (isAdmin(req)) {
+      const t = await svc.getTemplate(req.params.id);
+      doctorId = t.doctorId || req.user!.userId;
+    } else {
+      const doc = await resolveDoctor(req);
+      doctorId = doc.id;
+    }
+    const data = await svc.updateTemplate(req.params.id, doctorId, req.body);
     res.json(successResponse("আপডেট হয়েছে।", data));
   } catch (e) { next(e); }
 }
 
 export async function duplicate(req: Request, res: Response, next: NextFunction) {
   try {
-    const doc = await resolveDoctor(req);
-    const data = await svc.duplicateTemplate(req.params.id, doc.id, req.user!.userId);
+    let doctorId: string;
+    if (isAdmin(req)) {
+      doctorId = req.user!.userId;
+    } else {
+      const doc = await resolveDoctor(req);
+      doctorId = doc.id;
+    }
+    const data = await svc.duplicateTemplate(req.params.id, doctorId, req.user!.userId);
     res.status(201).json(successResponse("টেমপ্লেট কপি হয়েছে।", data));
   } catch (e) { next(e); }
 }

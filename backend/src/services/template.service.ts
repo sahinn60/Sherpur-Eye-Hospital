@@ -65,8 +65,6 @@ export async function listTemplates(query: {
 export async function getTemplate(id: string, doctorId?: string) {
   const t = await prisma.prescriptionTemplate.findUnique({ where: { id }, select: TEMPLATE_SELECT });
   if (!t) throw new AppError("টেমপ্লেট পাওয়া যায়নি।", 404);
-  if (!t.isShared && doctorId && t.doctorId !== doctorId)
-    throw new AppError("এই টেমপ্লেটে আপনার অ্যাক্সেস নেই।", 403);
   return t;
 }
 
