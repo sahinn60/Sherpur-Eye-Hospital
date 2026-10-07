@@ -1119,6 +1119,10 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
             প্রিভিউ দেখুন
           </button>
         )}
+        <button onClick={() => { setSuccess(false); setSavedRxId(null); }}
+          className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-sm">
+          + নতুন প্রেসক্রিপশন
+        </button>
         <button onClick={() => router.push("/dashboard/prescriptions")}
           className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
           প্রেসক্রিপশন তালিকা
