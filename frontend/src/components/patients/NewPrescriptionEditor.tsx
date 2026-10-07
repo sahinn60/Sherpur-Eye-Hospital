@@ -212,7 +212,7 @@ function SaveTemplateModal({ data, onClose }: { data: TemplateData; onClose: () 
         items: (data.items || []).map((it, i) => ({ ...it, sortOrder: i })),
       });
       setDone(true);
-      setTimeout(() => { onClose(); router.push("/dashboard/prescriptions/templates"); }, 1200);
+      setTimeout(() => { onClose(); }, 1200);
     } catch (e: any) {
       const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || "";
       setErr(`Save হয়নি: ${msg}`);
