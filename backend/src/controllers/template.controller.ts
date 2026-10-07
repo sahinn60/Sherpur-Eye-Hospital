@@ -14,8 +14,10 @@ function isAdmin(req: Request) {
 export async function list(req: Request, res: Response, next: NextFunction) {
   try {
     const { search, category, page = "1", limit = "20" } = req.query as Record<string, string>;
-    let doctorId: string | undefined;
-    if (!isAdmin(req)) {
+    let doctorId: string | null | undefined;
+    if (isAdmin(req)) {
+      doctorId = null; // null = see all templates
+    } else {
       const doc = await resolveDoctor(req);
       doctorId = doc.id;
     }

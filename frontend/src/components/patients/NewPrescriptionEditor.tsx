@@ -294,8 +294,9 @@ function SectionTemplateDropdown({ onApply }: { onApply: (t: PrescriptionTemplat
   }, []);
 
   async function handleOpen() {
-    setOpen((v) => !v);
-    if (templates.length === 0) {
+    const next = !open;
+    setOpen(next);
+    if (next) {
       setLoading(true);
       try {
         const res = await fetchTemplates({ limit: 50 });

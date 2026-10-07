@@ -33,15 +33,13 @@ function itemsData(items: any[]) {
 }
 
 export async function listTemplates(query: {
-  doctorId?: string; search?: string; category?: string;
+  doctorId?: string | null; search?: string; category?: string;
   isShared?: boolean; page: number; limit: number;
 }) {
-  const where: any = {
-    OR: [
-      { isShared: true },
-      ...(query.doctorId ? [{ doctorId: query.doctorId }] : []),
-    ],
-  };
+  // doctorId === null means admin/reception → see all templates
+  const where: any = query.doctorId === null
+    ? {}
+    : { OR: [{ isShared: true }, { doctorId: query.doctorId }] };
   if (query.category) where.category = query.category;
   if (query.search) {
     where.AND = [{ OR: [
