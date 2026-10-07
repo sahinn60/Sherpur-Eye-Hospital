@@ -15,7 +15,7 @@ function useDebounced<T>(value: T, delay: number): T {
 import {
   ArrowLeft, Plus, Trash2, Save, User, Phone, Hash,
   AlertCircle, CheckCircle, ChevronDown, ChevronUp,
-  Search, X, Edit2, Check, BookOpen, Eye, EyeOff,
+  Search, X, Edit2, Check, BookOpen, Eye, EyeOff, Settings,
 } from "lucide-react";
 import { PatientDetail, GENDER_BN } from "@/types/patient";
 import { Doctor } from "@/types/doctor";
@@ -27,7 +27,8 @@ import { buildRxHTML } from "@/components/clinic/rxPrintBuilder";
 import { Button } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { TemplateSelector } from "@/components/prescriptions";
-import { PrescriptionTemplate } from "@/types/prescription";
+import { PrescriptionTemplate, TEMPLATE_CATEGORIES } from "@/types/prescription";
+import { createTemplate } from "@/lib/services/templateService";
 import { LiveRxPreview } from "@/components/clinic";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -174,10 +175,110 @@ function uid() { return Math.random().toString(36).slice(2, 9); }
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
-function Section({ title, badge, children, defaultOpen = true, accent = false, enabled = true, onToggle }: {
+// ─── Save Template Modal ──────────────────────────────────────────────────────
+
+interface TemplateData {
+  chiefComplaint?: string; history?: string; diagnosis?: string;
+  advice?: string; instructions?: string; followUpNote?: string; followUpDays?: number;
+  items?: { medicineName: string; strength?: string; dosageForm?: string; dose?: string; frequency?: string; duration?: string; instructions?: string; sortOrder: number }[];
+}
+
+function SaveTemplateModal({ data, onClose }: { data: TemplateData; onClose: () => void }) {
+  const [name,     setName]     = useState("");
+  const [nameBn,   setNameBn]   = useState("");
+  const [category, setCategory] = useState("GENERAL");
+  const [isShared, setIsShared] = useState(false);
+  const [saving,   setSaving]   = useState(false);
+  const [done,     setDone]     = useState(false);
+  const [err,      setErr]      = useState("");
+
+  async function handleSave() {
+    if (!nameBn.trim() && !name.trim()) { setErr("Template-এর নাম দিন"); return; }
+    setSaving(true); setErr("");
+    try {
+      await createTemplate({
+        name: name || nameBn,
+        nameBn: nameBn || name,
+        category,
+        isShared,
+        chiefComplaint: data.chiefComplaint,
+        history: data.history,
+        diagnosis: data.diagnosis,
+        advice: data.advice,
+        instructions: data.instructions,
+        followUpNote: data.followUpNote,
+        followUpDays: data.followUpDays ?? null,
+        items: (data.items || []).map((it, i) => ({ ...it, sortOrder: i })),
+      });
+      setDone(true);
+      setTimeout(onClose, 1200);
+    } catch { setErr("Save করতে সমস্যা হয়েছে"); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-bold text-gray-900">Template হিসেবে Save করুন</h2>
+          <button type="button" onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"><X size={16} /></button>
+        </div>
+        {done ? (
+          <div className="flex flex-col items-center py-10 gap-3">
+            <CheckCircle size={36} className="text-emerald-500" />
+            <p className="text-sm font-semibold text-gray-700">Template সংরক্ষিত হয়েছে!</p>
+          </div>
+        ) : (
+          <div className="p-5 space-y-4">
+            <div>
+              <label className={lbl}>Template নাম (বাংলা) *</label>
+              <input value={nameBn} onChange={(e) => setNameBn(e.target.value)} placeholder="যেমন: ছানি অপারেশন পরবর্তী" className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>Template Name (English)</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Post-op Cataract" className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>Category</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} className={inp}>
+                {TEMPLATE_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <div onClick={() => setIsShared((v) => !v)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${isShared ? "bg-blue-500" : "bg-gray-300"}`}>
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${isShared ? "translate-x-4" : "translate-x-1"}`} />
+              </div>
+              <span className="text-sm text-gray-600">সবার সাথে শেয়ার করুন (Shared)</span>
+            </label>
+            <div className="bg-gray-50 rounded-xl px-4 py-3 text-xs text-gray-500 space-y-1">
+              {data.diagnosis && <p>✓ Diagnosis</p>}
+              {(data.items?.length ?? 0) > 0 && <p>✓ {data.items!.length}টি Medicine</p>}
+              {data.chiefComplaint && <p>✓ Chief Complaint</p>}
+              {data.advice && <p>✓ Advice</p>}
+              {data.followUpDays && <p>✓ Follow-up: {data.followUpDays} days</p>}
+            </div>
+            {err && <p className="text-xs text-red-500">{err}</p>}
+            <div className="flex gap-2 justify-end">
+              <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50">বাতিল</button>
+              <button type="button" onClick={handleSave} disabled={saving}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                <Save size={13} /> {saving ? "Saving..." : "Save Template"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Section wrapper ──────────────────────────────────────────────────────────
+
+function Section({ title, badge, children, defaultOpen = true, accent = false, enabled = true, onToggle, onSettings }: {
   title: string; badge?: number; children: React.ReactNode;
   defaultOpen?: boolean; accent?: boolean;
-  enabled?: boolean; onToggle?: () => void;
+  enabled?: boolean; onToggle?: () => void; onSettings?: () => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -192,6 +293,13 @@ function Section({ title, badge, children, defaultOpen = true, accent = false, e
           {!enabled && <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full ml-1">OFF</span>}
         </button>
         <div className="flex items-center gap-2 shrink-0">
+          {onSettings && (
+            <button type="button" onClick={(e) => { e.stopPropagation(); onSettings(); }}
+              title="Template হিসেবে Save করুন"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors">
+              <Settings size={13} />
+            </button>
+          )}
           {onToggle && (
             <button type="button" onClick={(e) => { e.stopPropagation(); onToggle(); }}
               title={enabled ? "Section বন্ধ করুন" : "Section চালু করুন"}
@@ -604,6 +712,7 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
   const [success,   setSuccess]   = useState(false);
   const [savedRxId, setSavedRxId] = useState<string | null>(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [templateModal, setTemplateModal] = useState<TemplateData | null>(null);
   // Mobile: toggle preview panel
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
@@ -646,6 +755,27 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
   const [instructions,   setInstructions]   = useState("");
   const [followUpDate,   setFollowUpDate]   = useState("");
   const [followUpNote,   setFollowUpNote]   = useState("");
+
+  // Build template data from current form state
+  function buildTemplateData(sections?: { complaint?: boolean; diagnosis?: boolean; medicines?: boolean; advice?: boolean; followUp?: boolean }): TemplateData {
+    const s = sections ?? { complaint: true, diagnosis: true, medicines: true, advice: true, followUp: true };
+    return {
+      chiefComplaint: s.complaint ? chiefComplaint || undefined : undefined,
+      history:        s.complaint ? history || undefined : undefined,
+      diagnosis:      s.diagnosis ? diagnosisText || undefined : undefined,
+      advice:         s.advice    ? advice || undefined : undefined,
+      instructions:   s.advice    ? instructions || undefined : undefined,
+      followUpNote:   s.followUp  ? followUpNote || undefined : undefined,
+      followUpDays:   s.followUp && followUpDate ? Math.round((new Date(followUpDate).getTime() - Date.now()) / 86400000) : undefined,
+      items: s.medicines ? medicines.map((m, i) => ({
+        medicineName: m.medicineName, strength: m.strength || undefined,
+        dosageForm: m.route || undefined, dose: m.dose || undefined,
+        frequency: m.frequency || undefined, duration: m.duration || undefined,
+        instructions: [m.genericName ? `(${m.genericName})` : "", m.instructions].filter(Boolean).join(" ") || undefined,
+        sortOrder: i,
+      })) : [],
+    };
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -873,10 +1003,18 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors shrink-0">
           <BookOpen size={15} /> Use Template
         </button>
+        <button type="button" onClick={() => setTemplateModal(buildTemplateData())}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-violet-700 bg-violet-50 border border-violet-200 rounded-xl hover:bg-violet-100 transition-colors shrink-0">
+          <Save size={15} /> Save as Template
+        </button>
         <Button type="submit" loading={saving} className="flex items-center gap-2 shrink-0">
           <Save size={15} /> Save
         </Button>
       </div>
+
+      {templateModal && (
+        <SaveTemplateModal data={templateModal} onClose={() => setTemplateModal(null)} />
+      )}
 
       {showTemplateSelector && (
         <TemplateSelector onApply={applyTemplate} onClose={() => setShowTemplateSelector(false)} />
@@ -906,7 +1044,8 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           </div>
 
           {/* Chief Complaint & History */}
-          <Section title="Chief Complaint & History" enabled={secComplaint} onToggle={() => setSecComplaint((v) => !v)}>
+          <Section title="Chief Complaint & History" enabled={secComplaint} onToggle={() => setSecComplaint((v) => !v)}
+            onSettings={() => setTemplateModal(buildTemplateData({ complaint: true }))}>
             <div className="space-y-4">
               <div>
                 <label className={lbl}>Chief Complaint</label>
@@ -922,7 +1061,8 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           </Section>
 
           {/* Eye Examination */}
-          <Section title="Eye Examination" accent enabled={secExam} onToggle={() => setSecExam((v) => !v)}>
+          <Section title="Eye Examination" accent enabled={secExam} onToggle={() => setSecExam((v) => !v)}
+            onSettings={() => setTemplateModal(buildTemplateData({}))}>
             <div className="space-y-5">
               {/* VA */}
               <div>
@@ -1085,7 +1225,8 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           </Section>
 
           {/* Diagnosis */}
-          <Section title="Diagnosis" badge={diagnoses.length} enabled={secDiagnosis} onToggle={() => setSecDiagnosis((v) => !v)}>
+          <Section title="Diagnosis" badge={diagnoses.length} enabled={secDiagnosis} onToggle={() => setSecDiagnosis((v) => !v)}
+            onSettings={() => setTemplateModal(buildTemplateData({ diagnosis: true }))}>
             <div className="space-y-4">
               <DiagnosisPanel items={diagnoses} onChange={setDiagnoses} />
               <div>
@@ -1096,17 +1237,20 @@ export function NewPrescriptionEditor({ patientId }: { patientId: string }) {
           </Section>
 
           {/* Medicines */}
-          <Section title="℞ Medicines" badge={medicines.length} accent enabled={secMedicines} onToggle={() => setSecMedicines((v) => !v)}>
+          <Section title="℞ Medicines" badge={medicines.length} accent enabled={secMedicines} onToggle={() => setSecMedicines((v) => !v)}
+            onSettings={() => setTemplateModal(buildTemplateData({ medicines: true }))}>
             <MedicinePanel medicines={medicines} onChange={setMedicines} />
           </Section>
 
           {/* Advice */}
-          <Section title="Advice & Instructions" defaultOpen={false} enabled={secAdvice} onToggle={() => setSecAdvice((v) => !v)}>
+          <Section title="Advice & Instructions" defaultOpen={false} enabled={secAdvice} onToggle={() => setSecAdvice((v) => !v)}
+            onSettings={() => setTemplateModal(buildTemplateData({ advice: true }))}>
             <AdvicePanel advice={advice} instructions={instructions} onAdviceChange={setAdvice} onInstructionsChange={setInstructions} />
           </Section>
 
           {/* Follow-up */}
-          <Section title="Follow-up" enabled={secFollowUp} onToggle={() => setSecFollowUp((v) => !v)}>
+          <Section title="Follow-up" enabled={secFollowUp} onToggle={() => setSecFollowUp((v) => !v)}
+            onSettings={() => setTemplateModal(buildTemplateData({ followUp: true }))}>
             <FollowUpPanel followUpDate={followUpDate} followUpNote={followUpNote} onDateChange={setFollowUpDate} onNoteChange={setFollowUpNote} />
           </Section>
 
