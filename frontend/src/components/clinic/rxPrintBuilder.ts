@@ -17,7 +17,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;li
 .hosp-logo{width:54px;height:54px;object-fit:contain;flex-shrink:0}
 .hosp-name-bn{font-size:16px;font-weight:700;color:#1a3a6b;line-height:1.2;letter-spacing:-0.01em}
 .hosp-name-en{font-size:10.5px;color:#2a4a8b;font-weight:600;margin-top:2px}
-.hosp-contact{font-size:9px;color:#555;margin-top:4px;line-height:1.4}
+.hosp-contact{font-size:9px;color:#555;margin-top:4px;line-height:1.6}
 .hosp-contact span{display:block}
 .dr-block{text-align:right;min-width:170px;max-width:200px}
 .dr-name{font-size:13.5px;font-weight:700;color:#1a1a1a;font-family:'Times New Roman',serif}
