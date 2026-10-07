@@ -41,11 +41,8 @@ export async function get(req: Request, res: Response, next: NextFunction) {
 
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
-    let doctorId: string;
-    if (isAdmin(req)) {
-      // Admin can pass doctorId in body, or use a placeholder
-      doctorId = req.body.doctorId || req.user!.userId;
-    } else {
+    let doctorId: string | null = null;
+    if (!isAdmin(req)) {
       const doc = await resolveDoctor(req);
       doctorId = doc.id;
     }

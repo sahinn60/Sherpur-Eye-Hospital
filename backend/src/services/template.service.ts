@@ -68,7 +68,7 @@ export async function getTemplate(id: string, doctorId?: string) {
   return t;
 }
 
-export async function createTemplate(doctorId: string, createdBy: string, input: any) {
+export async function createTemplate(doctorId: string | null, createdBy: string, input: any) {
   return prisma.prescriptionTemplate.create({
     data: {
       name:           input.name,
@@ -82,7 +82,7 @@ export async function createTemplate(doctorId: string, createdBy: string, input:
       followUpNote:   input.followUpNote  || null,
       followUpDays:   input.followUpDays  ? parseInt(input.followUpDays) : null,
       isShared:       input.isShared      ?? false,
-      doctorId,
+      doctorId:       doctorId ?? null,
       createdBy,
       items: { create: itemsData(input.items) },
     },
