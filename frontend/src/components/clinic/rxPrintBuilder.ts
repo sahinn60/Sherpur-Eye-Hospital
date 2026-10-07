@@ -73,7 +73,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:10.5px;color:#1a1a1a;li
 .fu-date{font-size:10.5px;font-weight:700;color:#1a1a1a}
 .fu-note{font-size:9px;color:#555}
 
-.sig-area{position:absolute;bottom:0;right:0;padding-top:14px;page-break-inside:avoid}
+.sig-area{position:fixed;bottom:18mm;right:10mm;page-break-inside:avoid}
 .sig-block{text-align:center;min-width:130px}
 .sig-img{height:38px;max-width:120px;object-fit:contain;display:block;margin:0 auto 4px}
 .sig-line{border-top:1px solid #333;padding-top:3px;margin-top:2px}
