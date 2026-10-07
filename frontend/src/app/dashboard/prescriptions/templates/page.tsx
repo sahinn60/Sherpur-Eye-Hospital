@@ -80,7 +80,7 @@ export default function TemplatesPage() {
   }
 
   return (
-    <RouteGuard allowedRoles={["SUPER_ADMIN", "ADMIN", "DOCTOR"]}>
+    <RouteGuard allowedRoles={["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTION"]}>
       <div className="space-y-5">
 
         {/* Header */}
