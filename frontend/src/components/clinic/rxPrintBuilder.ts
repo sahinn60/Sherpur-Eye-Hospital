@@ -17,8 +17,8 @@ body{font-family:'Times New Roman',Times,serif;font-size:11.5px;color:#1a1a1a;li
 .hosp-logo{width:54px;height:54px;object-fit:contain;flex-shrink:0}
 .hosp-name-bn{font-size:16px;font-weight:700;color:#1a3a6b;line-height:1.2;letter-spacing:-0.01em}
 .hosp-name-en{font-size:10.5px;color:#2a4a8b;font-weight:600;margin-top:2px}
-.hosp-contact{font-size:9px;color:#555;margin-top:4px;line-height:1.6}
-.hosp-contact span{margin-right:10px}
+.hosp-contact{font-size:9px;color:#555;margin-top:4px;line-height:1.8}
+.hosp-contact span{display:block}
 .dr-block{text-align:right;min-width:170px;max-width:200px}
 .dr-name{font-size:13.5px;font-weight:700;color:#1a1a1a;font-family:'Times New Roman',serif}
 .dr-qual{font-size:9.5px;color:#333;margin-top:2px;line-height:1.5}
@@ -143,6 +143,7 @@ export function buildRxHTML(
   if (hospEmerg) contactParts.push(`<span>🚨 ${hospEmerg}</span>`);
   if (hospEmail) contactParts.push(`<span>✉ ${hospEmail}</span>`);
   if (hospWeb)   contactParts.push(`<span>🌐 ${hospWeb}</span>`);
+  const contactHTML = contactParts.join("<br/>");
 
   const footerParts: string[] = [];
   if (hospNameBn) footerParts.push(hospNameBn);
@@ -201,7 +202,7 @@ ${!isFinalized ? `<div class="draft-stamp">DRAFT</div>` : ""}
     <div>
       <div class="hosp-name-bn">${hospNameBn}</div>
       <div class="hosp-name-en">${hospNameEn}</div>
-      ${contactParts.length ? `<div class="hosp-contact">${contactParts.join("")}</div>` : ""}
+      ${contactHTML ? `<div class="hosp-contact">${contactHTML}</div>` : ""}
     </div>
   </div>
   <div class="dr-block">
