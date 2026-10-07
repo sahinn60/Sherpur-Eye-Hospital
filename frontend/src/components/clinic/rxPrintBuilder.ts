@@ -32,10 +32,10 @@ body{font-family:'Times New Roman',Times,serif;font-size:10.5px;color:#1a1a1a;li
 .pb-label{font-size:8px;text-transform:uppercase;letter-spacing:0.04em;color:#777;display:block;margin-bottom:1px}
 .pb-value{font-weight:700;color:#1a1a1a;font-size:10px}
 
-.rx-body{display:grid;grid-template-columns:78mm 1px 1fr;gap:0}
+.rx-body{display:grid;grid-template-columns:78mm 1px 1fr;gap:0;align-items:stretch}
 .col-left{padding-right:8px;padding-top:2px}
 .col-divider{background:#c8d8ee;margin:0 4px}
-.col-right{padding-left:10px;padding-top:2px;display:flex;flex-direction:column;align-self:stretch}
+.col-right{padding-left:10px;padding-top:2px;display:flex;flex-direction:column}
 
 .sec-head{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#1a3a6b;border-bottom:1px solid #c8d8ee;padding-bottom:2px;margin-bottom:4px;margin-top:9px;page-break-after:avoid}
 .sec-head:first-child{margin-top:0}
@@ -73,7 +73,7 @@ body{font-family:'Times New Roman',Times,serif;font-size:10.5px;color:#1a1a1a;li
 .fu-date{font-size:10.5px;font-weight:700;color:#1a1a1a}
 .fu-note{font-size:9px;color:#555}
 
-.sig-area{margin-top:auto;flex-grow:1;display:flex;align-items:flex-end;justify-content:flex-end;padding-top:14px;page-break-inside:avoid}
+.sig-area{margin-top:auto;padding-top:14px;display:flex;justify-content:flex-end;page-break-inside:avoid}
 .sig-block{text-align:center;min-width:130px}
 .sig-img{height:38px;max-width:120px;object-fit:contain;display:block;margin:0 auto 4px}
 .sig-line{border-top:1px solid #333;padding-top:3px;margin-top:2px}
