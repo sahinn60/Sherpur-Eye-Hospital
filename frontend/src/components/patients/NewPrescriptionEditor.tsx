@@ -97,16 +97,16 @@ const COMMON_DIAGNOSES = [
 ];
 
 const ADVICE_PRESETS = [
-  "Do not rub your eyes",
-  "Wear sunglasses outdoors",
-  "Avoid dusty environments",
-  "Use medicines regularly as prescribed",
-  "Wash hands before applying eye drops",
-  "Do not share eye drops with others",
-  "Avoid swimming until further notice",
-  "Avoid heavy lifting and straining",
-  "Keep follow-up appointment",
-  "Return immediately if vision worsens",
+  "চোখ ডলবেন না",
+  "বাইরে রোদচশমা পরুন",
+  "ধুলাবালি এড়িয়ে চলুন",
+  "নিয়মিত ওষুধ ব্যবহার করুন",
+  "চোখের ড্রপ দেওয়ার আগে হাত ধুন",
+  "অন্যের সাথে চোখের ড্রপ শেয়ার করবেন না",
+  "পরবর্তী নির্দেশ না দেওয়া পর্যন্ত সাঁতার এড়িয়ে চলুন",
+  "ভারী জিনিস তোলা ও চাপ এড়িয়ে চলুন",
+  "ফলো-আপ অ্যাপয়েন্টমেন্ট রাখুন",
+  "দৃষ্টি খারাপ হলে সাথে সাথে আসুন",
 ];
 
 const FOLLOWUP_PRESETS = [
