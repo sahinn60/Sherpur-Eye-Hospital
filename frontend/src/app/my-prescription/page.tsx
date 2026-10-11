@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { PublicLayout } from "@/components/layout";
 import { PageHero } from "@/components/ui/shared";
 import { Search, FileText, Printer, User, Calendar, Stethoscope } from "lucide-react";
-import api from "@/lib/api";
 import { buildRxHTML } from "@/components/clinic/rxPrintBuilder";
-import { fetchHospitalRxSettings } from "@/lib/services/adminPrescriptionService";
+
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 function fmt(d: string) {
   return new Date(d).toLocaleDateString("bn-BD", { day: "numeric", month: "long", year: "numeric" });
@@ -23,8 +23,10 @@ export default function MyPrescriptionPage() {
     const t = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await api.get("/prescriptions/public/search", { params: { q: query.trim() } });
-        setResults(res.data.data || []);
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/prescriptions/public/search?q=${encodeURIComponent(query.trim())}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        setResults(json.data || []);
         setSearched(true);
       } catch { setResults([]); setSearched(true); }
       finally { setLoading(false); }
@@ -34,7 +36,9 @@ export default function MyPrescriptionPage() {
 
   async function handlePrint(rx: any) {
     try {
-      const hosp = await fetchHospitalRxSettings();
+      const res = await fetch(`${API}/prescriptions/admin/hospital-settings`);
+      const json = await res.json();
+      const hosp = json.data || {};
       const settings = rx.doctor?.prescriptionSettings ?? {};
       const html = buildRxHTML(rx, settings, hosp, true);
       const win = window.open("", "_blank", "width=900,height=1200");
