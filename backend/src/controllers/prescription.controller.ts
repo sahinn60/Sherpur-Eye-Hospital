@@ -145,3 +145,41 @@ export async function deleteRx(req: Request, res: Response, next: NextFunction) 
     res.json(successResponse("মুছে গেছে।"));
   } catch (e) { next(e); }
 }
+
+export async function publicSearchRx(req: Request, res: Response, next: NextFunction) {
+  try {
+    const q = ((req.query.q as string) || "").trim();
+    if (!q || q.length < 2) { res.json(successResponse("ok", [])); return; }
+
+    const patients = await prisma.patient.findMany({
+      where: {
+        OR: [
+          { nameBn:    { contains: q, mode: "insensitive" } },
+          { nameEn:    { contains: q, mode: "insensitive" } },
+          { phone:     { contains: q } },
+          { patientId: { contains: q, mode: "insensitive" } },
+        ],
+      },
+      select: { id: true },
+      take: 5,
+    });
+
+    if (patients.length === 0) { res.json(successResponse("ok", [])); return; }
+
+    const patientIds = patients.map((p) => p.id);
+    const rxList = await prisma.prescription.findMany({
+      where: { patientId: { in: patientIds }, status: "FINALIZED" },
+      select: {
+        id: true, rxNo: true, status: true, createdAt: true,
+        diagnosis: true, followUpDate: true,
+        doctor:  { select: { nameBn: true, designationBn: true } },
+        patient: { select: { id: true, patientId: true, nameBn: true, phone: true, age: true, gender: true } },
+        items:   { select: { medicineName: true }, orderBy: { sortOrder: "asc" as const } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    });
+
+    res.json(successResponse("ok", rxList));
+  } catch (e) { next(e); }
+}

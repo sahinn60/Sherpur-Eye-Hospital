@@ -36,6 +36,7 @@ router.post  ("/templates/:id/duplicate",doctorOnly,   tmpl.duplicate);
 router.delete("/templates/:id",          doctorOnly,   tmpl.remove);
 
 // Prescriptions
+router.get ("/public/search",  ctrl.publicSearchRx);
 router.get ("/",           doctorAccess, ctrl.listRx);
 router.post("/",           doctorOnly,   ctrl.createRx);
 router.get ("/:rxId",      doctorAccess, ctrl.getRx);
