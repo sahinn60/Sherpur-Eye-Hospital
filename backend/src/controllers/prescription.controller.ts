@@ -168,7 +168,7 @@ export async function publicSearchRx(req: Request, res: Response, next: NextFunc
 
     const patientIds = patients.map((p) => p.id);
     const rxList = await prisma.prescription.findMany({
-      where: { patientId: { in: patientIds }, status: "FINALIZED" },
+      where: { patientId: { in: patientIds } },
       select: {
         id: true, rxNo: true, status: true, createdAt: true,
         diagnosis: true, followUpDate: true,

@@ -34,19 +34,14 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowed = [
-        config.frontendUrl,
-        "https://sherpur-eye-hospital-kappa.vercel.app",
-        "https://frontend-nine-taupe-48.vercel.app",
-        "https://frontend-six-psi-30.vercel.app",
-        "https://frontend-git-master-crack-nc-odes-projects.vercel.app",
-        "https://frontend-crack-nc-odes-projects.vercel.app",
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-      ];
-      if (!origin || allowed.includes(origin)) callback(null, true);
-      else callback(new Error("Not allowed by CORS"));
+      // Allow no-origin (mobile apps, curl) and all vercel.app + localhost
+      if (!origin) return callback(null, true);
+      if (
+        origin.endsWith(".vercel.app") ||
+        origin.startsWith("http://localhost") ||
+        origin === config.frontendUrl
+      ) return callback(null, true);
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
