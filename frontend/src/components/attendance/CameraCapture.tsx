@@ -30,10 +30,14 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
       });
       streamRef.current = stream;
       if (videoRef.current) {
+        videoRef.current.srcObject = null;
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().catch(() => {});
+        };
       }
-    } catch {
+    } catch (err) {
+      console.error("Camera error:", err);
       setError("ক্যামেরা চালু করা যায়নি। অনুমতি দিন এবং আবার চেষ্টা করুন।");
     } finally { setStarting(false); }
   }, []);
