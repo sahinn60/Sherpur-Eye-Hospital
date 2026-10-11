@@ -24,7 +24,7 @@ export const SIDEBAR_NAV: NavGroup[] = [
   {
     group: "কর্মী ব্যবস্থাপনা",
     items: [
-      { href: "/dashboard/doctors",    label: "চিকিৎসক",    icon: "Stethoscope",  permission: "doctors.view" },
+      { href: "/dashboard/doctors",    label: "চিকিৎসক",    icon: "Stethoscope",  roles: ["SUPER_ADMIN","ADMIN","HR","RECEPTION","DOCTOR","ACCOUNTANT","EMPLOYEE"] },
       { href: "/dashboard/employees",  label: "কর্মচারী",   icon: "Users",        roles: ["SUPER_ADMIN","ADMIN","HR"] },
       { href: "/dashboard/attendance", label: "উপস্থিতি",   icon: "CalendarCheck", roles: ["SUPER_ADMIN","ADMIN","HR"] },
       { href: "/dashboard/leave",      label: "ছুটি",        icon: "CalendarOff" },
@@ -35,7 +35,7 @@ export const SIDEBAR_NAV: NavGroup[] = [
     items: [
       { href: "/dashboard/clinic",       label: "ক্লিনিক",           icon: "Stethoscope",  roles: ["DOCTOR","SUPER_ADMIN","ADMIN"] },
       { href: "/dashboard/patients",     label: "রোগী",             icon: "UserRound",    roles: ["SUPER_ADMIN","ADMIN","HR","DOCTOR","RECEPTION"] },
-      { href: "/dashboard/appointments", label: "অ্যাপয়েন্টমেন্ট", icon: "CalendarDays", permission: "appointments.view" },
+      { href: "/dashboard/appointments", label: "অ্যাপয়েন্টমেন্ট", icon: "CalendarDays", roles: ["SUPER_ADMIN","ADMIN","HR","DOCTOR","RECEPTION","ACCOUNTANT","EMPLOYEE"] },
       { href: "/dashboard/prescriptions",          label: "প্রেসক্রিপশন",   icon: "FileText",     roles: ["SUPER_ADMIN","ADMIN","DOCTOR","RECEPTION"] },
       { href: "/dashboard/prescriptions/templates",  label: "Rx টেমপ্লেট",   icon: "BookTemplate", roles: ["SUPER_ADMIN","ADMIN","DOCTOR"] },
     ],
@@ -60,8 +60,8 @@ export const SIDEBAR_NAV: NavGroup[] = [
     group: "কন্টেন্ট",
     items: [
       { href: "/dashboard/cms",     label: "ওয়েবসাইট CMS", icon: "Globe",     roles: ["SUPER_ADMIN","ADMIN"] },
-      { href: "/dashboard/news",    label: "সংবাদ",        icon: "Newspaper", permission: "news.manage" },
-      { href: "/dashboard/gallery", label: "গ্যালারি",     icon: "Image",     permission: "gallery.manage" },
+      { href: "/dashboard/news",    label: "সংবাদ",        icon: "Newspaper", roles: ["SUPER_ADMIN","ADMIN","HR","DOCTOR","RECEPTION","ACCOUNTANT","EMPLOYEE"] },
+      { href: "/dashboard/gallery", label: "গ্যালারি",     icon: "Image",     roles: ["SUPER_ADMIN","ADMIN","HR","DOCTOR","RECEPTION","ACCOUNTANT","EMPLOYEE"] },
     ],
   },
   {
