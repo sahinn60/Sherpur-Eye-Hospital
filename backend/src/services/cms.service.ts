@@ -34,6 +34,21 @@ export async function upsertSettings(settings: Record<string, string>) {
   return getPublicSettings();
 }
 
+// Ensure new settings exist (run on startup)
+export async function ensureNewSettings() {
+  const newSettings = [
+    { key: "hero_prescription_image", value: "", group: "page_heroes", labelBn: "Prescription পেজ হিরো ছবি", labelEn: "Prescription Page Hero Image", type: "image" },
+    { key: "hero_contact_image",      value: "", group: "page_heroes", labelBn: "Contact পেজ হিরো ছবি",      labelEn: "Contact Page Hero Image",      type: "image" },
+  ];
+  for (const s of newSettings) {
+    await prisma.siteSetting.upsert({
+      where: { key: s.key },
+      update: {},
+      create: s,
+    });
+  }
+}
+
 // ─── Homepage Sections ────────────────────────────────────────────────────────
 
 export async function getAllSections() {

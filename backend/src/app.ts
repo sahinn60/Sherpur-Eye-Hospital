@@ -7,8 +7,12 @@ import path from "path";
 import { config } from "./config/env";
 import routes from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
+import { ensureNewSettings } from "./services/cms.service";
 
 const app = express();
+
+// Ensure new CMS settings exist in DB
+ensureNewSettings().catch(() => {});
 
 // Trust proxy — required for correct IP behind nginx / load balancer
 app.set("trust proxy", 1);

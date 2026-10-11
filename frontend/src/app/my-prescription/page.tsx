@@ -6,6 +6,7 @@ import { PageHero } from "@/components/ui/shared";
 import { Search, FileText, Printer, User, Calendar, Stethoscope } from "lucide-react";
 import { buildRxHTML } from "@/components/clinic/rxPrintBuilder";
 import { useLang } from "@/context/LangContext";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -15,6 +16,7 @@ function fmt(d: string, lang: string) {
 
 export default function MyPrescriptionPage() {
   const { t, lang } = useLang();
+  const { s } = useSiteSettings();
   const [query,    setQuery]    = useState("");
   const [results,  setResults]  = useState<any[]>([]);
   const [loading,  setLoading]  = useState(false);
@@ -55,6 +57,7 @@ export default function MyPrescriptionPage() {
         title={t("আপনার প্রেসক্রিপশন দেখুন", "View Your Prescription")}
         subtitle={t("নাম, ফোন নম্বর বা রোগী আইডি দিয়ে সার্চ করুন", "Search by name, phone number or patient ID")}
         breadcrumbs={[{ label: t("হোম", "Home"), href: "/" }, { label: t("প্রেসক্রিপশন", "Prescription") }]}
+        bgImage={s.hero_prescription_image || undefined}
       />
 
       <section className="py-12 bg-gray-50 min-h-[60vh]">
