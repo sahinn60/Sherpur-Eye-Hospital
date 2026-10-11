@@ -40,10 +40,15 @@ app.use(
     origin: (origin, callback) => {
       // Allow no-origin (mobile apps, curl) and all vercel.app + localhost
       if (!origin) return callback(null, true);
+      const allowed = [
+        "https://sherpuradhunikeyehospital.com",
+        "https://www.sherpuradhunikeyehospital.com",
+      ];
       if (
         origin.endsWith(".vercel.app") ||
         origin.startsWith("http://localhost") ||
-        origin === config.frontendUrl
+        origin === config.frontendUrl ||
+        allowed.includes(origin)
       ) return callback(null, true);
       callback(new Error("Not allowed by CORS"));
     },
