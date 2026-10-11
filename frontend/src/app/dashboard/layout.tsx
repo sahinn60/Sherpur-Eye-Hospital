@@ -22,18 +22,19 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 function canSeeItem(
-  item: { roles?: UserRole[]; permission?: string },
+  item: { permKey?: string; alsoAllow?: UserRole[] },
   userRole: UserRole,
   hasPermission: (k: string) => boolean,
-  isAdmin: boolean
+  isSuperAdmin: boolean
 ) {
-  if (item.roles && !item.roles.includes(userRole)) return false;
-  if (item.permission && !isAdmin && !hasPermission(item.permission)) return false;
-  return true;
+  if (isSuperAdmin) return true;
+  if (!item.permKey) return true; // no restriction
+  if (item.alsoAllow?.includes(userRole)) return true;
+  return hasPermission(item.permKey);
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout, hasPermission, isAdmin } = useAuth();
+  const { user, logout, hasPermission, isSuperAdmin } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -79,7 +80,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <nav className="flex-1 overflow-y-auto py-4 px-3" style={{ scrollbarWidth: "none" }}>
             {SIDEBAR_NAV.map((group) => {
               const visible = group.items.filter((item) =>
-                canSeeItem(item, userRole, hasPermission, isAdmin)
+                canSeeItem(item, userRole, hasPermission, isSuperAdmin)
               );
               if (!visible.length) return null;
               return (

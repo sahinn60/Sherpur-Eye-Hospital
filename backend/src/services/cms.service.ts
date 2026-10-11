@@ -47,6 +47,39 @@ export async function ensureNewSettings() {
       create: s,
     });
   }
+
+  // Ensure nav-based permissions exist
+  const navPerms = [
+    { key: "nav.doctors",        labelBn: "চিকিৎসক",           labelEn: "Doctors",           group: "nav" },
+    { key: "nav.employees",      labelBn: "কর্মচারী",          labelEn: "Employees",         group: "nav" },
+    { key: "nav.attendance",     labelBn: "উপস্থিতি",          labelEn: "Attendance",        group: "nav" },
+    { key: "nav.leave",          labelBn: "ছুটি",               labelEn: "Leave",             group: "nav" },
+    { key: "nav.clinic",         labelBn: "ক্লিনিক",           labelEn: "Clinic",            group: "nav" },
+    { key: "nav.patients",       labelBn: "রোগী",              labelEn: "Patients",          group: "nav" },
+    { key: "nav.appointments",   labelBn: "অ্যাপয়েন্টমেন্ট",  labelEn: "Appointments",      group: "nav" },
+    { key: "nav.prescriptions",  labelBn: "প্রেসক্রিপশন",      labelEn: "Prescriptions",     group: "nav" },
+    { key: "nav.rx_templates",   labelBn: "Rx টেমপ্লেট",      labelEn: "Rx Templates",      group: "nav" },
+    { key: "nav.billing",        labelBn: "বিলিং",             labelEn: "Billing",           group: "nav" },
+    { key: "nav.income",         labelBn: "আয়",                labelEn: "Income",            group: "nav" },
+    { key: "nav.expenses",       labelBn: "ব্যয়",              labelEn: "Expenses",          group: "nav" },
+    { key: "nav.inventory",      labelBn: "ইনভেন্টরি",         labelEn: "Inventory",         group: "nav" },
+    { key: "nav.surgery",        labelBn: "সার্জারি/OT",        labelEn: "Surgery/OT",        group: "nav" },
+    { key: "nav.reports",        labelBn: "রিপোর্ট",           labelEn: "Reports",           group: "nav" },
+    { key: "nav.cms",            labelBn: "ওয়েবসাইট CMS",     labelEn: "Website CMS",       group: "nav" },
+    { key: "nav.news",           labelBn: "সংবাদ",             labelEn: "News",              group: "nav" },
+    { key: "nav.gallery",        labelBn: "গ্যালারি",          labelEn: "Gallery",           group: "nav" },
+    { key: "nav.users",          labelBn: "ব্যবহারকারী",       labelEn: "Users",             group: "nav" },
+    { key: "nav.audit",          labelBn: "অডিট লগ",           labelEn: "Audit Log",         group: "nav" },
+    { key: "nav.settings",       labelBn: "সেটিংস",            labelEn: "Settings",          group: "nav" },
+    { key: "nav.rx_settings",    labelBn: "Rx সেটিংস",         labelEn: "Rx Settings",       group: "nav" },
+  ];
+  for (const p of navPerms) {
+    await prisma.permission.upsert({
+      where: { key: p.key },
+      update: {},
+      create: { id: `perm-${p.key.replace(".", "-")}`, ...p },
+    });
+  }
 }
 
 // ─── Homepage Sections ────────────────────────────────────────────────────────

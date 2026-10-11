@@ -7,6 +7,7 @@ import { RouteGuard } from "@/components/auth";
 import { Button, Modal } from "@/components/ui";
 import { ROLE_LABELS, UserRole } from "@/types";
 import api from "@/lib/api";
+import { ALL_NAV_PERMISSIONS } from "@/lib/sidebarNav";
 
 interface UserItem {
   id: string; name: string; email: string; role: UserRole;
@@ -67,23 +68,15 @@ function RegisterForm({ onSubmit, onCancel, error }: {
 }
 
 function PermissionModal({ user, onClose }: { user: UserItem; onClose: () => void }) {
-  const [allPerms, setAllPerms]     = useState<Permission[]>([]);
   const [selected, setSelected]     = useState<Set<string>>(new Set());
   const [loading, setLoading]       = useState(true);
   const [saving, setSaving]         = useState(false);
   const [saved, setSaved]           = useState(false);
 
   useEffect(() => {
-    async function load() {
-      const [permsRes, userPermsRes] = await Promise.all([
-        api.get<{ data: Permission[] }>("/auth/permissions"),
-        api.get<{ data: string[] }>(`/auth/users/${user.id}/permissions`),
-      ]);
-      setAllPerms(permsRes.data.data);
-      setSelected(new Set(userPermsRes.data.data));
-      setLoading(false);
-    }
-    load();
+    api.get<{ data: string[] }>(`/auth/users/${user.id}/permissions`)
+      .then((res) => { setSelected(new Set(res.data.data)); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [user.id]);
 
   function toggle(key: string) {
@@ -114,7 +107,8 @@ function PermissionModal({ user, onClose }: { user: UserItem; onClose: () => voi
     } finally { setSaving(false); }
   }
 
-  const groups = allPerms.reduce<Record<string, Permission[]>>((acc, p) => {
+  // Group sidebar items by group
+  const groups = ALL_NAV_PERMISSIONS.reduce<Record<string, typeof ALL_NAV_PERMISSIONS>>((acc, p) => {
     (acc[p.group] = acc[p.group] || []).push(p);
     return acc;
   }, {});
@@ -125,7 +119,7 @@ function PermissionModal({ user, onClose }: { user: UserItem; onClose: () => voi
         <div className="py-10 text-center text-gray-400 text-sm">লোড হচ্ছে...</div>
       ) : (
         <div className="space-y-4">
-          <p className="text-xs text-gray-500">যে অ্যাক্সেসগুলো দিতে চান সেগুলো টিক করুন।</p>
+          <p className="text-xs text-gray-500">যে মেনুগুলো দেখাতে চান সেগুলো টিক করুন। ডাক্তার রোলের জন্য নির্ধারিত মেনু সবসময় দেখা যাবে।</p>
           <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
             {Object.entries(groups).map(([group, perms]) => {
               const keys = perms.map((p) => p.key);
@@ -136,7 +130,7 @@ function PermissionModal({ user, onClose }: { user: UserItem; onClose: () => voi
                     onClick={() => toggleGroup(keys)}
                     className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-left"
                   >
-                    <span className="text-sm font-semibold text-gray-700 capitalize">{group}</span>
+                    <span className="text-sm font-semibold text-gray-700">{group}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                       allOn ? "bg-primary-100 text-primary-700" : "bg-gray-200 text-gray-500"
                     }`}>{allOn ? "সব চালু" : "সব বন্ধ"}</span>
@@ -150,10 +144,7 @@ function PermissionModal({ user, onClose }: { user: UserItem; onClose: () => voi
                           onChange={() => toggle(p.key)}
                           className="w-4 h-4 rounded accent-primary-600"
                         />
-                        <div>
-                          <p className="text-sm text-gray-800">{p.labelBn}</p>
-                          <p className="text-xs text-gray-400">{p.key}</p>
-                        </div>
+                        <span className="text-sm text-gray-800">{p.label}</span>
                       </label>
                     ))}
                   </div>
