@@ -8,6 +8,9 @@ import {
   listUsersService,
   toggleUserStatusService,
   updateUserRoleService,
+  listPermissionsService,
+  getUserPermissionsService,
+  updateUserPermissionsService,
 } from "../services/auth.service";
 import { successResponse } from "../utils/response";
 
@@ -72,5 +75,23 @@ export async function toggleUserStatus(req: Request, res: Response, next: NextFu
 export async function updateUserRole(req: Request, res: Response, next: NextFunction) {
   try {
     res.json(successResponse("Role updated", await updateUserRoleService(req.params.id, req.body.role, req.user!.userId)));
+  } catch (err) { next(err); }
+}
+
+export async function listPermissions(_req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(successResponse("Permissions", await listPermissionsService()));
+  } catch (err) { next(err); }
+}
+
+export async function getUserPermissions(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(successResponse("User permissions", await getUserPermissionsService(req.params.id)));
+  } catch (err) { next(err); }
+}
+
+export async function updateUserPermissions(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(successResponse("Permissions updated", await updateUserPermissionsService(req.params.id, req.body.permissionKeys)));
   } catch (err) { next(err); }
 }

@@ -200,3 +200,33 @@ export async function updateUserRoleService(userId: string, role: string, reques
     select: { id: true, name: true, email: true, role: true, isActive: true },
   });
 }
+
+export async function listPermissionsService() {
+  return prisma.permission.findMany({ orderBy: [{ group: "asc" }, { key: "asc" }] });
+}
+
+export async function getUserPermissionsService(userId: string) {
+  const up = await prisma.userPermission.findMany({
+    where: { userId },
+    select: { permission: { select: { key: true } } },
+  });
+  return up.map((p) => p.permission.key);
+}
+
+export async function updateUserPermissionsService(userId: string, permissionKeys: string[]) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new AppError("User not found", 404);
+
+  const permissions = await prisma.permission.findMany({
+    where: { key: { in: permissionKeys } },
+    select: { id: true },
+  });
+
+  await prisma.userPermission.deleteMany({ where: { userId } });
+  if (permissions.length > 0) {
+    await prisma.userPermission.createMany({
+      data: permissions.map((p) => ({ userId, permissionId: p.id })),
+    });
+  }
+  return { updated: permissions.length };
+}

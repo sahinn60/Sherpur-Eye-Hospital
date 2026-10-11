@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Plus, Filter, ShieldCheck } from "lucide-react";
+import { Search, Plus, Filter, ShieldCheck, Key } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth";
 import { Button, Modal } from "@/components/ui";
@@ -14,6 +14,9 @@ interface UserItem {
 }
 interface UserListResponse {
   items: UserItem[]; total: number; page: number; totalPages: number;
+}
+interface Permission {
+  id: string; key: string; labelBn: string; labelEn: string; group: string;
 }
 
 const ROLES: UserRole[] = ["SUPER_ADMIN", "ADMIN", "HR", "DOCTOR", "RECEPTION", "ACCOUNTANT", "EMPLOYEE"];
@@ -63,6 +66,113 @@ function RegisterForm({ onSubmit, onCancel, error }: {
   );
 }
 
+function PermissionModal({ user, onClose }: { user: UserItem; onClose: () => void }) {
+  const [allPerms, setAllPerms]     = useState<Permission[]>([]);
+  const [selected, setSelected]     = useState<Set<string>>(new Set());
+  const [loading, setLoading]       = useState(true);
+  const [saving, setSaving]         = useState(false);
+  const [saved, setSaved]           = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const [permsRes, userPermsRes] = await Promise.all([
+        api.get<{ data: Permission[] }>("/auth/permissions"),
+        api.get<{ data: string[] }>(`/auth/users/${user.id}/permissions`),
+      ]);
+      setAllPerms(permsRes.data.data);
+      setSelected(new Set(userPermsRes.data.data));
+      setLoading(false);
+    }
+    load();
+  }, [user.id]);
+
+  function toggle(key: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
+
+  function toggleGroup(keys: string[]) {
+    const allOn = keys.every((k) => selected.has(k));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      keys.forEach((k) => allOn ? next.delete(k) : next.add(k));
+      return next;
+    });
+  }
+
+  async function save() {
+    setSaving(true);
+    try {
+      await api.put(`/auth/users/${user.id}/permissions`, { permissionKeys: Array.from(selected) });
+      setSaved(true);
+      setTimeout(() => { setSaved(false); onClose(); }, 800);
+    } catch (e: any) {
+      alert(e?.response?.data?.message || "সমস্যা হয়েছে");
+    } finally { setSaving(false); }
+  }
+
+  const groups = allPerms.reduce<Record<string, Permission[]>>((acc, p) => {
+    (acc[p.group] = acc[p.group] || []).push(p);
+    return acc;
+  }, {});
+
+  return (
+    <Modal open onClose={onClose} title={`${user.name} — অ্যাক্সেস পরিচালনা`} size="lg">
+      {loading ? (
+        <div className="py-10 text-center text-gray-400 text-sm">লোড হচ্ছে...</div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-xs text-gray-500">যে অ্যাক্সেসগুলো দিতে চান সেগুলো টিক করুন।</p>
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+            {Object.entries(groups).map(([group, perms]) => {
+              const keys = perms.map((p) => p.key);
+              const allOn = keys.every((k) => selected.has(k));
+              return (
+                <div key={group} className="border border-gray-200 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => toggleGroup(keys)}
+                    className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-left"
+                  >
+                    <span className="text-sm font-semibold text-gray-700 capitalize">{group}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      allOn ? "bg-primary-100 text-primary-700" : "bg-gray-200 text-gray-500"
+                    }`}>{allOn ? "সব চালু" : "সব বন্ধ"}</span>
+                  </button>
+                  <div className="divide-y divide-gray-100">
+                    {perms.map((p) => (
+                      <label key={p.key} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(p.key)}
+                          onChange={() => toggle(p.key)}
+                          className="w-4 h-4 rounded accent-primary-600"
+                        />
+                        <div>
+                          <p className="text-sm text-gray-800">{p.labelBn}</p>
+                          <p className="text-xs text-gray-400">{p.key}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+            <Button variant="secondary" onClick={onClose}>বাতিল</Button>
+            <Button onClick={save} disabled={saving}>
+              {saved ? "✓ সংরক্ষিত" : saving ? "সংরক্ষণ হচ্ছে..." : "সংরক্ষণ করুন"}
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
 export default function UsersPage() {
   const { user: me, isSuperAdmin } = useAuth();
 
@@ -75,6 +185,7 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState("");
   const [showForm,   setShowForm]   = useState(false);
   const [formError,  setFormError]  = useState("");
+  const [permUser,   setPermUser]   = useState<UserItem | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -216,14 +327,22 @@ export default function UsersPage() {
                     </td>
                     <td className="px-4 py-3">
                       {u.id !== me?.id && (
-                        <button onClick={() => handleToggle(u)}
-                          className={`text-xs px-2 py-1 rounded-lg transition-colors ${
-                            u.isActive
-                              ? "bg-red-50 text-red-600 hover:bg-red-100"
-                              : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                          }`}>
-                          {u.isActive ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন"}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => handleToggle(u)}
+                            className={`text-xs px-2 py-1 rounded-lg transition-colors ${
+                              u.isActive
+                                ? "bg-red-50 text-red-600 hover:bg-red-100"
+                                : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                            }`}>
+                            {u.isActive ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন"}
+                          </button>
+                          {isSuperAdmin && (
+                            <button onClick={() => setPermUser(u)}
+                              className="text-xs px-2 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center gap-1">
+                              <Key size={11} /> অ্যাক্সেস
+                            </button>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -249,6 +368,7 @@ export default function UsersPage() {
           <RegisterForm onSubmit={handleRegister} onCancel={() => { setShowForm(false); setFormError(""); }} error={formError} />
         </Modal>
       )}
+      {permUser && <PermissionModal user={permUser} onClose={() => setPermUser(null)} />}
     </RouteGuard>
   );
 }
