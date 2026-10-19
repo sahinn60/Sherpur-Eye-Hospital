@@ -1,51 +1,56 @@
 "use client";
 
+import Link from "next/link";
+import { CalendarCheck, CheckCircle2, MapPin } from "lucide-react";
 import { useLang } from "@/context/LangContext";
-import { CARE_STEPS } from "@/lib/config/siteConfig";
+
+const STEPS = [
+  { icon: <CalendarCheck size={24} />, bn: "অ্যাপয়েন্টমেন্ট অনুরোধ", en: "Request Appointment", descBn: "অনলাইনে বা ফোনে সহজেই অ্যাপয়েন্টমেন্ট নিন।", descEn: "Book easily online or by phone." },
+  { icon: <CheckCircle2 size={24} />, bn: "নিশ্চিতকরণ", en: "Confirmation", descBn: "আমাদের টিম আপনাকে কল করে সময় নিশ্চিত করবে।", descEn: "Our team will call to confirm your time." },
+  { icon: <MapPin size={24} />, bn: "হাসপাতালে আসুন", en: "Visit Hospital", descBn: "নির্ধারিত সময়ে হাসপাতালে এসে বিশেষজ্ঞ সেবা নিন।", descEn: "Visit at your scheduled time for specialist care." },
+];
 
 export function CareProcessSection() {
   const { t } = useLang();
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 bg-primary-50">
+    <section className="py-14 sm:py-20 bg-blue-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
-          <span className="text-primary-600 text-xs sm:text-sm font-semibold uppercase tracking-wider">
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+          <span className="text-blue-200 text-xs font-semibold uppercase tracking-widest">
             {t("চিকিৎসা প্রক্রিয়া", "Care Process")}
           </span>
-          <h2
-            className="font-bold text-gray-900 mt-2 mb-3"
-            style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)" }}
-          >
+          <h2 className="font-extrabold text-white mt-2 mb-3" style={{ fontSize: "clamp(1.6rem, 4vw, 2.25rem)" }}>
             {t("কীভাবে সেবা নেবেন", "How to Get Care")}
           </h2>
-          <p className="text-gray-500 text-sm sm:text-base">
-            {t(
-              "মাত্র কয়েকটি সহজ ধাপে আমাদের বিশেষজ্ঞ সেবা গ্রহণ করুন।",
-              "Get our specialist care in just a few simple steps."
-            )}
+          <p className="text-blue-100 text-sm sm:text-base">
+            {t("মাত্র ৩টি সহজ ধাপে আমাদের বিশেষজ্ঞ সেবা গ্রহণ করুন।", "Get our specialist care in just 3 simple steps.")}
           </p>
         </div>
 
-        {/* 1 col mobile, 2 col sm, 4 col lg */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 relative">
-          {/* Connector line (desktop only) */}
-          <div className="hidden lg:block absolute top-10 left-[12.5%] right-[12.5%] h-0.5 bg-primary-200 z-0" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 relative">
+          {/* Connector */}
+          <div className="hidden sm:block absolute top-10 left-[20%] right-[20%] h-0.5 bg-white/20 z-0" />
 
-          {CARE_STEPS.map((step, i) => (
-            <div key={step.step} className="relative z-10 flex flex-col items-center text-center">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary-600 text-white flex flex-col items-center justify-center mb-3 sm:mb-4 shadow-lg">
-                <span className="text-[10px] sm:text-xs font-medium opacity-80">{t("ধাপ", "Step")}</span>
-                <span className="text-lg sm:text-xl font-bold leading-none">{i + 1}</span>
+          {STEPS.map((step, i) => (
+            <div key={step.en} className="relative z-10 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-2xl bg-white/20 border border-white/30 text-white flex items-center justify-center mb-4 shadow-lg">
+                {step.icon}
               </div>
-              <h3 className="font-bold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">
-                {t(step.titleBn, step.titleEn)}
-              </h3>
-              <p className="text-gray-500 text-xs sm:text-sm leading-relaxed">
-                {t(step.descBn, step.descEn)}
-              </p>
+              <div className="w-6 h-6 rounded-full bg-white text-blue-600 text-xs font-extrabold flex items-center justify-center mb-3 -mt-1">
+                {i + 1}
+              </div>
+              <h3 className="font-bold text-white mb-2 text-base">{t(step.bn, step.en)}</h3>
+              <p className="text-blue-100 text-sm leading-relaxed">{t(step.descBn, step.descEn)}</p>
             </div>
           ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <Link href="/appointment" className="inline-flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 font-bold px-7 py-3.5 rounded-xl transition-colors text-sm shadow-lg">
+            <CalendarCheck size={18} />
+            {t("এখনই অ্যাপয়েন্টমেন্ট নিন", "Book Appointment Now")}
+          </Link>
         </div>
       </div>
     </section>

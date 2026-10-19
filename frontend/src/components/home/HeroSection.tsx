@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Phone, CalendarCheck } from "lucide-react";
+import { CalendarCheck, Eye, ArrowRight } from "lucide-react";
 import { useLang } from "@/context/LangContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
@@ -10,104 +10,107 @@ export function HeroSection() {
   const { s } = useSiteSettings();
 
   return (
-    <section
-      className="relative bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 text-white overflow-hidden"
-      style={s.hero_image_url ? {
-        backgroundImage: `url(${s.hero_image_url})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      } : undefined}
-    >
-      {/* Dark overlay when image is set */}
-      {s.hero_image_url && (
-        <div className="absolute inset-0 bg-primary-900/70" />
-      )}
-      {/* Background blobs — hidden on mobile for performance */}
-      <div className="absolute inset-0 opacity-10 hidden sm:block">
-        <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-white blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-primary-300 blur-3xl" />
-      </div>
+    <section className="relative bg-gradient-to-br from-sky-50 via-blue-50 to-white overflow-hidden">
+      {/* Subtle background circles */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-blue-100/40 -translate-y-1/3 translate-x-1/3 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-sky-100/30 translate-y-1/2 -translate-x-1/4 pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 md:py-24 lg:py-32">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-24">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+          {/* Left — Text */}
           <div>
-            {/* Badge */}
-            <span className="inline-block bg-primary-600/60 border border-primary-400/40 text-primary-100 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
-              {t(s.hero_badge_bn, s.hero_badge_en)}
+            <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
+              <Eye size={13} />
+              {t("শেরপুরের আধুনিক চক্ষু সেবা কেন্দ্র", "Modern Eye Care Center in Sherpur")}
             </span>
 
-            {/* Headline — responsive clamp */}
-            <h1
-              className="font-bold leading-tight mb-4"
-              style={{ fontSize: "clamp(1.75rem, 5vw, 3.75rem)", lineHeight: 1.2 }}
-            >
-              {t(s.hero_title_bn, s.hero_title_en)}
+            <h1 className="font-extrabold text-gray-900 leading-tight mb-4" style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)" }}>
+              {t("চোখের যত্ন", "Eye Care")}{" "}
+              <span className="text-blue-600">{t("এখন আরও সহজ।", "Made Easier.")}</span>
             </h1>
 
-            {/* Description */}
-            <p className="text-primary-100 text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 max-w-lg">
-              {t(s.hero_desc_bn, s.hero_desc_en)}
+            <p className="text-gray-500 text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
+              {t(
+                "বিশ্বাস, যত্ন এবং আধুনিক চিকিৎসা প্রযুক্তির সমন্বয়ে আপনার চোখের সুস্থতার জন্য আমরা আছি পাশে।",
+                "We combine trust, care, and modern medical technology to stand by your eye health."
+              )}
             </p>
 
-            {/* CTA Buttons — stack on mobile, row on sm+ */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 mb-10">
               <Link
                 href="/appointment"
-                className="flex items-center justify-center gap-2 bg-white text-primary-800 font-bold px-6 py-3.5 rounded-xl hover:bg-primary-50 transition-colors shadow-lg text-sm sm:text-base"
+                className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-7 py-3.5 rounded-xl transition-colors shadow-md shadow-blue-200 text-sm sm:text-base"
               >
                 <CalendarCheck size={18} />
                 {t("অ্যাপয়েন্টমেন্ট নিন", "Book Appointment")}
               </Link>
-              <a
-                href={`tel:${s.phone}`}
-                className="flex items-center justify-center gap-2 border-2 border-white/60 text-white font-bold px-6 py-3.5 rounded-xl hover:bg-white/10 transition-colors text-sm sm:text-base"
+              <Link
+                href="/my-prescription"
+                className="inline-flex items-center justify-center gap-2 border-2 border-blue-200 text-blue-700 hover:bg-blue-50 font-bold px-7 py-3.5 rounded-xl transition-colors text-sm sm:text-base"
               >
-                <Phone size={18} />
-                {t("এখনই কল করুন", "Call Now")}
-              </a>
+                {t("প্রেসক্রিপশন দেখুন", "View Prescription")}
+                <ArrowRight size={16} />
+              </Link>
             </div>
 
-            {/* Feature pills */}
-            <div className="flex flex-wrap gap-3 sm:gap-6 mt-8 pt-6 sm:pt-8 border-t border-white/20">
+            {/* Stats row */}
+            <div className="flex flex-wrap gap-6 pt-6 border-t border-gray-100">
               {[
-                { bn: "অভিজ্ঞ চিকিৎসক দল", en: "Expert Medical Team" },
-                { bn: "আধুনিক যন্ত্রপাতি", en: "Modern Equipment" },
-                { bn: "সাশ্রয়ী মূল্যে সেবা", en: "Affordable Care" },
-              ].map((item) => (
-                <div key={item.en} className="flex items-center gap-2 text-primary-100 text-xs sm:text-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary-300 flex-shrink-0" />
-                  {t(item.bn, item.en)}
+                { val: s.stat1_value_bn || "১০+", valEn: s.stat1_value_en || "10+", lbn: s.stat1_label_bn || "বছরের অভিজ্ঞতা", len: s.stat1_label_en || "Years Experience" },
+                { val: s.stat2_value_bn || "৫+",  valEn: s.stat2_value_en || "5+",  lbn: s.stat2_label_bn || "বিশেষজ্ঞ চিকিৎসক", len: s.stat2_label_en || "Specialist Doctors" },
+                { val: s.stat4_value_bn || "১০,০০০+", valEn: s.stat4_value_en || "10,000+", lbn: s.stat4_label_bn || "সন্তুষ্ট রোগী", len: s.stat4_label_en || "Happy Patients" },
+              ].map((st) => (
+                <div key={st.len}>
+                  <p className="text-xl font-extrabold text-blue-700">{t(st.val, st.valEn)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{t(st.lbn, st.len)}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Decorative visual — desktop only */}
-          <div className="hidden lg:flex justify-center items-center">
-            <div className="relative w-80 h-80">
-              <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-pulse" />
-              <div className="absolute inset-8 rounded-full border border-white/30" />
-              <div className="absolute inset-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-7xl mb-2">👁️</div>
-                  <p className="text-white/80 text-xs font-medium">{t("চক্ষু সেবা", "Eye Care")}</p>
+          {/* Right — Visual card */}
+          <div className="hidden lg:block">
+            <div className="relative">
+              {/* Main card */}
+              <div className="bg-white rounded-3xl shadow-xl shadow-blue-100 overflow-hidden border border-blue-50">
+                <div className="bg-gradient-to-br from-blue-600 to-blue-800 h-56 flex items-center justify-center">
+                  <div className="text-center text-white">
+                    <div className="text-8xl mb-3">👁️</div>
+                    <p className="font-bold text-lg">{t("চক্ষু পরীক্ষা", "Eye Examination")}</p>
+                    <p className="text-blue-200 text-sm">{t("আধুনিক প্রযুক্তিতে", "With Modern Technology")}</p>
+                  </div>
+                </div>
+                <div className="p-5 grid grid-cols-3 gap-3">
+                  {[
+                    { icon: "🔬", bn: "ফ্যাকো সার্জারি", en: "Phaco Surgery" },
+                    { icon: "👓", bn: "চশমার পাওয়ার", en: "Spectacle Power" },
+                    { icon: "💧", bn: "গ্লুকোমা", en: "Glaucoma" },
+                  ].map((item) => (
+                    <div key={item.en} className="text-center p-2 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors">
+                      <div className="text-2xl mb-1">{item.icon}</div>
+                      <p className="text-xs text-gray-600 font-medium leading-tight">{t(item.bn, item.en)}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="absolute -top-4 -right-4 bg-white text-primary-800 rounded-xl px-3 py-2 shadow-lg text-xs font-bold">
-                {t("ফ্যাকো সার্জারি", "Phaco Surgery")} ✓
+
+              {/* Floating badge */}
+              <div className="absolute -top-4 -right-4 bg-green-500 text-white rounded-2xl px-4 py-2 shadow-lg text-xs font-bold">
+                ✓ {t("জরুরি সেবা ২৪/৭", "24/7 Emergency")}
               </div>
-              <div className="absolute -bottom-4 -left-4 bg-primary-500 text-white rounded-xl px-3 py-2 shadow-lg text-xs font-bold">
-                {t("জরুরি সেবা ২৪/৭", "24/7 Emergency")}
+              <div className="absolute -bottom-4 -left-4 bg-blue-600 text-white rounded-2xl px-4 py-2 shadow-lg text-xs font-bold">
+                📍 {t("শেরপুর সদর", "Sherpur Sadar")}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Wave divider */}
+      {/* Bottom wave */}
       <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-          <path d="M0 40L1440 40L1440 14C1200 40 960 0 720 14C480 28 240 0 0 14L0 40Z" fill="white" />
+        <svg viewBox="0 0 1440 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+          <path d="M0 32L1440 32L1440 10C1200 32 960 0 720 10C480 20 240 0 0 10L0 32Z" fill="white" />
         </svg>
       </div>
     </section>
