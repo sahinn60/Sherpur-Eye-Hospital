@@ -162,24 +162,7 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* ── Bottom stats strip ── */}
-        <div className="mt-16 sm:mt-20 pt-8 border-t border-white/10">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
-            {[
-              { valueBn: "১০+", valueEn: "10+", labelBn: "বছরের অভিজ্ঞতা", labelEn: "Years Experience" },
-              { valueBn: "৫০০০+", valueEn: "5000+", labelBn: "সফল অপারেশন", labelEn: "Successful Surgeries" },
-              { valueBn: "১০+", valueEn: "10+", labelBn: "বিশেষজ্ঞ চিকিৎসক", labelEn: "Expert Doctors" },
-              { valueBn: "৯৮%", valueEn: "98%", labelBn: "রোগী সন্তুষ্টি", labelEn: "Patient Satisfaction" },
-            ].map((stat) => (
-              <div key={stat.labelEn} className="text-center">
-                <p className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)" }}>
-                  {t(stat.valueBn, stat.valueEn)}
-                </p>
-                <p className="text-blue-300 text-xs sm:text-sm">{t(stat.labelBn, stat.labelEn)}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+
       </div>
     </section>
   );
