@@ -53,6 +53,7 @@ export default function QueuePage() {
   const [searchRes,  setSearchRes]  = useState<PatientResult[]>([]);
   const [selPatient, setSelPatient] = useState<PatientResult | null>(null);
   const [searching,  setSearching]  = useState(false);
+  const [searchErr,  setSearchErr]  = useState("");
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -102,15 +103,19 @@ export default function QueuePage() {
   function onSearchChange(val: string) {
     setSearchQ(val);
     setSelPatient(null);
+    setSearchErr("");
     if (searchRef.current) clearTimeout(searchRef.current);
     if (!val.trim()) { setSearchRes([]); return; }
     searchRef.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const r = await api.get<{ data: { items: PatientResult[] } }>(`/patients?search=${encodeURIComponent(val)}&limit=6`);
-        setSearchRes(r.data.data.items ?? []);
-      } catch { setSearchRes([]); }
-      finally { setSearching(false); }
+        const r = await api.get("/patients", { params: { search: val.trim(), limit: 8 } });
+        const items: PatientResult[] = r.data?.data?.items ?? [];
+        setSearchRes(items);
+      } catch (e: any) {
+        setSearchErr(e?.response?.data?.message || "সার্ভার সংযোগ ব্যর্থ");
+        setSearchRes([]);
+      } finally { setSearching(false); }
     }, 350);
   }
 
@@ -259,12 +264,14 @@ export default function QueuePage() {
                         <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl">
                           {searching ? (
                             <p className="text-xs text-gray-400 px-4 py-3">খোঁজা হচ্ছে...</p>
+                          ) : searchErr ? (
+                            <p className="text-xs text-red-500 px-4 py-3">⚠ {searchErr}</p>
                           ) : searchRes.length === 0 ? (
-                            <p className="text-xs text-gray-400 px-4 py-3">কোনো রোগী পাওয়া যায়নি</p>
+                            <p className="text-xs text-gray-400 px-4 py-3">কোনো রোগী পাওয়া যায়নি — Walk-in হিসেবে যোগ করুন</p>
                           ) : searchRes.map(p => (
                             <button key={p.id}
                               onMouseDown={e => e.preventDefault()}
-                              onClick={() => { setSelPatient(p); setSearchQ(""); setSearchRes([]); }}
+                              onClick={() => { setSelPatient(p); setSearchQ(""); setSearchRes([]); setSearchErr(""); }}
                               className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b border-gray-50 last:border-0">
                               <p className="text-sm font-medium text-gray-900">{p.nameBn}</p>
                               <p className="text-xs text-gray-400">{p.patientId} · {p.phone}</p>
