@@ -52,8 +52,7 @@ export function errorHandler(
 
   // Log unexpected errors server-side only
   if (config.env !== "test") {
-    console.error(`[${new Date().toISOString()}] ${req.method} ${req.path}`, err.message);
-    if (config.env === "development") console.error(err.stack);
+    console.error(`[${new Date().toISOString()}] ${req.method} ${req.path}`, err.message, err.stack);
   }
 
   // Never expose internals in production

@@ -180,7 +180,7 @@ export async function addEntry(data: {
     const existing = await prisma.queueEntry.findFirst({
       where: { sessionId: data.sessionId, patientId: data.patientId, status: { in: ["WAITING", "CALLED", "IN_CONSULTATION"] } },
     });
-    if (existing) throw new AppError("Patient already in queue", 409);
+    if (existing) throw new AppError("এই রোগী ইতিমধ্যে সিরিয়ালে আছেন", 409);
   }
 
   // Next serial number
@@ -191,15 +191,20 @@ export async function addEntry(data: {
   const serial = (last?.serial ?? 0) + 1;
   const tokenLabel = toBengaliDigits(serial);
 
-  return prisma.queueEntry.create({
-    data: {
-      sessionId: data.sessionId,
-      serial,
-      tokenLabel,
-      patientId: data.patientId ?? null,
-      addedBy: data.addedBy,
-    },
-  });
+  try {
+    return await prisma.queueEntry.create({
+      data: {
+        sessionId: data.sessionId,
+        serial,
+        tokenLabel,
+        patientId: data.patientId ?? null,
+        addedBy: data.addedBy,
+      },
+    });
+  } catch (e: any) {
+    console.error("[addEntry] Prisma error:", e?.message, e?.code, e?.meta);
+    throw e;
+  }
 }
 
 /** Atomic call-next — uses transaction to prevent double-advance */
