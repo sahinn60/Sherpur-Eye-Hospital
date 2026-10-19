@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarCheck, ListOrdered, Users, ArrowRight, Phone } from "lucide-react";
+import { CalendarCheck, Phone, ArrowRight, Eye, Shield, Clock, Star } from "lucide-react";
 import { useLang } from "@/context/LangContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
@@ -9,88 +9,174 @@ export function HeroSection() {
   const { t } = useLang();
   const { s } = useSiteSettings();
   const heroImg: string = (s as any).hero_image || "";
+  const phone: string = (s as any).contact_phone || "01781836581";
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#EBF3FF] to-white">
-      {/* Decorative blobs */}
-      <div className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-100 opacity-50 blur-3xl" />
-      <div className="pointer-events-none absolute top-10 -right-20 w-72 h-72 rounded-full bg-blue-200 opacity-30 blur-3xl" />
+    <section className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%)" }}>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-0 sm:pt-16 lg:pt-20">
+      {/* Background pattern */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, #60a5fa, transparent)" }} />
+        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, #3b82f6, transparent)" }} />
+        {/* Grid dots */}
+        <svg className="absolute inset-0 w-full h-full opacity-5" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="dots" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1.5" fill="white" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dots)" />
+        </svg>
+      </div>
 
-        {/* ── Top text ── */}
-        <div className="text-center max-w-3xl mx-auto">
-          <span className="inline-flex items-center gap-2 bg-blue-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full mb-5 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-white/70 inline-block animate-pulse" />
-            {t("শেরপুরের আধুনিক চক্ষু সেবা কেন্দ্র", "Modern Eye Care Center in Sherpur")}
-          </span>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20 lg:py-24">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
-          <h1 className="font-extrabold text-gray-900 leading-tight mb-5 tracking-tight"
-            style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}>
-            {t("চোখের সেরা যত্ন", "The Best Care")}
-            <br />
-            <span className="text-blue-600">{t("এখন আপনার দোরগোড়ায়", "For Your Eyes")}</span>
-          </h1>
+          {/* ── LEFT: Text content ── */}
+          <div className="order-2 lg:order-1">
 
-          <p className="text-gray-500 leading-relaxed mb-8 mx-auto"
-            style={{ fontSize: "clamp(0.95rem, 1.5vw, 1.1rem)", maxWidth: "540px" }}>
-            {t(
-              "বিশ্বাস, যত্ন ও আধুনিক প্রযুক্তির সমন্বয়ে শেরপুর আধুনিক চক্ষু হাসপাতাল আপনার চোখের সুস্থতায় সর্বদা পাশে।",
-              "Combining trust, care and modern technology — Sherpur Eye Hospital is always by your side."
-            )}
-          </p>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-blue-400/30 bg-blue-500/10 backdrop-blur-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-blue-200 text-xs font-semibold tracking-wide">
+                {t("শেরপুরের আধুনিক চক্ষু সেবা কেন্দ্র", "Modern Eye Care Center — Sherpur")}
+              </span>
+            </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-            <Link href="/appointment"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-7 py-3.5 rounded-2xl transition-all shadow-lg shadow-blue-200 text-sm">
-              <CalendarCheck size={17} />
-              {t("অ্যাপয়েন্টমেন্ট নিন", "Book Appointment")}
-            </Link>
-            <a href={`tel:${(s as any).contact_phone || "01781836581"}`}
-              className="inline-flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:text-blue-700 font-bold px-7 py-3.5 rounded-2xl transition-all text-sm">
-              <Phone size={17} />
-              {t("কল করুন", "Call Us")}
-            </a>
+            {/* Headline */}
+            <h1 className="font-extrabold text-white leading-tight mb-5 tracking-tight"
+              style={{ fontSize: "clamp(2rem, 4.5vw, 3.5rem)", lineHeight: 1.15 }}>
+              {t("আপনার চোখের", "Expert Care")}
+              <br />
+              <span style={{ background: "linear-gradient(90deg, #60a5fa, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                {t("বিশেষজ্ঞ সেবা", "For Your Eyes")}
+              </span>
+              <br />
+              <span className="text-white">{t("আমাদের কাছে", "We're Here")}</span>
+            </h1>
+
+            {/* Description */}
+            <p className="text-blue-100/80 leading-relaxed mb-8"
+              style={{ fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)", maxWidth: "480px" }}>
+              {t(
+                "বিশ্বাস, যত্ন ও আধুনিক প্রযুক্তির সমন্বয়ে শেরপুর আধুনিক চক্ষু হাসপাতাল আপনার চোখের সুস্থতায় সর্বদা পাশে আছে।",
+                "Combining trust, care and modern technology — Sherpur Eye Hospital stands by your eye health every step of the way."
+              )}
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-3 mb-10">
+              <Link href="/appointment"
+                className="inline-flex items-center gap-2.5 font-bold px-7 py-3.5 rounded-2xl text-sm transition-all shadow-xl"
+                style={{ background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "white", boxShadow: "0 8px 32px rgba(37,99,235,0.4)" }}>
+                <CalendarCheck size={17} />
+                {t("অ্যাপয়েন্টমেন্ট নিন", "Book Appointment")}
+              </Link>
+              <a href={`tel:${phone}`}
+                className="inline-flex items-center gap-2.5 font-bold px-7 py-3.5 rounded-2xl text-sm transition-all border-2 border-white/20 text-white hover:bg-white/10 backdrop-blur-sm">
+                <Phone size={17} />
+                {t("কল করুন", "Call Now")}
+              </a>
+            </div>
+
+            {/* Trust indicators */}
+            <div className="flex flex-wrap gap-5">
+              {[
+                { icon: Shield, bn: "বিশ্বস্ত সেবা", en: "Trusted Care" },
+                { icon: Clock, bn: "দ্রুত সেবা", en: "Fast Service" },
+                { icon: Star, bn: "অভিজ্ঞ দল", en: "Expert Team" },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.en} className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/20 flex items-center justify-center">
+                      <Icon size={14} className="text-blue-300" />
+                    </div>
+                    <span className="text-blue-200 text-xs font-medium">{t(item.bn, item.en)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── RIGHT: Visual ── */}
+          <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-md lg:max-w-none">
+
+              {/* Main image card */}
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+                style={{ aspectRatio: "4/3" }}>
+                {heroImg ? (
+                  <img src={heroImg}
+                    alt={t("শেরপুর আধুনিক চক্ষু হাসপাতাল", "Sherpur Eye Hospital")}
+                    className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-4"
+                    style={{ background: "linear-gradient(135deg, #1e3a5f, #1e40af)" }}>
+                    <div className="w-24 h-24 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center">
+                      <Eye size={44} className="text-blue-300" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-white font-bold text-lg">{t("শেরপুর আধুনিক চক্ষু হাসপাতাল", "Sherpur Eye Hospital")}</p>
+                      <p className="text-blue-300 text-sm mt-1">{t("ও ফ্যাকো সেন্টার", "& Phaco Center")}</p>
+                    </div>
+                    <p className="text-blue-400/60 text-xs text-center px-8">
+                      {t("CMS থেকে হিরো ছবি আপলোড করুন", "Upload hero image from CMS")}
+                    </p>
+                  </div>
+                )}
+
+                {/* Overlay gradient at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+                  style={{ background: "linear-gradient(to top, rgba(15,23,42,0.6), transparent)" }} />
+              </div>
+
+              {/* Floating card — top left */}
+              <div className="absolute -top-4 -left-4 sm:-left-6 bg-white rounded-2xl px-4 py-3 shadow-2xl border border-gray-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <span className="text-lg">👁️</span>
+                  </div>
+                  <div>
+                    <p className="text-gray-900 font-extrabold text-sm leading-none">১০০%</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{t("ব্যথামুক্ত", "Painless")}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating card — bottom right */}
+              <div className="absolute -bottom-4 -right-4 sm:-right-6 bg-white rounded-2xl px-4 py-3 shadow-2xl border border-gray-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <CalendarCheck size={18} className="text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-gray-900 font-extrabold text-sm leading-none">{t("অনলাইন", "Online")}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{t("অ্যাপয়েন্টমেন্ট", "Appointment")}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* ── Hero image ── */}
-        <div className="relative mx-auto max-w-5xl">
-          <div className="overflow-hidden rounded-t-3xl shadow-2xl shadow-blue-100"
-            style={{ height: "clamp(220px, 32vw, 420px)" }}>
-            {heroImg ? (
-              <img src={heroImg} alt={t("শেরপুর আধুনিক চক্ষু হাসপাতাল", "Sherpur Eye Hospital")}
-                className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-blue-700 via-blue-600 to-blue-900 flex flex-col items-center justify-center gap-3">
-                <span className="text-7xl sm:text-8xl">🏥</span>
-                <p className="text-white/80 text-sm text-center px-6">
-                  {t("Admin CMS থেকে হিরো ছবি আপলোড করুন", "Upload hero image from Admin CMS")}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* ── Quick cards overlapping image bottom ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 -mt-6 sm:-mt-8 px-3 sm:px-0 pb-6 sm:pb-8">
+        {/* ── Bottom stats strip ── */}
+        <div className="mt-16 sm:mt-20 pt-8 border-t border-white/10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
             {[
-              { icon: <CalendarCheck size={20} className="text-blue-600" />, titleBn: "অ্যাপয়েন্টমেন্ট", titleEn: "Appointment", descBn: "সহজেই সময় নির্ধারণ করুন", descEn: "Schedule your visit easily", href: "/appointment", color: "blue" },
-              { icon: <ListOrdered size={20} className="text-emerald-600" />, titleBn: "লাইভ সিরিয়াল", titleEn: "Live Serial", descBn: "বর্তমান সিরিয়াল দেখুন", descEn: "Check current serial", href: "#live-serial", color: "emerald" },
-              { icon: <Users size={20} className="text-violet-600" />, titleBn: "আমাদের চিকিৎসক", titleEn: "Our Doctors", descBn: "অভিজ্ঞ বিশেষজ্ঞ দল", descEn: "Experienced specialists", href: "/doctors", color: "violet" },
-            ].map((card) => (
-              <Link key={card.titleEn} href={card.href}
-                className="flex items-center gap-3 bg-white rounded-2xl px-4 py-4 shadow-xl border border-gray-100 hover:border-blue-200 hover:shadow-2xl transition-all group">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  card.color === "blue" ? "bg-blue-50" : card.color === "emerald" ? "bg-emerald-50" : "bg-violet-50"
-                }`}>
-                  {card.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900 text-sm">{t(card.titleBn, card.titleEn)}</p>
-                  <p className="text-gray-400 text-xs mt-0.5">{t(card.descBn, card.descEn)}</p>
-                </div>
-                <ArrowRight size={15} className="text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-              </Link>
+              { valueBn: "১০+", valueEn: "10+", labelBn: "বছরের অভিজ্ঞতা", labelEn: "Years Experience" },
+              { valueBn: "৫০০০+", valueEn: "5000+", labelBn: "সফল অপারেশন", labelEn: "Successful Surgeries" },
+              { valueBn: "১০+", valueEn: "10+", labelBn: "বিশেষজ্ঞ চিকিৎসক", labelEn: "Expert Doctors" },
+              { valueBn: "৯৮%", valueEn: "98%", labelBn: "রোগী সন্তুষ্টি", labelEn: "Patient Satisfaction" },
+            ].map((stat) => (
+              <div key={stat.labelEn} className="text-center">
+                <p className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)" }}>
+                  {t(stat.valueBn, stat.valueEn)}
+                </p>
+                <p className="text-blue-300 text-xs sm:text-sm">{t(stat.labelBn, stat.labelEn)}</p>
+              </div>
             ))}
           </div>
         </div>
