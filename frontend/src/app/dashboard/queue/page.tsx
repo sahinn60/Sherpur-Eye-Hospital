@@ -16,7 +16,16 @@ interface Entry {
   id: string; serial: number; tokenLabel: string; status: string;
   patient?: { nameBn: string; patientId: string; phone: string } | null;
 }
-interface PatientResult { id: string; nameBn: string; patientId: string; phone: string; }
+interface PatientResult {
+  id: string; nameBn: string; patientId: string; phone: string;
+  _source: "patient";
+}
+interface ApptResult {
+  id: string; requestId: string; patientName: string; phone: string;
+  preferredDate: string; status: string;
+  _source: "appointment";
+}
+type SearchResult = PatientResult | ApptResult;
 interface Doctor { id: string; nameBn: string; nameEn: string; }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -36,7 +45,7 @@ const SESSION_BN: Record<string, string> = {
 };
 
 export default function QueuePage() {
-  const { user, isSuperAdmin, isAdmin } = useAuth();
+  const { isSuperAdmin, isAdmin } = useAuth();
   const isStaff = isSuperAdmin || isAdmin;
 
   const [sessions,   setSessions]   = useState<Session[]>([]);
@@ -50,14 +59,13 @@ export default function QueuePage() {
   const [newDate,    setNewDate]    = useState(new Date().toISOString().slice(0, 10));
   const [busy,       setBusy]       = useState(false);
   const [searchQ,    setSearchQ]    = useState("");
-  const [searchRes,  setSearchRes]  = useState<PatientResult[]>([]);
-  const [selPatient, setSelPatient] = useState<PatientResult | null>(null);
+  const [searchRes,  setSearchRes]  = useState<SearchResult[]>([]);
+  const [selPatient, setSelPatient] = useState<SearchResult | null>(null);
   const [searching,  setSearching]  = useState(false);
   const [searchErr,  setSearchErr]  = useState("");
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollRef   = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Always derive selSession from sessions array so it stays fresh
   const selSession = sessions.find(s => s.id === selId) ?? null;
 
   const loadSessions = useCallback(async () => {
@@ -82,10 +90,7 @@ export default function QueuePage() {
     if (pollRef.current) clearInterval(pollRef.current);
     if (!selId) { setEntries([]); return; }
     loadEntries(selId);
-    pollRef.current = setInterval(() => {
-      loadSessions();
-      loadEntries(selId);
-    }, 5000);
+    pollRef.current = setInterval(() => { loadSessions(); loadEntries(selId); }, 5000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [selId, loadEntries, loadSessions]);
 
@@ -109,14 +114,33 @@ export default function QueuePage() {
     searchRef.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const r = await api.get("/patients", { params: { search: val.trim(), limit: 8 } });
-        const items: PatientResult[] = r.data?.data?.items ?? [];
-        setSearchRes(items);
-      } catch (e: any) {
-        setSearchErr(e?.response?.data?.message || "সার্ভার সংযোগ ব্যর্থ");
+        const [pRes, aRes] = await Promise.allSettled([
+          api.get("/patients", { params: { search: val.trim(), limit: 6 } }),
+          api.get("/appointments/search-patients", { params: { q: val.trim() } }),
+        ]);
+        const patients: PatientResult[] = pRes.status === "fulfilled"
+          ? (pRes.value.data?.data?.items ?? []).map((p: any) => ({ ...p, _source: "patient" as const }))
+          : [];
+        const appts: ApptResult[] = aRes.status === "fulfilled"
+          ? (aRes.value.data?.data ?? []).map((a: any) => ({ ...a, _source: "appointment" as const }))
+          : [];
+        // If same phone in both sources, keep registered patient only
+        const patientPhones = new Set(patients.map(p => p.phone));
+        const filteredAppts = appts.filter(a => !patientPhones.has(a.phone));
+        setSearchRes([...patients, ...filteredAppts]);
+      } catch {
+        setSearchErr("সার্ভার সংযোগ ব্যর্থ");
         setSearchRes([]);
       } finally { setSearching(false); }
     }, 350);
+  }
+
+  function clearSearch() {
+    setSelPatient(null); setSearchQ(""); setSearchRes([]); setSearchErr("");
+  }
+
+  function resultName(r: SearchResult) {
+    return r._source === "patient" ? r.nameBn : r.patientName;
   }
 
   async function createSession() {
@@ -176,9 +200,7 @@ export default function QueuePage() {
                 {s.doctor && <p className="text-xs text-gray-500">{s.doctor.nameBn}</p>}
                 <div className="flex items-center justify-between mt-1">
                   <p className="text-xs text-gray-400">মোট: {s._count?.entries ?? 0} জন</p>
-                  {s.currentSerial && (
-                    <p className="text-xs font-bold text-blue-600">সিরিয়াল: {s.currentSerial}</p>
-                  )}
+                  {s.currentSerial && <p className="text-xs font-bold text-blue-600">সিরিয়াল: {s.currentSerial}</p>}
                 </div>
               </button>
             ))}
@@ -199,12 +221,9 @@ export default function QueuePage() {
                     <p className="font-bold text-gray-900">{selSession.roomLabel}</p>
                     <p className="text-xs text-gray-400 mt-0.5">
                       বর্তমান সিরিয়াল:{" "}
-                      <span className="font-bold text-blue-600 text-sm">
-                        {selSession.currentSerial ?? "—"}
-                      </span>
+                      <span className="font-bold text-blue-600 text-sm">{selSession.currentSerial ?? "—"}</span>
                     </p>
                   </div>
-
                   <div className="flex flex-wrap gap-2">
                     {selSession.status === "NOT_STARTED" && (
                       <Button size="sm" onClick={() => act(() => api.patch(`/queue/sessions/${selSession.id}/action/start`))} disabled={busy} className="flex items-center gap-1 bg-green-600 hover:bg-green-700">
@@ -244,22 +263,36 @@ export default function QueuePage() {
                       {selPatient ? (
                         <div className="flex items-center gap-2 border border-blue-300 bg-blue-50 rounded-lg px-3 py-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{selPatient.nameBn}</p>
-                            <p className="text-xs text-gray-500">{selPatient.patientId} · {selPatient.phone}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-gray-900 truncate">{resultName(selPatient)}</p>
+                              <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                                selPatient._source === "patient"
+                                  ? "bg-blue-100 text-blue-600"
+                                  : "bg-amber-100 text-amber-700"
+                              }`}>
+                                {selPatient._source === "patient" ? "নিবন্ধিত" : "অ্যাপয়েন্টমেন্ট"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              {selPatient._source === "patient"
+                                ? `${selPatient.patientId} · ${selPatient.phone}`
+                                : `${selPatient.requestId} · ${selPatient.phone}`}
+                            </p>
                           </div>
-                          <button onClick={() => { setSelPatient(null); setSearchQ(""); setSearchRes([]); }}
+                          <button onClick={clearSearch}
                             className="text-gray-400 hover:text-red-500 text-lg leading-none flex-shrink-0">×</button>
                         </div>
                       ) : (
                         <input
-                          placeholder="নাম, ফোন বা Patient ID দিয়ে খুঁজুন (ঐচ্ছিক)"
+                          placeholder="নাম, ফোন বা Patient ID / APT ID দিয়ে খুঁজুন (ঐচ্ছিক)"
                           value={searchQ}
                           onChange={e => onSearchChange(e.target.value)}
                           onBlur={() => setTimeout(() => setSearchRes([]), 200)}
                           className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
                         />
                       )}
-                      {/* Dropdown results */}
+
+                      {/* Dropdown */}
                       {!selPatient && searchQ && (
                         <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl">
                           {searching ? (
@@ -269,22 +302,41 @@ export default function QueuePage() {
                           ) : searchRes.length === 0 ? (
                             <p className="text-xs text-gray-400 px-4 py-3">কোনো রোগী পাওয়া যায়নি — Walk-in হিসেবে যোগ করুন</p>
                           ) : searchRes.map(p => (
-                            <button key={p.id}
+                            <button key={`${p._source}-${p.id}`}
                               onMouseDown={e => e.preventDefault()}
                               onClick={() => { setSelPatient(p); setSearchQ(""); setSearchRes([]); setSearchErr(""); }}
                               className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b border-gray-50 last:border-0">
-                              <p className="text-sm font-medium text-gray-900">{p.nameBn}</p>
-                              <p className="text-xs text-gray-400">{p.patientId} · {p.phone}</p>
+                              {p._source === "patient" ? (
+                                <>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm font-medium text-gray-900">{p.nameBn}</p>
+                                    <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">নিবন্ধিত</span>
+                                  </div>
+                                  <p className="text-xs text-gray-400">{p.patientId} · {p.phone}</p>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm font-medium text-gray-900">{p.patientName}</p>
+                                    <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">অ্যাপয়েন্টমেন্ট</span>
+                                  </div>
+                                  <p className="text-xs text-gray-400">{p.requestId} · {p.phone}</p>
+                                </>
+                              )}
                             </button>
                           ))}
                         </div>
                       )}
                     </div>
+
                     <Button size="sm" onClick={() => act(async () => {
-                      await api.post(`/queue/sessions/${selSession.id}/entries`, { patientId: selPatient?.id });
-                      setSelPatient(null); setSearchQ(""); setSearchRes([]);
+                      // Only registered patients have a Patient DB id to link
+                      const patientId = selPatient?._source === "patient" ? selPatient.id : undefined;
+                      await api.post(`/queue/sessions/${selSession.id}/entries`, { patientId });
+                      clearSearch();
                     })} disabled={busy} className="flex items-center gap-1">
-                      <Plus size={13} /> {selPatient ? `${selPatient.nameBn} কে যোগ করুন` : "Walk-in যোগ করুন"}
+                      <Plus size={13} />
+                      {selPatient ? `${resultName(selPatient)} কে যোগ করুন` : "Walk-in যোগ করুন"}
                     </Button>
                   </div>
                 )}

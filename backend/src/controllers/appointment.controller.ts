@@ -2,9 +2,18 @@ import { Request, Response, NextFunction } from "express";
 import {
   createAppointment, getAllAppointments,
   getAppointmentById, getAppointmentByRequestId, updateAppointmentStatus,
+  searchAppointmentPatients,
 } from "../services/appointment.service";
 import { successResponse } from "../utils/response";
 import { auditCtx } from "../utils/auditCtx";
+
+export async function searchPatients(req: Request, res: Response, next: NextFunction) {
+  try {
+    const q = (req.query.q as string) || "";
+    const results = await searchAppointmentPatients(q);
+    res.json(successResponse("Results", results));
+  } catch (err) { next(err); }
+}
 
 export async function bookAppointment(req: Request, res: Response, next: NextFunction) {
   try {

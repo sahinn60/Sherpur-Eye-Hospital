@@ -88,6 +88,24 @@ export async function getAllAppointments(status?: string, search?: string) {
   });
 }
 
+/** Search appointments by name/phone for queue walk-in — returns safe fields only */
+export async function searchAppointmentPatients(q: string) {
+  const term = q.trim();
+  if (!term) return [];
+  return prisma.appointment.findMany({
+    where: {
+      OR: [
+        { patientName: { contains: term, mode: "insensitive" } },
+        { phone:       { contains: term } },
+        { requestId:   { contains: term, mode: "insensitive" } },
+      ],
+    },
+    select: { id: true, requestId: true, patientName: true, phone: true, preferredDate: true, status: true },
+    orderBy: { createdAt: "desc" },
+    take: 8,
+  });
+}
+
 export async function getAppointmentById(id: string) {
   const appt = await prisma.appointment.findUnique({
     where: { id },
