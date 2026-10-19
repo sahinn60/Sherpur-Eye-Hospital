@@ -10,11 +10,33 @@ export function HeroSection() {
   const { s } = useSiteSettings();
   const heroImg: string = (s as any).hero_image || "";
   const phone: string = (s as any).contact_phone || "01781836581";
+  const bgImage: string   = s.hero_bg_image    || "";
+  const bgEnabled: boolean = s.hero_bg_enabled === "true";
+  const bgOpacity: number  = Math.min(100, Math.max(0, Number(s.hero_bg_opacity  ?? 15)))  / 100;
+  const bgOverlay: number  = Math.min(100, Math.max(0, Number(s.hero_bg_overlay  ?? 50)))  / 100;
+  const bgPosition: string = s.hero_bg_position || "center";
 
   return (
     <section className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%)" }}>
 
-      {/* Background pattern */}
+      {/* Hero background image layer — decorative, pointer-events-none */}
+      {bgEnabled && bgImage && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bgImage}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full pointer-events-none select-none"
+            style={{ objectFit: "cover", objectPosition: bgPosition, opacity: bgOpacity }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: `rgba(15,23,42,${bgOverlay})` }}
+          />
+        </>
+      )}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-10"
           style={{ background: "radial-gradient(circle, #60a5fa, transparent)" }} />

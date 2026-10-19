@@ -411,7 +411,7 @@ export default function CmsAdminPage() {
   }
 
   const isSettingsTab = ![
-    "sections", "notices", "about_images", "page_heroes", "nav_icons", "messages"
+    "sections", "notices", "about_images", "page_heroes", "nav_icons", "messages", "hero"
   ].includes(activeTab);
 
   // For about_images tab: show only image-type fields from 'about' group
@@ -482,7 +482,119 @@ export default function CmsAdminPage() {
               </div>
             ) : (
               <>
-                {isSettingsTab && (
+                {activeTab === "hero" && (
+                  <div className="space-y-6">
+                    {/* ── Hero Background Image ── */}
+                    <div className="border border-blue-100 rounded-xl p-5 bg-blue-50/40 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">হিরো ব্যাকগ্রাউন্ড ছবি</p>
+                          <p className="text-xs text-gray-400 mt-0.5">Hero Background Image — আলাদা ব্যাকগ্রাউন্ড লেয়ার (foreground ছবির পেছনে)</p>
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <span className="text-xs text-gray-500">{draft["hero_bg_enabled"] === "true" ? "চালু" : "বন্ধ"}</span>
+                          <button
+                            type="button"
+                            onClick={() => setDraft({ ...draft, hero_bg_enabled: draft["hero_bg_enabled"] === "true" ? "false" : "true" })}
+                            className={`relative w-10 h-5 rounded-full transition-colors ${
+                              draft["hero_bg_enabled"] === "true" ? "bg-primary-600" : "bg-gray-300"
+                            }`}
+                          >
+                            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                              draft["hero_bg_enabled"] === "true" ? "translate-x-5" : "translate-x-0.5"
+                            }`} />
+                          </button>
+                        </label>
+                      </div>
+
+                      {/* Upload */}
+                      <Field
+                        s={{ key: "hero_bg_image", labelBn: "ব্যাকগ্রাউন্ড ছবি (1920×800px প্রস্তাবিত)", labelEn: "Background Image (1920×800px suggested)", type: "image", group: "hero" }}
+                        value={draft["hero_bg_image"] ?? ""}
+                        onChange={(v) => setDraft({ ...draft, hero_bg_image: v })}
+                      />
+
+                      {/* Opacity */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          ছবির অপাসিটি / Image Opacity — {draft["hero_bg_opacity"] ?? "15"}%
+                        </label>
+                        <input
+                          type="range" min={0} max={100} step={1}
+                          value={draft["hero_bg_opacity"] ?? "15"}
+                          onChange={(e) => setDraft({ ...draft, hero_bg_opacity: e.target.value })}
+                          className="w-full accent-primary-600"
+                        />
+                        <div className="flex justify-between text-[10px] text-gray-400 mt-0.5"><span>0%</span><span>100%</span></div>
+                      </div>
+
+                      {/* Overlay */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Navy ওভারলে শক্তি / Navy Overlay — {draft["hero_bg_overlay"] ?? "50"}%
+                        </label>
+                        <input
+                          type="range" min={0} max={100} step={1}
+                          value={draft["hero_bg_overlay"] ?? "50"}
+                          onChange={(e) => setDraft({ ...draft, hero_bg_overlay: e.target.value })}
+                          className="w-full accent-primary-600"
+                        />
+                        <div className="flex justify-between text-[10px] text-gray-400 mt-0.5"><span>0% (স্বচ্ছ)</span><span>100% (অস্বচ্ছ)</span></div>
+                      </div>
+
+                      {/* Position */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">ছবির অবস্থান / Background Position</label>
+                        <select
+                          value={draft["hero_bg_position"] ?? "center"}
+                          onChange={(e) => setDraft({ ...draft, hero_bg_position: e.target.value })}
+                          className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        >
+                          {["center","top","bottom","left","right"].map((p) => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex justify-end pt-1">
+                        <Button
+                          onClick={async () => {
+                            setSaving(true);
+                            try {
+                              await saveSettings({
+                                hero_bg_image:    draft["hero_bg_image"]    ?? "",
+                                hero_bg_enabled:  draft["hero_bg_enabled"]  ?? "false",
+                                hero_bg_opacity:  draft["hero_bg_opacity"]  ?? "15",
+                                hero_bg_overlay:  draft["hero_bg_overlay"]  ?? "50",
+                                hero_bg_position: draft["hero_bg_position"] ?? "center",
+                              });
+                              setSaved(true);
+                              setTimeout(() => setSaved(false), 2500);
+                            } finally { setSaving(false); }
+                          }}
+                          disabled={saving}
+                          className="flex items-center gap-2"
+                        >
+                          <Save size={14} /> {saving ? "সংরক্ষণ হচ্ছে..." : "ব্যাকগ্রাউন্ড সংরক্ষণ করুন"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* ── Existing hero text/image fields ── */}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">হিরো টেক্সট ও Foreground ছবি</p>
+                      <SettingsTab
+                        group="hero"
+                        grouped={grouped}
+                        draft={draft}
+                        setDraft={setDraft}
+                        onSave={handleSaveSettings}
+                        saving={saving}
+                      />
+                    </div>
+                  </div>
+                )}
+                {activeTab !== "hero" && isSettingsTab && (
                   <SettingsTab
                     group={activeTab}
                     grouped={grouped}

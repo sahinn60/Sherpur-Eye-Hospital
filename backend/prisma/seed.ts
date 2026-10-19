@@ -272,7 +272,12 @@ async function main() {
     { key: "hero_title_en",    value: "Your Vision, Our Responsibility",    group: "hero", labelBn: "হিরো শিরোনাম (ইংরেজি)",  labelEn: "Hero Title (English)",  type: "text" },
     { key: "hero_desc_bn",     value: "শেরপুর আধুনিক চক্ষু হাসপাতালে আমরা সর্বাধুনিক প্রযুক্তি ও অভিজ্ঞ চিকিৎসকদের মাধ্যমে আপনার চোখের সর্বোত্তম যত্ন নিশ্চিত করি।", group: "hero", labelBn: "হিরো বিবরণ (বাংলা)",  labelEn: "Hero Description (Bangla)",  type: "textarea" },
     { key: "hero_desc_en",     value: "At Sherpur Adhunik Eye Hospital, we ensure the best care for your eyes through modern technology and experienced doctors.", group: "hero", labelBn: "হিরো বিবরণ (ইংরেজি)",  labelEn: "Hero Description (English)",  type: "textarea" },
-    { key: "hero_image",       value: "", group: "hero", labelBn: "হিরো ব্যাকগ্রাউন্ড ছবি", labelEn: "Hero Background Image", type: "image" },
+    { key: "hero_image",       value: "", group: "hero", labelBn: "হিরো ফোরগ্রাউন্ড ছবি (ডান পাশে)", labelEn: "Hero Foreground Image (right side)", type: "image" },
+    { key: "hero_bg_image",    value: "", group: "hero", labelBn: "হিরো ব্যাকগ্রাউন্ড ছবি",           labelEn: "Hero Background Image",           type: "image" },
+    { key: "hero_bg_enabled",  value: "false", group: "hero", labelBn: "ব্যাকগ্রাউন্ড ছবি চালু",      labelEn: "Background Image Enabled",       type: "text" },
+    { key: "hero_bg_opacity",  value: "15",    group: "hero", labelBn: "ব্যাকগ্রাউন্ড ছবির অপাসিটি",  labelEn: "Background Image Opacity",       type: "text" },
+    { key: "hero_bg_overlay",  value: "50",    group: "hero", labelBn: "Navy ওভারলে শক্তি",           labelEn: "Navy Overlay Strength",           type: "text" },
+    { key: "hero_bg_position", value: "center",group: "hero", labelBn: "ব্যাকগ্রাউন্ড পজিশন",          labelEn: "Background Position",            type: "text" },
     // Stats
     { key: "stat1_value_bn",   value: "১০+",       group: "stats", labelBn: "স্ট্যাট ১ মান (বাংলা)",  labelEn: "Stat 1 Value (Bangla)",  type: "text" },
     { key: "stat1_value_en",   value: "10+",        group: "stats", labelBn: "স্ট্যাট ১ মান (ইংরেজি)",  labelEn: "Stat 1 Value (English)",  type: "text" },

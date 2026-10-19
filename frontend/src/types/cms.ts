@@ -62,6 +62,11 @@ export interface HospitalSettings {
   hero_desc_bn:     string;
   hero_desc_en:     string;
   hero_image_url:   string;
+  hero_bg_image:    string;
+  hero_bg_enabled:  string;
+  hero_bg_opacity:  string;
+  hero_bg_overlay:  string;
+  hero_bg_position: string;
   stat1_value_bn:   string;
   stat1_value_en:   string;
   stat1_label_bn:   string;
