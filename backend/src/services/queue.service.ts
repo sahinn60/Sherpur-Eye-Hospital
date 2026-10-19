@@ -98,7 +98,7 @@ export async function listAllSessions(date?: string) {
       doctor: { select: { nameBn: true, nameEn: true } },
       _count: { select: { entries: true } },
     },
-    orderBy: [{ doctor: { sortOrder: "asc" } }, { createdAt: "asc" }],
+    orderBy: { createdAt: "asc" },
   });
 }
 
