@@ -56,7 +56,5 @@ export function errorHandler(
   }
 
   // Never expose internals in production
-  res.status(500).json(errorResponse(
-    config.env === "production" ? "Internal server error" : err.message
-  ));
+  res.status(500).json(errorResponse(err.message));
 }
