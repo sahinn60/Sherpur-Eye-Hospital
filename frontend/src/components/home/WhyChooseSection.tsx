@@ -4,12 +4,12 @@ import { useLang } from "@/context/LangContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const REASONS = [
-  { titleBn: "অভিজ্ঞ বিশেষজ্ঞ দল",   titleEn: "Experienced Specialist Team", descBn: "আমাদের চিকিৎসকরা দেশে ও বিদেশে উচ্চতর প্রশিক্ষণপ্রাপ্ত।", descEn: "Our doctors are highly trained both locally and abroad." },
-  { titleBn: "সর্বাধুনিক প্রযুক্তি",   titleEn: "Latest Technology",           descBn: "আন্তর্জাতিক মানের যন্ত্রপাতি ও সরঞ্জাম ব্যবহার করা হয়।",  descEn: "International standard equipment and instruments are used." },
-  { titleBn: "রোগীকেন্দ্রিক সেবা",     titleEn: "Patient-Centered Care",       descBn: "প্রতিটি রোগীকে পরিবারের সদস্যের মতো যত্ন নেওয়া হয়।",   descEn: "Every patient is cared for like a family member." },
-  { titleBn: "সাশ্রয়ী মূল্যে সেবা",   titleEn: "Affordable Services",         descBn: "উন্নত চিকিৎসা সেবা সকলের নাগালের মধ্যে রাখা আমাদের লক্ষ্য।", descEn: "Our goal is to keep quality healthcare within everyone's reach." },
-  { titleBn: "সময়মতো সেবা",           titleEn: "Timely Service",              descBn: "অ্যাপয়েন্টমেন্ট অনুযায়ী সময়মতো সেবা নিশ্চিত করা হয়।",  descEn: "Timely service is ensured as per appointment." },
-  { titleBn: "সহজলভ্য অবস্থান",        titleEn: "Accessible Location",         descBn: "শেরপুর সদরে সহজে পৌঁছানো যায় এমন স্থানে অবস্থিত।",      descEn: "Located in an easily accessible area in Sherpur Sadar." },
+  { titleBn: "অভিজ্ঞ বিশেষজ্ঞ দল", titleEn: "Expert Specialist Team", descBn: "দেশে ও বিদেশে উচ্চতর প্রশিক্ষণপ্রাপ্ত চিকিৎসক।", descEn: "Doctors trained locally and abroad.", num: "০১" },
+  { titleBn: "সর্বাধুনিক প্রযুক্তি", titleEn: "Latest Technology", descBn: "আন্তর্জাতিক মানের যন্ত্রপাতি ও সরঞ্জাম।", descEn: "International standard equipment.", num: "০২" },
+  { titleBn: "রোগীকেন্দ্রিক সেবা", titleEn: "Patient-Centered Care", descBn: "প্রতিটি রোগীকে পরিবারের মতো যত্ন।", descEn: "Every patient cared for like family.", num: "০৩" },
+  { titleBn: "সাশ্রয়ী মূল্যে সেবা", titleEn: "Affordable Services", descBn: "উন্নত চিকিৎসা সকলের নাগালে রাখা আমাদের লক্ষ্য।", descEn: "Quality healthcare within everyone's reach.", num: "০৪" },
+  { titleBn: "সময়মতো সেবা", titleEn: "Timely Service", descBn: "অ্যাপয়েন্টমেন্ট অনুযায়ী সময়মতো সেবা।", descEn: "On-time service as per appointment.", num: "০৫" },
+  { titleBn: "সহজলভ্য অবস্থান", titleEn: "Accessible Location", descBn: "শেরপুর সদরে সহজে পৌঁছানো যায়।", descEn: "Easily accessible in Sherpur Sadar.", num: "০৬" },
 ];
 
 export function WhyChooseSection() {
@@ -18,25 +18,39 @@ export function WhyChooseSection() {
   const icons = [s.icon_why_1, s.icon_why_2, s.icon_why_3, s.icon_why_4, s.icon_why_5, s.icon_why_6];
 
   return (
-    <section className="py-14 sm:py-20 bg-slate-50">
+    <section className="py-16 sm:py-24 bg-[#F7FAFF]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-          <span className="text-blue-600 text-xs font-semibold uppercase tracking-widest">{t("কেন আমরা", "Why Choose Us")}</span>
-          <h2 className="font-extrabold text-gray-900 mt-2 mb-3" style={{ fontSize: "clamp(1.6rem, 4vw, 2.25rem)" }}>
-            {t("কেন আমাদের হাসপাতাল বেছে নেবেন?", "Why Choose Our Hospital?")}
+
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <span className="inline-block bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4">
+            {t("কেন আমরা", "Why Choose Us")}
+          </span>
+          <h2 className="font-extrabold text-gray-900 leading-tight mb-4"
+            style={{ fontSize: "clamp(1.75rem, 4vw, 2.5rem)" }}>
+            {t("কেন আমাদের হাসপাতাল", "Why Choose")}
+            <br />
+            <span className="text-blue-600">{t("বেছে নেবেন?", "Our Hospital?")}</span>
           </h2>
-          <p className="text-gray-500 text-sm sm:text-base">{t("আমরা শুধু চিকিৎসা দিই না, আমরা আপনার সুস্বাস্থ্য নিশ্চিত করি।", "We don't just treat — we ensure your well-being.")}</p>
+          <p className="text-gray-500 text-sm sm:text-base">
+            {t("আমরা শুধু চিকিৎসা দিই না, আমরা আপনার সুস্বাস্থ্য নিশ্চিত করি।", "We don't just treat — we ensure your well-being.")}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           {REASONS.map((reason, i) => (
-            <div key={reason.titleEn} className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all flex gap-4">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0">
-                {icons[i] || "✓"}
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 mb-1 text-sm sm:text-base">{t(reason.titleBn, reason.titleEn)}</h3>
-                <p className="text-gray-500 text-xs sm:text-sm leading-relaxed">{t(reason.descBn, reason.descEn)}</p>
+            <div key={reason.titleEn}
+              className="group bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 group-hover:bg-blue-600 flex items-center justify-center text-2xl flex-shrink-0 transition-colors duration-300">
+                  {icons[i] || "✦"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-blue-200 text-xs font-bold mb-1 group-hover:text-blue-400 transition-colors">{reason.num}</p>
+                  <h3 className="font-bold text-gray-900 mb-1.5 text-sm sm:text-base group-hover:text-blue-700 transition-colors">
+                    {t(reason.titleBn, reason.titleEn)}
+                  </h3>
+                  <p className="text-gray-500 text-xs sm:text-sm leading-relaxed">{t(reason.descBn, reason.descEn)}</p>
+                </div>
               </div>
             </div>
           ))}
