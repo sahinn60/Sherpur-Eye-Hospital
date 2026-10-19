@@ -9,13 +9,12 @@ import api from "@/lib/api";
 
 interface Session {
   id: string; roomLabel: string; status: string; currentSerial: number | null;
-  isPublic: boolean; doctor?: { nameBn: string };
+  isPublic: boolean; doctor?: { nameBn: string } | null;
   _count?: { entries: number };
 }
 interface Entry {
   id: string; serial: number; tokenLabel: string; status: string;
   patient?: { nameBn: string; patientId: string; phone: string } | null;
-  calledAt?: string; completedAt?: string;
 }
 interface Doctor { id: string; nameBn: string; nameEn: string; }
 
@@ -39,18 +38,21 @@ export default function QueuePage() {
   const { user, isSuperAdmin, isAdmin } = useAuth();
   const isStaff = isSuperAdmin || isAdmin;
 
-  const [sessions,    setSessions]    = useState<Session[]>([]);
-  const [selSession,  setSelSession]  = useState<Session | null>(null);
-  const [entries,     setEntries]     = useState<Entry[]>([]);
-  const [doctors,     setDoctors]     = useState<Doctor[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [showCreate,  setShowCreate]  = useState(false);
-  const [newRoom,     setNewRoom]     = useState("চেম্বার ১");
-  const [newDoctor,   setNewDoctor]   = useState("");
-  const [newDate,     setNewDate]     = useState(new Date().toISOString().slice(0, 10));
-  const [patientId,   setPatientId]   = useState("");
-  const [busy,        setBusy]        = useState(false);
+  const [sessions,   setSessions]   = useState<Session[]>([]);
+  const [selId,      setSelId]      = useState<string | null>(null);
+  const [entries,    setEntries]    = useState<Entry[]>([]);
+  const [doctors,    setDoctors]    = useState<Doctor[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newRoom,    setNewRoom]    = useState("চেম্বার ১");
+  const [newDoctor,  setNewDoctor]  = useState("");
+  const [newDate,    setNewDate]    = useState(new Date().toISOString().slice(0, 10));
+  const [patientId,  setPatientId]  = useState("");
+  const [busy,       setBusy]       = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Always derive selSession from sessions array so it stays fresh
+  const selSession = sessions.find(s => s.id === selId) ?? null;
 
   const loadSessions = useCallback(async () => {
     try {
@@ -67,28 +69,39 @@ export default function QueuePage() {
   useEffect(() => { loadSessions(); }, [loadSessions]);
 
   useEffect(() => {
-    if (isStaff) {
-      api.get<{ data: Doctor[] }>("/doctors").then(r => setDoctors(r.data.data)).catch(() => {});
-    }
-  }, [isStaff]);
+    api.get<{ data: Doctor[] }>("/doctors").then(r => setDoctors(r.data.data)).catch(() => {});
+  }, []);
 
   useEffect(() => {
-    if (!selSession) return;
-    loadEntries(selSession.id);
-    pollRef.current = setInterval(() => loadEntries(selSession.id), 6000);
+    if (pollRef.current) clearInterval(pollRef.current);
+    if (!selId) { setEntries([]); return; }
+    loadEntries(selId);
+    pollRef.current = setInterval(() => {
+      loadSessions();
+      loadEntries(selId);
+    }, 5000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [selSession, loadEntries]);
+  }, [selId, loadEntries, loadSessions]);
 
   async function act(fn: () => Promise<any>) {
     setBusy(true);
-    try { await fn(); await loadSessions(); if (selSession) await loadEntries(selSession.id); }
-    catch (e: any) { alert(e?.response?.data?.message || "সমস্যা হয়েছে"); }
-    finally { setBusy(false); }
+    try {
+      await fn();
+      await loadSessions();
+      if (selId) await loadEntries(selId);
+    } catch (e: any) {
+      alert(e?.response?.data?.message || e?.message || "সমস্যা হয়েছে");
+    } finally { setBusy(false); }
   }
 
   async function createSession() {
     await act(async () => {
-      await api.post("/queue/sessions", { doctorId: newDoctor || undefined, roomLabel: newRoom, sessionDate: newDate, isPublic: true });
+      await api.post("/queue/sessions", {
+        doctorId: newDoctor || undefined,
+        roomLabel: newRoom,
+        sessionDate: newDate,
+        isPublic: true,
+      });
       setShowCreate(false);
     });
   }
@@ -107,11 +120,9 @@ export default function QueuePage() {
           </div>
           <div className="flex gap-2">
             <Button size="sm" variant="secondary" onClick={loadSessions}><RefreshCw size={14} /></Button>
-            {(isStaff || user?.role === "RECEPTION") && (
-              <Button size="sm" onClick={() => setShowCreate(true)} className="flex items-center gap-1">
-                <Plus size={14} /> নতুন সেশন
-              </Button>
-            )}
+            <Button size="sm" onClick={() => setShowCreate(true)} className="flex items-center gap-1">
+              <Plus size={14} /> নতুন সেশন
+            </Button>
           </div>
         </div>
 
@@ -127,18 +138,23 @@ export default function QueuePage() {
                 আজ কোনো সেশন নেই
               </div>
             ) : sessions.map(s => (
-              <button key={s.id} onClick={() => setSelSession(s)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${selSession?.id === s.id ? "border-blue-400 bg-blue-50" : "border-gray-100 bg-white hover:border-blue-200"}`}>
+              <button key={s.id} onClick={() => setSelId(s.id)}
+                className={`w-full text-left p-4 rounded-xl border transition-all ${selId === s.id ? "border-blue-400 bg-blue-50" : "border-gray-100 bg-white hover:border-blue-200"}`}>
                 <div className="flex items-center justify-between mb-1">
                   <p className="font-bold text-gray-900 text-sm">{s.roomLabel}</p>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    s.status === "RUNNING" ? "bg-green-100 text-green-700" :
-                    s.status === "PAUSED"  ? "bg-yellow-100 text-yellow-700" :
-                    s.status === "FINISHED"? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-500"
+                    s.status === "RUNNING"  ? "bg-green-100 text-green-700" :
+                    s.status === "PAUSED"   ? "bg-yellow-100 text-yellow-700" :
+                    s.status === "FINISHED" ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-500"
                   }`}>{SESSION_BN[s.status] || s.status}</span>
                 </div>
                 {s.doctor && <p className="text-xs text-gray-500">{s.doctor.nameBn}</p>}
-                <p className="text-xs text-gray-400 mt-1">মোট: {s._count?.entries ?? 0} জন</p>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs text-gray-400">মোট: {s._count?.entries ?? 0} জন</p>
+                  {s.currentSerial && (
+                    <p className="text-xs font-bold text-blue-600">সিরিয়াল: {s.currentSerial}</p>
+                  )}
+                </div>
               </button>
             ))}
           </div>
@@ -151,14 +167,19 @@ export default function QueuePage() {
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+
                 {/* Session header */}
                 <div className="p-4 border-b border-gray-100 flex flex-wrap items-center gap-2">
                   <div className="flex-1">
                     <p className="font-bold text-gray-900">{selSession.roomLabel}</p>
-                    <p className="text-xs text-gray-400">বর্তমান সিরিয়াল: <span className="font-bold text-blue-600">{selSession.currentSerial ?? "—"}</span></p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      বর্তমান সিরিয়াল:{" "}
+                      <span className="font-bold text-blue-600 text-sm">
+                        {selSession.currentSerial ?? "—"}
+                      </span>
+                    </p>
                   </div>
 
-                  {/* Action buttons */}
                   <div className="flex flex-wrap gap-2">
                     {selSession.status === "NOT_STARTED" && (
                       <Button size="sm" onClick={() => act(() => api.patch(`/queue/sessions/${selSession.id}/action/start`))} disabled={busy} className="flex items-center gap-1 bg-green-600 hover:bg-green-700">
@@ -191,11 +212,11 @@ export default function QueuePage() {
                   </div>
                 </div>
 
-                {/* Add patient */}
+                {/* Add patient — available as long as session not FINISHED */}
                 {selSession.status !== "FINISHED" && (
                   <div className="p-4 border-b border-gray-100 flex gap-2">
                     <input
-                      placeholder="Patient ID (ঐচ্ছিক)"
+                      placeholder="Patient ID লিখুন (ঐচ্ছিক — খালি রাখলে Walk-in)"
                       value={patientId}
                       onChange={e => setPatientId(e.target.value)}
                       className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
@@ -209,19 +230,21 @@ export default function QueuePage() {
                       }
                       await api.post(`/queue/sessions/${selSession.id}/entries`, { patientId: pid });
                       setPatientId("");
-                    })} disabled={busy} className="flex items-center gap-1">
+                    })} disabled={busy} className="flex items-center gap-1 whitespace-nowrap">
                       <Plus size={13} /> যোগ করুন
                     </Button>
                   </div>
                 )}
 
                 {/* Entries */}
-                <div className="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+                <div className="divide-y divide-gray-50 max-h-[420px] overflow-y-auto">
                   {entries.length === 0 ? (
-                    <p className="text-center py-8 text-gray-400 text-sm">কোনো এন্ট্রি নেই</p>
+                    <p className="text-center py-10 text-gray-400 text-sm">কোনো এন্ট্রি নেই — উপরে রোগী যোগ করুন</p>
                   ) : entries.map(e => (
                     <div key={e.id} className="flex items-center gap-3 px-4 py-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center font-extrabold text-blue-700 text-sm flex-shrink-0">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-sm flex-shrink-0 ${
+                        e.status === "CALLED" || e.status === "IN_CONSULTATION" ? "bg-yellow-50 text-yellow-700" : "bg-blue-50 text-blue-700"
+                      }`}>
                         {e.tokenLabel}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -233,7 +256,6 @@ export default function QueuePage() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[e.status] || "bg-gray-100 text-gray-500"}`}>
                         {STATUS_BN[e.status] || e.status}
                       </span>
-                      {/* Entry actions */}
                       <div className="flex gap-1">
                         {e.status === "IN_CONSULTATION" && (
                           <button onClick={() => act(() => api.patch(`/queue/entries/${e.id}/complete`))} title="সম্পন্ন" className="w-7 h-7 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center">
@@ -264,15 +286,13 @@ export default function QueuePage() {
       {showCreate && (
         <Modal open onClose={() => setShowCreate(false)} title="নতুন সেশন তৈরি" size="sm">
           <div className="space-y-4">
-            {isStaff && (
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">চিকিৎসক</label>
-                <select value={newDoctor} onChange={e => setNewDoctor(e.target.value)} className={inp}>
-                  <option value="">নিজের জন্য</option>
-                  {doctors.map(d => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
-                </select>
-              </div>
-            )}
+            <div>
+              <label className="text-xs font-medium text-gray-600 mb-1 block">চিকিৎসক (ঐচ্ছিক)</label>
+              <select value={newDoctor} onChange={e => setNewDoctor(e.target.value)} className={inp}>
+                <option value="">— চিকিৎসক ছাড়া —</option>
+                {doctors.map(d => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
+              </select>
+            </div>
             <div>
               <label className="text-xs font-medium text-gray-600 mb-1 block">চেম্বার / রুম</label>
               <input value={newRoom} onChange={e => setNewRoom(e.target.value)} className={inp} />

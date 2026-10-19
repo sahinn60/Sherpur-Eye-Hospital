@@ -19,12 +19,18 @@ function todayDhaka(): Date {
 /** Active doctors that have at least one public session today */
 export async function publicDoctorList() {
   const today = todayDhaka();
-  const doctors = await prisma.doctor.findMany({
-    where: { isActive: true },
+  const sessions = await prisma.queueSession.findMany({
+    where: { sessionDate: today, isPublic: true, doctorId: { not: null } },
+    select: { doctorId: true },
+    distinct: ["doctorId"],
+  });
+  const doctorIds = sessions.map((s) => s.doctorId!).filter(Boolean);
+  if (!doctorIds.length) return [];
+  return prisma.doctor.findMany({
+    where: { id: { in: doctorIds }, isActive: true },
     select: { id: true, nameBn: true, nameEn: true, designationBn: true, designationEn: true },
     orderBy: { sortOrder: "asc" },
   });
-  return doctors;
 }
 
 /** Public sessions for a doctor today */
@@ -44,7 +50,7 @@ export async function publicSerialData(sessionId: string) {
     where: { id: sessionId },
     select: {
       id: true, status: true, currentSerial: true, roomLabel: true, updatedAt: true,
-      doctor: { select: { nameBn: true, nameEn: true } },
+      doctor: { select: { nameBn: true, nameEn: true } } as any,
     },
   });
   if (!session) throw new AppError("Session not found", 404);
@@ -59,8 +65,8 @@ export async function publicSerialData(sessionId: string) {
 
   return {
     sessionId: session.id,
-    doctorNameBn: session.doctor.nameBn,
-    doctorNameEn: session.doctor.nameEn,
+    doctorNameBn: session.doctor?.nameBn ?? "",
+    doctorNameEn: session.doctor?.nameEn ?? "",
     roomLabel: session.roomLabel,
     status: session.status,
     currentSerial: session.currentSerial ?? null,
@@ -97,12 +103,12 @@ export async function listAllSessions(date?: string) {
 }
 
 export async function createSession(data: {
-  doctorId: string; roomLabel: string; sessionDate?: string; isPublic?: boolean; createdBy: string;
+  doctorId?: string; roomLabel: string; sessionDate?: string; isPublic?: boolean; createdBy: string;
 }) {
   const d = data.sessionDate ? new Date(data.sessionDate) : todayDhaka();
   return prisma.queueSession.create({
     data: {
-      doctorId: data.doctorId,
+      doctorId: data.doctorId || null,
       roomLabel: data.roomLabel || "চেম্বার ১",
       sessionDate: d,
       isPublic: data.isPublic ?? true,

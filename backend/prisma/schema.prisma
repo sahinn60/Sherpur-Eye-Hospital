@@ -1018,8 +1018,8 @@ enum QueueEntryStatus {
 
 model QueueSession {
   id           String              @id @default(cuid())
-  doctorId     String
-  doctor       Doctor              @relation(fields: [doctorId], references: [id])
+  doctorId     String?
+  doctor       Doctor?             @relation(fields: [doctorId], references: [id])
   sessionDate  DateTime            @db.Date          // Asia/Dhaka date
   roomLabel    String              @default("চেম্বার ১") // public room name
   status       QueueSessionStatus  @default(NOT_STARTED)
