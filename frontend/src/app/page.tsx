@@ -2,17 +2,10 @@ import { PublicLayout } from "@/components/layout";
 import {
   HeroSection,
   LiveSerialSection,
-  IntroSection,
   ServicesSection,
-  PhacoBanner,
-  WhyChooseSection,
-  DoctorsSection,
-  FacilitiesSection,
-  CareProcessSection,
   StatsSection,
-  TestimonialsSection,
-  ArticlesSection,
-  GallerySection,
+  DoctorsSection,
+  CareProcessSection,
   ContactCTA,
   MapSection,
 } from "@/components/home";
@@ -22,17 +15,10 @@ export default function HomePage() {
     <PublicLayout>
       <HeroSection />
       <LiveSerialSection />
-      <IntroSection />
       <ServicesSection />
-      <PhacoBanner />
-      <WhyChooseSection />
       <StatsSection />
       <DoctorsSection />
-      <FacilitiesSection />
       <CareProcessSection />
-      <TestimonialsSection />
-      <ArticlesSection />
-      <GallerySection />
       <ContactCTA />
       <MapSection />
     </PublicLayout>
