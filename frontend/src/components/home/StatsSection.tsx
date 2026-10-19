@@ -15,7 +15,7 @@ export function StatsSection() {
   ];
 
   return (
-    <section className="py-10 sm:py-14" style={{ backgroundColor: "#F1F6FC" }}>
+    <section className="py-10 sm:py-14" style={{ backgroundColor: "#2563EB" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {stats.map((stat, i) => (
