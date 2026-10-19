@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarCheck, Phone, ArrowRight, Eye, Shield, Clock, Star } from "lucide-react";
+import { CalendarCheck, Phone, ArrowRight, Eye, Shield, Clock, Star, List } from "lucide-react";
 import { useLang } from "@/context/LangContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
@@ -158,28 +158,31 @@ export function HeroSection() {
               {/* Floating card — top left */}
               <div className="absolute -top-4 -left-4 sm:-left-6 bg-white rounded-2xl px-4 py-3 shadow-2xl border border-gray-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
-                    <span className="text-lg">👁️</span>
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                    <Eye size={18} className="text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-gray-900 font-extrabold text-sm leading-none">১০০%</p>
-                    <p className="text-gray-400 text-xs mt-0.5">{t("ব্যথামুক্ত", "Painless")}</p>
+                    <p className="text-gray-900 font-extrabold text-sm leading-none">{t("আধুনিক", "Modern")}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{t("চক্ষু সেবা", "Eye Care")}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Floating card — bottom right */}
-              <div className="absolute -bottom-4 -right-4 sm:-right-6 bg-white rounded-2xl px-4 py-3 shadow-2xl border border-gray-100">
+              {/* Floating card — bottom right (links to live serial section) */}
+              <Link
+                href="/#live-serial"
+                className="absolute -bottom-4 -right-4 sm:-right-6 bg-white rounded-2xl px-4 py-3 shadow-2xl border border-gray-100 hover:shadow-xl hover:border-blue-200 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
-                    <CalendarCheck size={18} className="text-blue-600" />
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <List size={18} className="text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-gray-900 font-extrabold text-sm leading-none">{t("অনলাইন", "Online")}</p>
-                    <p className="text-gray-400 text-xs mt-0.5">{t("অ্যাপয়েন্টমেন্ট", "Appointment")}</p>
+                    <p className="text-gray-900 font-extrabold text-sm leading-none">{t("সরাসরি", "Live")}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{t("লাইভ সিরিয়াল", "Serial")}</p>
                   </div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
