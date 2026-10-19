@@ -63,7 +63,11 @@ export async function getEntries(req: Request, res: Response, next: NextFunction
 
 export async function addEntry(req: Request, res: Response, next: NextFunction) {
   try {
-    res.status(201).json(successResponse("Entry added", await Q.addEntry({ ...req.body, addedBy: req.user!.userId })));
+    res.status(201).json(successResponse("Entry added", await Q.addEntry({
+      sessionId: req.params.sessionId,
+      patientId: req.body.patientId,
+      addedBy: req.user!.userId,
+    })));
   } catch (e) { next(e); }
 }
 
