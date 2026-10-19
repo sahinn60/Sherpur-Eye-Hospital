@@ -43,16 +43,9 @@ export default function AppointmentsPage() {
     try {
       const params: any = {};
       if (statusFilter) params.status = statusFilter;
+      if (search.trim()) params.search = search.trim();
       const res = await api.get("/appointments", { params });
-      let items: Appointment[] = res.data.data || [];
-      if (search) {
-        const q = search.toLowerCase();
-        items = items.filter((a) =>
-          a.patientName.toLowerCase().includes(q) ||
-          a.phone.includes(q) ||
-          a.requestId.toLowerCase().includes(q)
-        );
-      }
+      const items: Appointment[] = res.data.data || [];
       setAppointments(items);
       setTotal(items.length);
     } finally { setLoading(false); }

@@ -186,7 +186,7 @@ export default function QueuePage() {
                 বাম থেকে একটি সেশন নির্বাচন করুন
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-xl border border-gray-100">
 
                 {/* Session header */}
                 <div className="p-4 border-b border-gray-100 flex flex-wrap items-center gap-2">
@@ -235,7 +235,7 @@ export default function QueuePage() {
                 {/* Add patient */}
                 {selSession.status !== "FINISHED" && (
                   <div className="p-4 border-b border-gray-100 space-y-2">
-                    <div className="relative">
+                    <div className="relative z-30">
                       {selPatient ? (
                         <div className="flex items-center gap-2 border border-blue-300 bg-blue-50 rounded-lg px-3 py-2">
                           <div className="flex-1 min-w-0">
@@ -250,18 +250,21 @@ export default function QueuePage() {
                           placeholder="নাম, ফোন বা Patient ID দিয়ে খুঁজুন (ঐচ্ছিক)"
                           value={searchQ}
                           onChange={e => onSearchChange(e.target.value)}
+                          onBlur={() => setTimeout(() => setSearchRes([]), 200)}
                           className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
                         />
                       )}
                       {/* Dropdown results */}
                       {!selPatient && searchQ && (
-                        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl">
                           {searching ? (
                             <p className="text-xs text-gray-400 px-4 py-3">খোঁজা হচ্ছে...</p>
                           ) : searchRes.length === 0 ? (
                             <p className="text-xs text-gray-400 px-4 py-3">কোনো রোগী পাওয়া যায়নি</p>
                           ) : searchRes.map(p => (
-                            <button key={p.id} onClick={() => { setSelPatient(p); setSearchQ(""); setSearchRes([]); }}
+                            <button key={p.id}
+                              onMouseDown={e => e.preventDefault()}
+                              onClick={() => { setSelPatient(p); setSearchQ(""); setSearchRes([]); }}
                               className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b border-gray-50 last:border-0">
                               <p className="text-sm font-medium text-gray-900">{p.nameBn}</p>
                               <p className="text-xs text-gray-400">{p.patientId} · {p.phone}</p>
@@ -280,7 +283,7 @@ export default function QueuePage() {
                 )}
 
                 {/* Entries */}
-                <div className="divide-y divide-gray-50 max-h-[420px] overflow-y-auto">
+                <div className="divide-y divide-gray-50 max-h-[420px] overflow-y-auto rounded-b-xl">
                   {entries.length === 0 ? (
                     <p className="text-center py-10 text-gray-400 text-sm">কোনো এন্ট্রি নেই — উপরে রোগী যোগ করুন</p>
                   ) : entries.map(e => (

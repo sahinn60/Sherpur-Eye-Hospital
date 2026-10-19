@@ -69,9 +69,19 @@ export async function createAppointment(input: CreateAppointmentInput, ctx?: Aud
   return appt;
 }
 
-export async function getAllAppointments(status?: string) {
+export async function getAllAppointments(status?: string, search?: string) {
+  const where: any = {};
+  if (status) where.status = status as any;
+  if (search) {
+    const q = search.trim();
+    where.OR = [
+      { patientName: { contains: q, mode: "insensitive" } },
+      { phone:       { contains: q } },
+      { requestId:   { contains: q, mode: "insensitive" } },
+    ];
+  }
   return prisma.appointment.findMany({
-    where: status ? { status: status as any } : undefined,
+    where,
     select: PUBLIC_SELECT,
     orderBy: { createdAt: "desc" },
     take: 500,

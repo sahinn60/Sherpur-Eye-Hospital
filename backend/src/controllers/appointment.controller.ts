@@ -16,7 +16,10 @@ export async function bookAppointment(req: Request, res: Response, next: NextFun
 
 export async function listAppointments(req: Request, res: Response, next: NextFunction) {
   try {
-    const appts = await getAllAppointments(req.query.status as string | undefined);
+    const appts = await getAllAppointments(
+      req.query.status as string | undefined,
+      req.query.search as string | undefined,
+    );
     res.json(successResponse("Appointments fetched", appts));
   } catch (err) { next(err); }
 }
