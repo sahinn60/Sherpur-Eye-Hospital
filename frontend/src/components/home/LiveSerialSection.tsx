@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { RefreshCw, CalendarCheck, CheckCircle2, MapPin } from "lucide-react";
+import { RefreshCw, CalendarCheck } from "lucide-react";
 import { useLang } from "@/context/LangContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://sherpur-eye-hospital.onrender.com/api/v1";
@@ -34,23 +34,27 @@ const STEPS = [
 export function LiveSerialSection() {
   const { t } = useLang();
 
-  const [doctors,    setDoctors]    = useState<Doctor[]>([]);
-  const [sessions,   setSessions]   = useState<Session[]>([]);
-  const [serial,     setSerial]     = useState<SerialData | null>(null);
-  const [selDoctor,  setSelDoctor]  = useState("");
-  const [selSession, setSelSession] = useState("");
-  const [stale,      setStale]      = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [doctors,      setDoctors]      = useState<Doctor[]>([]);
+  const [sessions,     setSessions]     = useState<Session[]>([]);
+  const [serial,       setSerial]       = useState<SerialData | null>(null);
+  const [selDoctor,    setSelDoctor]    = useState("");
+  const [selSession,   setSelSession]   = useState("");
+  const [stale,        setStale]        = useState(false);
+  const [lastUpdate,   setLastUpdate]   = useState<Date | null>(null);
+  const [doctorsLoaded, setDoctorsLoaded] = useState(false);
 
-  const timerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchingRef = useRef(false);
 
   // Load doctors once
   useEffect(() => {
     fetch(`${API}/queue/public/doctors`)
       .then(r => r.json())
-      .then(d => { if (d.data?.length) { setDoctors(d.data); setSelDoctor(d.data[0].id); } })
-      .catch(() => {});
+      .then(d => {
+        setDoctorsLoaded(true);
+        if (d.data?.length) { setDoctors(d.data); setSelDoctor(d.data[0].id); }
+      })
+      .catch(() => setDoctorsLoaded(true));
   }, []);
 
   // Load sessions when doctor changes
@@ -59,9 +63,7 @@ export function LiveSerialSection() {
     setSessions([]); setSelSession(""); setSerial(null);
     fetch(`${API}/queue/public/doctors/${selDoctor}/sessions`)
       .then(r => r.json())
-      .then(d => {
-        if (d.data?.length) { setSessions(d.data); setSelSession(d.data[0].id); }
-      })
+      .then(d => { if (d.data?.length) { setSessions(d.data); setSelSession(d.data[0].id); } })
       .catch(() => {});
   }, [selDoctor]);
 
@@ -93,13 +95,110 @@ export function LiveSerialSection() {
   // Stale detection
   useEffect(() => {
     if (!lastUpdate) return;
-    const t = setTimeout(() => setStale(true), 30000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setStale(true), 30000);
+    return () => clearTimeout(timer);
   }, [lastUpdate]);
 
   const statusInfo = serial ? (STATUS_LABEL[serial.status] ?? { bn: serial.status, color: "text-gray-500" }) : null;
-
   const sel = "w-full text-sm border border-blue-100 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 text-gray-700";
+
+  // ── render helpers ──────────────────────────────────────────────────────────
+
+  function renderSerialBody() {
+    if (!doctorsLoaded) {
+      return (
+        <div className="flex items-center justify-center py-10 text-gray-400 text-sm gap-2">
+          <RefreshCw size={14} className="animate-spin" />
+          {t("লোড হচ্ছে...", "Loading...")}
+        </div>
+      );
+    }
+    if (doctors.length === 0) {
+      return (
+        <div className="text-center py-10 space-y-2">
+          <p className="text-gray-500 text-sm font-medium">
+            {t("আজ কোনো সেশন চালু নেই", "No active session today")}
+          </p>
+          <p className="text-gray-400 text-xs">
+            {t(
+              "ডাক্তার চেম্বার শুরু হলে এখানে লাইভ সিরিয়াল দেখাবে",
+              "Live serial will appear here when a doctor starts a session"
+            )}
+          </p>
+        </div>
+      );
+    }
+    return (
+      <>
+        {/* Dropdowns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <div>
+            <label className="text-xs font-semibold text-gray-500 mb-1 block">{t("চিকিৎসক", "Doctor")}</label>
+            <select className={sel} value={selDoctor} onChange={e => setSelDoctor(e.target.value)}>
+              {doctors.map(d => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-500 mb-1 block">{t("চেম্বার / সেশন", "Chamber / Session")}</label>
+            <select className={sel} value={selSession} onChange={e => setSelSession(e.target.value)}>
+              {sessions.length === 0
+                ? <option value="">{t("আজ কোনো সেশন নেই", "No session today")}</option>
+                : sessions.map(s => <option key={s.id} value={s.id}>{s.roomLabel}</option>)
+              }
+            </select>
+          </div>
+        </div>
+
+        {/* Status badge */}
+        {statusInfo && (
+          <div className="flex items-center gap-2 mb-5">
+            <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+              serial?.status === "RUNNING"  ? "bg-green-50 border-green-200 text-green-700" :
+              serial?.status === "PAUSED"   ? "bg-yellow-50 border-yellow-200 text-yellow-700" :
+              serial?.status === "FINISHED" ? "bg-red-50 border-red-200 text-red-600" :
+              "bg-gray-50 border-gray-200 text-gray-500"
+            }`}>
+              {t(statusInfo.bn, serial?.status ?? "")}
+            </span>
+            {stale && (
+              <span className="text-xs text-orange-500 font-medium">
+                {t("⚠ সংযোগ বিলম্বিত", "⚠ Connection delayed")}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Serial cards */}
+        {!selSession || !serial ? (
+          <div className="text-center py-10 text-gray-400 text-sm">
+            {selSession ? t("লোড হচ্ছে...", "Loading...") : t("একটি সেশন নির্বাচন করুন", "Select a session")}
+          </div>
+        ) : serial.status === "NOT_STARTED" ? (
+          <div className="text-center py-10 text-gray-400 text-sm">{t("সেশন এখনো শুরু হয়নি", "Session not started yet")}</div>
+        ) : serial.status === "FINISHED" ? (
+          <div className="text-center py-10 text-gray-400 text-sm">{t("আজকের সেশন শেষ হয়েছে", "Today's session has ended")}</div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { labelBn: "বর্তমান সিরিয়াল", token: serial.currentToken,   accent: "green" },
+              { labelBn: "পরবর্তী সিরিয়াল",  token: serial.nextToken,      accent: "blue" },
+              { labelBn: "তার পরের সিরিয়াল", token: serial.afterNextToken, accent: "gray" },
+            ].map((card) => (
+              <div key={card.labelBn} className="bg-white rounded-2xl p-4 text-center border border-blue-50 shadow-sm">
+                <p className="text-xs text-gray-400 mb-2 leading-tight">{t(card.labelBn, card.labelBn)}</p>
+                <p className={`text-3xl font-extrabold ${
+                  card.accent === "green" ? "text-green-600" :
+                  card.accent === "blue"  ? "text-blue-600"  : "text-gray-400"
+                }`}>
+                  {card.token ?? "—"}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <section id="live-serial" className="py-12 sm:py-16 bg-white">
@@ -116,7 +215,7 @@ export function LiveSerialSection() {
                 <p className="text-xs text-gray-400 mt-0.5">
                   {lastUpdate
                     ? t(`সর্বশেষ আপডেট: ${lastUpdate.toLocaleTimeString("bn-BD")}`, `Last updated: ${lastUpdate.toLocaleTimeString("en-GB")}`)
-                    : t("লোড হচ্ছে...", "Loading...")}
+                    : t("আজকের সিরিয়াল তথ্য", "Today's serial info")}
                 </p>
               </div>
               <button
@@ -128,71 +227,7 @@ export function LiveSerialSection() {
               </button>
             </div>
 
-            {/* Dropdowns */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-              <div>
-                <label className="text-xs font-semibold text-gray-500 mb-1 block">{t("চিকিৎসক", "Doctor")}</label>
-                <select className={sel} value={selDoctor} onChange={e => setSelDoctor(e.target.value)}>
-                  {doctors.length === 0 && <option value="">{t("লোড হচ্ছে...", "Loading...")}</option>}
-                  {doctors.map(d => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 mb-1 block">{t("চেম্বার / সেশন", "Chamber / Session")}</label>
-                <select className={sel} value={selSession} onChange={e => setSelSession(e.target.value)}>
-                  {sessions.length === 0 && <option value="">{t("আজ কোনো সেশন নেই", "No session today")}</option>}
-                  {sessions.map(s => <option key={s.id} value={s.id}>{s.roomLabel}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {/* Status badge */}
-            {statusInfo && (
-              <div className="flex items-center gap-2 mb-5">
-                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                  serial?.status === "RUNNING"  ? "bg-green-50 border-green-200 text-green-700" :
-                  serial?.status === "PAUSED"   ? "bg-yellow-50 border-yellow-200 text-yellow-700" :
-                  serial?.status === "FINISHED" ? "bg-red-50 border-red-200 text-red-600" :
-                  "bg-gray-50 border-gray-200 text-gray-500"
-                }`}>
-                  {t(statusInfo.bn, serial?.status ?? "")}
-                </span>
-                {stale && (
-                  <span className="text-xs text-orange-500 font-medium">
-                    {t("⚠ সংযোগ বিলম্বিত", "⚠ Connection delayed")}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Serial cards */}
-            {!selSession || !serial ? (
-              <div className="text-center py-10 text-gray-400 text-sm">
-                {selSession ? t("লোড হচ্ছে...", "Loading...") : t("একটি সেশন নির্বাচন করুন", "Select a session")}
-              </div>
-            ) : serial.status === "NOT_STARTED" ? (
-              <div className="text-center py-10 text-gray-400 text-sm">{t("সেশন এখনো শুরু হয়নি", "Session not started yet")}</div>
-            ) : serial.status === "FINISHED" ? (
-              <div className="text-center py-10 text-gray-400 text-sm">{t("আজকের সেশন শেষ হয়েছে", "Today's session has ended")}</div>
-            ) : (
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { labelBn: "বর্তমান সিরিয়াল", token: serial.currentToken, accent: "green" },
-                  { labelBn: "পরবর্তী সিরিয়াল",  token: serial.nextToken,    accent: "blue" },
-                  { labelBn: "তার পরের সিরিয়াল", token: serial.afterNextToken, accent: "gray" },
-                ].map((card) => (
-                  <div key={card.labelBn} className="bg-white rounded-2xl p-4 text-center border border-blue-50 shadow-sm">
-                    <p className="text-xs text-gray-400 mb-2 leading-tight">{t(card.labelBn, card.labelBn)}</p>
-                    <p className={`text-3xl font-extrabold ${
-                      card.accent === "green" ? "text-green-600" :
-                      card.accent === "blue"  ? "text-blue-600"  : "text-gray-400"
-                    }`}>
-                      {card.token ?? "—"}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
+            {renderSerialBody()}
 
             {/* Disclaimer */}
             <p className="text-xs text-gray-400 mt-5 leading-relaxed">
@@ -215,15 +250,12 @@ export function LiveSerialSection() {
             <div className="space-y-0">
               {STEPS.map((step, i) => (
                 <div key={step.num} className="flex gap-4">
-                  {/* Number + connector */}
                   <div className="flex flex-col items-center">
                     <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-extrabold flex-shrink-0">
                       {step.num}
                     </div>
                     {i < STEPS.length - 1 && <div className="w-0.5 flex-1 bg-blue-100 my-1" />}
                   </div>
-
-                  {/* Content */}
                   <div className={`pb-6 ${i === STEPS.length - 1 ? "pb-0" : ""}`}>
                     <p className="font-bold text-gray-900 text-sm mb-1">{t(step.titleBn, step.titleBn)}</p>
                     <p className="text-gray-500 text-xs leading-relaxed">{t(step.descBn, step.descBn)}</p>
@@ -232,7 +264,6 @@ export function LiveSerialSection() {
               ))}
             </div>
 
-            {/* CTA */}
             <a
               href="/appointment"
               className="mt-7 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-xl transition-colors text-sm w-full"
