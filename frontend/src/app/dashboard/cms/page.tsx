@@ -108,8 +108,14 @@ function SettingsTab({ group, grouped, draft, setDraft, onSave, saving }: {
   saving: boolean;
 }) {
   // For 'about' group, hide image fields (they are in About Images tab)
+  // For 'hero' group, hide hero_bg_* keys (managed by the custom Background Image UI above)
+  const BG_KEYS = ["hero_bg_image","hero_bg_enabled","hero_bg_opacity","hero_bg_overlay","hero_bg_position"];
   const allFields = grouped[group] || [];
-  const fields = group === "about" ? allFields.filter((f) => f.type !== "image") : allFields;
+  const fields = group === "about"
+    ? allFields.filter((f) => f.type !== "image")
+    : group === "hero"
+      ? allFields.filter((f) => !BG_KEYS.includes(f.key))
+      : allFields;
   if (!fields.length) return <p className="text-sm text-gray-400 py-8 text-center">কোনো সেটিং নেই</p>;
 
   return (
@@ -507,11 +513,11 @@ export default function CmsAdminPage() {
                         </label>
                       </div>
 
-                      {/* Upload */}
+                      {/* Upload — auto-enables toggle when image is set */}
                       <Field
                         s={{ key: "hero_bg_image", value: draft["hero_bg_image"] ?? "", labelBn: "ব্যাকগ্রাউন্ড ছবি (1920×800px প্রস্তাবিত)", labelEn: "Background Image (1920×800px suggested)", type: "image", group: "hero" }}
                         value={draft["hero_bg_image"] ?? ""}
-                        onChange={(v) => setDraft({ ...draft, hero_bg_image: v })}
+                        onChange={(v) => setDraft({ ...draft, hero_bg_image: v, hero_bg_enabled: v ? "true" : draft["hero_bg_enabled"] })}
                       />
 
                       {/* Opacity */}

@@ -37,8 +37,13 @@ export async function upsertSettings(settings: Record<string, string>) {
 // Ensure new settings exist (run on startup)
 export async function ensureNewSettings() {
   const newSettings = [
-    { key: "hero_prescription_image", value: "", group: "page_heroes", labelBn: "Prescription পেজ হিরো ছবি", labelEn: "Prescription Page Hero Image", type: "image" },
-    { key: "hero_contact_image",      value: "", group: "page_heroes", labelBn: "Contact পেজ হিরো ছবি",      labelEn: "Contact Page Hero Image",      type: "image" },
+    { key: "hero_prescription_image", value: "",       group: "page_heroes", labelBn: "Prescription পেজ হিরো ছবি", labelEn: "Prescription Page Hero Image", type: "image" },
+    { key: "hero_contact_image",      value: "",       group: "page_heroes", labelBn: "Contact পেজ হিরো ছবি",      labelEn: "Contact Page Hero Image",      type: "image" },
+    { key: "hero_bg_image",           value: "",       group: "hero",        labelBn: "হিরো ব্যাকগ্রাউন্ড ছবি",    labelEn: "Hero Background Image",        type: "image" },
+    { key: "hero_bg_enabled",         value: "false",  group: "hero",        labelBn: "ব্যাকগ্রাউন্ড ছবি চালু",   labelEn: "Background Image Enabled",     type: "text" },
+    { key: "hero_bg_opacity",         value: "15",     group: "hero",        labelBn: "ব্যাকগ্রাউন্ড অপাসিটি",    labelEn: "Background Image Opacity",     type: "text" },
+    { key: "hero_bg_overlay",         value: "50",     group: "hero",        labelBn: "Navy ওভারলে শক্তি",         labelEn: "Navy Overlay Strength",         type: "text" },
+    { key: "hero_bg_position",        value: "center", group: "hero",        labelBn: "ব্যাকগ্রাউন্ড পজিশন",      labelEn: "Background Position",          type: "text" },
   ];
   for (const s of newSettings) {
     await prisma.siteSetting.upsert({
