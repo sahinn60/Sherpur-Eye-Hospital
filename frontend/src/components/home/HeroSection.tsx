@@ -170,7 +170,7 @@ export function HeroSection() {
 
               {/* Floating card — bottom right (links to live serial section) */}
               <Link
-                href="/#live-serial"
+                href="/live-serial"
                 className="absolute -bottom-4 -right-4 sm:-right-6 bg-white rounded-2xl px-4 py-3 shadow-2xl border border-gray-100 hover:shadow-xl hover:border-blue-200 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <div className="flex items-center gap-2.5">
