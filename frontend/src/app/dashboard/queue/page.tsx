@@ -16,6 +16,7 @@ interface Entry {
   id: string; serial: number; tokenLabel: string; status: string;
   patient?: { nameBn: string; patientId: string; phone: string } | null;
 }
+interface PatientResult { id: string; nameBn: string; patientId: string; phone: string; }
 interface Doctor { id: string; nameBn: string; nameEn: string; }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -47,8 +48,12 @@ export default function QueuePage() {
   const [newRoom,    setNewRoom]    = useState("চেম্বার ১");
   const [newDoctor,  setNewDoctor]  = useState("");
   const [newDate,    setNewDate]    = useState(new Date().toISOString().slice(0, 10));
-  const [patientId,  setPatientId]  = useState("");
   const [busy,       setBusy]       = useState(false);
+  const [searchQ,    setSearchQ]    = useState("");
+  const [searchRes,  setSearchRes]  = useState<PatientResult[]>([]);
+  const [selPatient, setSelPatient] = useState<PatientResult | null>(null);
+  const [searching,  setSearching]  = useState(false);
+  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Always derive selSession from sessions array so it stays fresh
@@ -92,6 +97,21 @@ export default function QueuePage() {
     } catch (e: any) {
       alert(e?.response?.data?.message || e?.message || "সমস্যা হয়েছে");
     } finally { setBusy(false); }
+  }
+
+  function onSearchChange(val: string) {
+    setSearchQ(val);
+    setSelPatient(null);
+    if (searchRef.current) clearTimeout(searchRef.current);
+    if (!val.trim()) { setSearchRes([]); return; }
+    searchRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const r = await api.get<{ data: { items: PatientResult[] } }>(`/patients?search=${encodeURIComponent(val)}&limit=6`);
+        setSearchRes(r.data.data.items ?? []);
+      } catch { setSearchRes([]); }
+      finally { setSearching(false); }
+    }, 350);
   }
 
   async function createSession() {
@@ -212,26 +232,49 @@ export default function QueuePage() {
                   </div>
                 </div>
 
-                {/* Add patient — available as long as session not FINISHED */}
+                {/* Add patient */}
                 {selSession.status !== "FINISHED" && (
-                  <div className="p-4 border-b border-gray-100 flex gap-2">
-                    <input
-                      placeholder="Patient ID লিখুন (ঐচ্ছিক — খালি রাখলে Walk-in)"
-                      value={patientId}
-                      onChange={e => setPatientId(e.target.value)}
-                      className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
+                  <div className="p-4 border-b border-gray-100 space-y-2">
+                    <div className="relative">
+                      {selPatient ? (
+                        <div className="flex items-center gap-2 border border-blue-300 bg-blue-50 rounded-lg px-3 py-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{selPatient.nameBn}</p>
+                            <p className="text-xs text-gray-500">{selPatient.patientId} · {selPatient.phone}</p>
+                          </div>
+                          <button onClick={() => { setSelPatient(null); setSearchQ(""); setSearchRes([]); }}
+                            className="text-gray-400 hover:text-red-500 text-lg leading-none flex-shrink-0">×</button>
+                        </div>
+                      ) : (
+                        <input
+                          placeholder="নাম, ফোন বা Patient ID দিয়ে খুঁজুন (ঐচ্ছিক)"
+                          value={searchQ}
+                          onChange={e => onSearchChange(e.target.value)}
+                          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        />
+                      )}
+                      {/* Dropdown results */}
+                      {!selPatient && searchQ && (
+                        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                          {searching ? (
+                            <p className="text-xs text-gray-400 px-4 py-3">খোঁজা হচ্ছে...</p>
+                          ) : searchRes.length === 0 ? (
+                            <p className="text-xs text-gray-400 px-4 py-3">কোনো রোগী পাওয়া যায়নি</p>
+                          ) : searchRes.map(p => (
+                            <button key={p.id} onClick={() => { setSelPatient(p); setSearchQ(""); setSearchRes([]); }}
+                              className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b border-gray-50 last:border-0">
+                              <p className="text-sm font-medium text-gray-900">{p.nameBn}</p>
+                              <p className="text-xs text-gray-400">{p.patientId} · {p.phone}</p>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <Button size="sm" onClick={() => act(async () => {
-                      let pid: string | undefined;
-                      if (patientId.trim()) {
-                        const r = await api.get<{ data: any[] }>(`/patients?search=${patientId.trim()}&limit=1`);
-                        pid = r.data.data?.[0]?.id;
-                        if (!pid) throw new Error("রোগী পাওয়া যায়নি");
-                      }
-                      await api.post(`/queue/sessions/${selSession.id}/entries`, { patientId: pid });
-                      setPatientId("");
-                    })} disabled={busy} className="flex items-center gap-1 whitespace-nowrap">
-                      <Plus size={13} /> যোগ করুন
+                      await api.post(`/queue/sessions/${selSession.id}/entries`, { patientId: selPatient?.id });
+                      setSelPatient(null); setSearchQ(""); setSearchRes([]);
+                    })} disabled={busy} className="flex items-center gap-1">
+                      <Plus size={13} /> {selPatient ? `${selPatient.nameBn} কে যোগ করুন` : "Walk-in যোগ করুন"}
                     </Button>
                   </div>
                 )}
