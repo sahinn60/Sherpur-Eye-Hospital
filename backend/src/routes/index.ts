@@ -19,6 +19,7 @@ import inventoryRoutes from "./inventory.routes";
 import prescriptionRoutes from "./prescription.routes";
 import cmsRoutes from "./cms.routes";
 import auditRoutes from "./audit.routes";
+import queueRoutes from "./queue.routes";
 
 const router = Router();
 
@@ -46,5 +47,6 @@ router.use("/inventory",     inventoryRoutes);
 router.use("/prescriptions",  prescriptionRoutes);
 router.use("/cms",           cmsRoutes);
 router.use("/audit",         auditRoutes);
+router.use("/queue",         queueRoutes);
 
 export default router;

@@ -154,6 +154,7 @@ model Doctor {
   surgeries       Surgery[]      @relation("SurgeryDoctor")
   prescriptionSettings DoctorPrescriptionSettings?
   prescriptionTemplates PrescriptionTemplate[]
+  queueSessions         QueueSession[]
 
   @@map("doctors")
 }
@@ -379,6 +380,7 @@ model Patient {
   prescriptions    Prescription[]
   invoices         Invoice[]
   surgeries        Surgery[]
+  queueEntries     QueueEntry[]
 
   @@index([phone])
   @@index([patientId])
@@ -994,6 +996,71 @@ model ContactMessage {
   createdAt DateTime @default(now())
 
   @@map("contact_messages")
+}
+
+// ─── Queue / Live Serial ─────────────────────────────────────────────────────
+
+enum QueueSessionStatus {
+  NOT_STARTED
+  RUNNING
+  PAUSED
+  FINISHED
+}
+
+enum QueueEntryStatus {
+  WAITING
+  CALLED
+  IN_CONSULTATION
+  COMPLETED
+  SKIPPED
+  CANCELLED
+}
+
+model QueueSession {
+  id           String              @id @default(cuid())
+  doctorId     String
+  doctor       Doctor              @relation(fields: [doctorId], references: [id])
+  sessionDate  DateTime            @db.Date          // Asia/Dhaka date
+  roomLabel    String              @default("চেম্বার ১") // public room name
+  status       QueueSessionStatus  @default(NOT_STARTED)
+  isPublic     Boolean             @default(true)    // show on homepage
+  currentSerial Int?                                 // serial number being served
+  startedAt    DateTime?
+  pausedAt     DateTime?
+  finishedAt   DateTime?
+  createdBy    String?             // userId
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  entries      QueueEntry[]
+
+  @@index([doctorId])
+  @@index([sessionDate])
+  @@index([status])
+  @@map("queue_sessions")
+}
+
+model QueueEntry {
+  id          String           @id @default(cuid())
+  sessionId   String
+  session     QueueSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  serial      Int              // sequential within session
+  patientId   String?
+  patient     Patient?         @relation(fields: [patientId], references: [id])
+  tokenLabel  String           // safe public token e.g. "০১২" — no patient name
+  status      QueueEntryStatus @default(WAITING)
+  calledAt    DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  skippedAt   DateTime?
+  skipReason  String?
+  addedBy     String?          // userId
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([sessionId, serial])
+  @@index([sessionId, status])
+  @@map("queue_entries")
 }
 
 model NewsArticle {

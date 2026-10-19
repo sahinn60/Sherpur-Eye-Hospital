@@ -1,6 +1,7 @@
 import { PublicLayout } from "@/components/layout";
 import {
   HeroSection,
+  LiveSerialSection,
   IntroSection,
   ServicesSection,
   PhacoBanner,
@@ -20,6 +21,7 @@ export default function HomePage() {
   return (
     <PublicLayout>
       <HeroSection />
+      <LiveSerialSection />
       <IntroSection />
       <ServicesSection />
       <PhacoBanner />

@@ -34,6 +34,7 @@ export const SIDEBAR_NAV: NavGroup[] = [
     group: "রোগী সেবা",
     items: [
       { href: "/dashboard/clinic",                      label: "ক্লিনিক",           icon: "Stethoscope",  permKey: "nav.clinic",            alsoAllow: ["DOCTOR"] },
+      { href: "/dashboard/queue",                       label: "লাইভ সিরিয়াল",      icon: "ListOrdered",  permKey: "nav.queue",             alsoAllow: ["DOCTOR", "RECEPTION"] },
       { href: "/dashboard/patients",                    label: "রোগী",              icon: "UserRound",    permKey: "nav.patients" },
       { href: "/dashboard/appointments",                label: "অ্যাপয়েন্টমেন্ট",  icon: "CalendarDays", permKey: "nav.appointments" },
       { href: "/dashboard/prescriptions",               label: "প্রেসক্রিপশন",      icon: "FileText",     permKey: "nav.prescriptions",     alsoAllow: ["DOCTOR"] },

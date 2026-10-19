@@ -1,4 +1,5 @@
 export { HeroSection } from "./HeroSection";
+export { LiveSerialSection } from "./LiveSerialSection";
 export { IntroSection } from "./IntroSection";
 export { ServicesSection } from "./ServicesSection";
 export { PhacoBanner } from "./PhacoBanner";
