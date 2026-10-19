@@ -509,7 +509,7 @@ export default function CmsAdminPage() {
 
                       {/* Upload */}
                       <Field
-                        s={{ key: "hero_bg_image", labelBn: "ব্যাকগ্রাউন্ড ছবি (1920×800px প্রস্তাবিত)", labelEn: "Background Image (1920×800px suggested)", type: "image", group: "hero" }}
+                        s={{ key: "hero_bg_image", value: draft["hero_bg_image"] ?? "", labelBn: "ব্যাকগ্রাউন্ড ছবি (1920×800px প্রস্তাবিত)", labelEn: "Background Image (1920×800px suggested)", type: "image", group: "hero" }}
                         value={draft["hero_bg_image"] ?? ""}
                         onChange={(v) => setDraft({ ...draft, hero_bg_image: v })}
                       />
